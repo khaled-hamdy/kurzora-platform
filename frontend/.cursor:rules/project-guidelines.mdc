@@ -1,0 +1,23 @@
+description: Kurzora Project Guidelines
+globs:
+alwaysApply: true
+---
+
+📌 Cursor Instructions for the Kurzora Project
+
+1. All backend logic (Firebase Functions, Supabase queries, scoring algorithms) must go in:
+   - /src/backend-functions/
+
+2. Do NOT modify or touch:
+   - /src/components/
+   - /src/pages/
+
+Those folders are controlled by Lovable (our UI builder) and may be overwritten.
+
+3. Use clean modular TypeScript for all logic.
+4. Each file should handle one thing (e.g., scoreSignal.ts, fetchIndicators.ts)
+5. The tech stack is:
+   - React + Vite + Tailwind CSS
+   - Supabase (PostgreSQL)
+   - Firebase Cloud Functions
+   - Stripe + Telegram + Make.com

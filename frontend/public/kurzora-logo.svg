@@ -1,0 +1,13 @@
+
+<svg width="200" height="60" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+  <!-- Green TrendingUp icon -->
+  <g transform="translate(10, 15)">
+    <path d="M3 17L9 11L13 15L21 7" stroke="#10B981" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M21 7H15M21 7V13" stroke="#10B981" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  
+  <!-- White Kurzora text -->
+  <text x="50" y="38" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="600" fill="#ffffff" text-shadow="0 1px 3px rgba(0, 0, 0, 0.3)">
+    Kurzora
+  </text>
+</svg>
