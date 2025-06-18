@@ -6,7 +6,7 @@ import SignalLegend from "./SignalLegend";
 import SignalTable from "./SignalTable";
 import SignalSummaryStats from "./SignalSummaryStats";
 import SignalHeatmapHeader from "./SignalHeatmapHeader";
-import { mockSignals } from "../../data/mockSignals";
+import { useSignals } from "../../hooks/useSignals";
 import {
   filterSignals,
   calculateFinalScore,
@@ -28,6 +28,9 @@ const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
   );
   const [autoRefresh, setAutoRefresh] = useState(true);
 
+  // Real data from Supabase
+  const { signals, loading, error } = useSignals();
+
   const handleViewSignal = (signal: Signal, timeframe: string) => {
     const finalScore = calculateFinalScore(signal.signals);
     const signalData = {
@@ -44,7 +47,7 @@ const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
   };
 
   const filteredSignals = filterSignals(
-    mockSignals,
+    signals,
     timeFilter,
     scoreThreshold,
     sectorFilter,
