@@ -1,15 +1,17 @@
-
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { useLanguage } from '../../contexts/LanguageContext';
-import SignalFilters from './SignalFilters';
-import SignalLegend from './SignalLegend';
-import SignalTable from './SignalTable';
-import SignalSummaryStats from './SignalSummaryStats';
-import SignalHeatmapHeader from './SignalHeatmapHeader';
-import { mockSignals } from '../../data/mockSignals';
-import { filterSignals, calculateFinalScore } from '../../utils/signalCalculations';
-import { Signal } from '../../types/signal';
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { useLanguage } from "../../contexts/LanguageContext";
+import SignalFilters from "./SignalFilters";
+import SignalLegend from "./SignalLegend";
+import SignalTable from "./SignalTable";
+import SignalSummaryStats from "./SignalSummaryStats";
+import SignalHeatmapHeader from "./SignalHeatmapHeader";
+import { mockSignals } from "../../data/mockSignals";
+import {
+  filterSignals,
+  calculateFinalScore,
+} from "../../utils/signalCalculations";
+import { Signal } from "../../types/signal";
 
 interface SignalHeatmapProps {
   onOpenSignalModal?: (signal: any) => void;
@@ -17,11 +19,13 @@ interface SignalHeatmapProps {
 
 const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
   const { language } = useLanguage();
-  const [timeFilter, setTimeFilter] = useState('1D');
+  const [timeFilter, setTimeFilter] = useState("1D");
   const [scoreThreshold, setScoreThreshold] = useState([70]);
-  const [sectorFilter, setSectorFilter] = useState('all');
-  const [marketFilter, setMarketFilter] = useState('global');
-  const [highlightedCategory, setHighlightedCategory] = useState<string | null>(null);
+  const [sectorFilter, setSectorFilter] = useState("all");
+  const [marketFilter, setMarketFilter] = useState("global");
+  const [highlightedCategory, setHighlightedCategory] = useState<string | null>(
+    null
+  );
   const [autoRefresh, setAutoRefresh] = useState(true);
 
   const handleViewSignal = (signal: Signal, timeframe: string) => {
@@ -31,7 +35,7 @@ const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
       name: signal.name,
       price: signal.price,
       change: signal.change,
-      signalScore: finalScore
+      signalScore: finalScore,
     };
 
     if (onOpenSignalModal) {

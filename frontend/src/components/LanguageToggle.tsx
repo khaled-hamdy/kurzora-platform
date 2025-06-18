@@ -1,20 +1,22 @@
+import React, { useState } from "react";
+import { useLanguage } from "../contexts/LanguageContext";
+import { Button } from "./ui/button";
+import { Languages, ChevronDown } from "lucide-react";
 
-import React, { useState } from 'react';
-import { useLanguage } from '../contexts/LanguageContext';
-import { Button } from './ui/button';
-import { Languages, ChevronDown } from 'lucide-react';
+// Define the supported languages to match LanguageContext
+type Language = "en" | "ar" | "de";
 
 const LanguageToggle: React.FC = () => {
   const { language, setLanguage } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
 
-  const languages = [
-    { code: 'en', label: 'English', flag: '🇺🇸' },
-    { code: 'ar', label: 'العربية', flag: '🇸🇦' },
-    { code: 'de', label: 'Deutsch', flag: '🇩🇪' }
+  const languages: Array<{ code: Language; label: string; flag: string }> = [
+    { code: "en", label: "English", flag: "🇺🇸" },
+    { code: "ar", label: "العربية", flag: "🇸🇦" },
+    { code: "de", label: "Deutsch", flag: "🇩🇪" },
   ];
 
-  const currentLanguage = languages.find(lang => lang.code === language);
+  const currentLanguage = languages.find((lang) => lang.code === language);
 
   return (
     <div className="relative">
@@ -31,14 +33,14 @@ const LanguageToggle: React.FC = () => {
         </span>
         <ChevronDown className="h-3 w-3" />
       </Button>
-      
+
       {isOpen && (
         <div className="absolute top-full mt-1 right-0 bg-slate-800 border border-slate-600 rounded-md shadow-lg z-50 min-w-[120px]">
           {languages.map((lang) => (
             <button
               key={lang.code}
               onClick={() => {
-                setLanguage(lang.code as any);
+                setLanguage(lang.code); // Now properly typed - no 'any' needed
                 setIsOpen(false);
               }}
               className="w-full px-3 py-2 text-left hover:bg-slate-700 text-slate-200 hover:text-white flex items-center space-x-2 first:rounded-t-md last:rounded-b-md transition-colors duration-200"

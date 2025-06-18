@@ -4,7 +4,7 @@ import { TrendingUp } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const Footer: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const handleFooterLinkClick = () => {
     window.scrollTo({
@@ -26,7 +26,10 @@ const Footer: React.FC = () => {
 
   const legalLinks = [
     { label: t('footer.privacyPolicy'), path: '/privacy-policy' },
-    { label: t('footer.termsOfService'), path: '/terms-of-service' },
+    { 
+      label: t('footer.termsOfService'), 
+      path: language === 'de' ? '/de/terms-of-service' : '/terms-of-service' 
+    },
     { label: t('footer.riskDisclosure'), path: '/risk-disclosure' },
     { label: t('footer.shariahCompliance'), path: '/shariah-compliance' },
   ];

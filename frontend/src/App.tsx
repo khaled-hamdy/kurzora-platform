@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -29,6 +28,7 @@ import AdminSignals from "./pages/admin/AdminSignals";
 import AdminSettings from "./pages/admin/AdminSettings";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import TermsOfService from "./pages/legal/TermsOfService";
+import GermanTermsOfService from "./pages/legal/de/TermsOfService";
 import RiskDisclosure from "./pages/legal/RiskDisclosure";
 import ShariahCompliance from "./pages/legal/ShariahCompliance";
 import GDPRCompliance from "./pages/legal/GDPRCompliance";
@@ -95,6 +95,7 @@ function App() {
               {/* Legal Pages */}
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
+              <Route path="/de/terms-of-service" element={<GermanTermsOfService />} />
               <Route path="/risk-disclosure" element={<RiskDisclosure />} />
               <Route path="/shariah-compliance" element={<ShariahCompliance />} />
               <Route path="/gdpr-compliance" element={<GDPRCompliance />} />
