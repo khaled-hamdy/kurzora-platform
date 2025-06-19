@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "../ui/button";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { usePositions } from "../../contexts/PositionsContext";
 
 interface Signal {
   ticker: string;
@@ -37,6 +38,11 @@ const SignalTable: React.FC<SignalTableProps> = ({
   onViewSignal,
 }) => {
   const { t } = useLanguage();
+  const {
+    hasPosition,
+    getButtonText,
+    isLoading: positionsLoading,
+  } = usePositions();
   const timeframes = ["1H", "4H", "1D", "1W"];
 
   const getSignalColor = (score: number) => {
@@ -60,11 +66,12 @@ const SignalTable: React.FC<SignalTableProps> = ({
     return "";
   };
 
-  // NEW: Status badge styling and logic
+  // SIMPLIFIED: Status badge with context-based position detection
   const getStatusBadge = (signal: Signal) => {
-    const { status, has_open_position } = signal;
+    const { status } = signal;
+    const hasRealPosition = hasPosition(signal.ticker);
 
-    if (has_open_position || status === "triggered") {
+    if (hasRealPosition || status === "triggered") {
       return {
         text: "IN POSITION",
         className: "bg-blue-500 text-white",
@@ -100,21 +107,11 @@ const SignalTable: React.FC<SignalTableProps> = ({
     }
   };
 
-  // UPDATED: Execute button only - no more View button
+  // SIMPLIFIED: Smart button logic using context
   const getActionButton = (signal: Signal) => {
-    const { status, has_open_position } = signal;
-
-    if (has_open_position || status === "triggered") {
-      return (
-        <Button
-          size="sm"
-          className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1"
-          onClick={() => onViewSignal(signal, "execute")}
-        >
-          Manage Position
-        </Button>
-      );
-    }
+    const { status } = signal;
+    const hasRealPosition = hasPosition(signal.ticker);
+    const buttonText = getButtonText(signal.ticker);
 
     if (status === "expired" || status === "cancelled") {
       return (
@@ -128,14 +125,18 @@ const SignalTable: React.FC<SignalTableProps> = ({
       );
     }
 
-    // SIMPLIFIED: Only Execute button for active signals
     return (
       <Button
         size="sm"
-        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1"
+        className={`text-white text-xs px-3 py-1 ${
+          hasRealPosition
+            ? "bg-blue-600 hover:bg-blue-700"
+            : "bg-emerald-600 hover:bg-emerald-700"
+        }`}
         onClick={() => onViewSignal(signal, "execute")}
+        disabled={positionsLoading && buttonText === "Loading..."}
       >
-        Execute Trade
+        {buttonText}
       </Button>
     );
   };
@@ -272,6 +273,7 @@ const SignalTable: React.FC<SignalTableProps> = ({
             const isFinalScoreHighlighted = shouldHighlightScore(finalScore);
             const shouldRowBlink = shouldBlinkRow(signal);
             const statusBadge = getStatusBadge(signal);
+            const hasRealPosition = hasPosition(signal.ticker);
 
             return (
               <div
@@ -280,9 +282,7 @@ const SignalTable: React.FC<SignalTableProps> = ({
                   shouldRowBlink
                     ? "animate-pulse bg-slate-700/50 ring-2 ring-emerald-400/50"
                     : ""
-                } ${
-                  signal.has_open_position ? "border-l-4 border-blue-400" : ""
-                }`}
+                } ${hasRealPosition ? "border-l-4 border-blue-400" : ""}`}
               >
                 {/* Stock Info with Status Badge */}
                 <div className="flex flex-col">
@@ -293,7 +293,7 @@ const SignalTable: React.FC<SignalTableProps> = ({
                   <div className="text-slate-400 text-xs truncate">
                     {signal.name}
                   </div>
-                  {/* NEW: Status Badge */}
+                  {/* Status Badge */}
                   <div className="mt-1">
                     <span
                       className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-bold ${statusBadge.className}`}
@@ -363,7 +363,7 @@ const SignalTable: React.FC<SignalTableProps> = ({
                   </div>
                 </div>
 
-                {/* UPDATED: Single Action Button */}
+                {/* Smart Action Button */}
                 <div className="flex justify-center">
                   {getActionButton(signal)}
                 </div>

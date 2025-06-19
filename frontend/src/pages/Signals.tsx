@@ -28,6 +28,7 @@ import {
 import { useToast } from "../hooks/use-toast";
 import SignalModal from "../components/signals/SignalModal";
 import { useSignalsPageData } from "../hooks/useSignalsPageData";
+import { usePositions } from "../contexts/PositionsContext"; // Use shared context!
 import {
   filterSignals,
   calculateFinalScore,
@@ -38,6 +39,9 @@ const Signals: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // OPTIMIZED: Use shared context instead of individual database calls
+  const { hasPosition, getButtonText, refreshPositions } = usePositions();
 
   const [timeFilter, setTimeFilter] = useState("1D");
   const [scoreThreshold, setScoreThreshold] = useState([70]);
@@ -52,16 +56,13 @@ const Signals: React.FC = () => {
   } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Use real data instead of mockSignals
+  // Use real data from shared context
   const {
     signals: realSignals,
     loading,
     error,
     refresh,
   } = useSignalsPageData();
-
-  // Mock existing positions for preventing double trading
-  const existingPositions = ["AAPL", "NVDA", "MSFT"]; // This would come from your state management
 
   if (!user) {
     navigate("/");
@@ -117,7 +118,7 @@ const Signals: React.FC = () => {
     );
   }
 
-  // Use real signals instead of mockSignals
+  // Use real signals with optimized filtering
   const filteredSignals = filterSignals(
     realSignals,
     timeFilter,
@@ -147,6 +148,12 @@ const Signals: React.FC = () => {
         newTrade: tradeData,
       },
     });
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    // OPTIMIZED: Just refresh positions context once instead of individual calls
+    refreshPositions();
   };
 
   const getScoreColor = (score: number) => {
@@ -273,9 +280,8 @@ const Signals: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredSignals.map((signal) => {
             const finalScore = calculateFinalScore(signal.signals);
-            const hasExistingPosition = existingPositions.includes(
-              signal.ticker
-            );
+            const hasExistingPosition = hasPosition(signal.ticker); // OPTIMIZED: Direct context call
+            const buttonText = getButtonText(signal.ticker); // OPTIMIZED: Direct context call
 
             return (
               <Card
@@ -290,8 +296,8 @@ const Signals: React.FC = () => {
                       </h3>
                       <p className="text-slate-400 text-sm">{signal.name}</p>
                       {hasExistingPosition && (
-                        <Badge className="bg-orange-600 text-white text-xs mt-1">
-                          Position Open
+                        <Badge className="bg-blue-600 text-white text-xs mt-1">
+                          📈 Position Open
                         </Badge>
                       )}
                       <p className="text-xs text-slate-500 mt-1">
@@ -353,10 +359,15 @@ const Signals: React.FC = () => {
 
                     <Button
                       onClick={() => handleViewSignal(signal)}
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                      className={`w-full text-white ${
+                        hasExistingPosition
+                          ? "bg-blue-600 hover:bg-blue-700"
+                          : "bg-emerald-600 hover:bg-emerald-700"
+                      }`}
+                      disabled={buttonText === "Loading..."}
                     >
                       <Activity className="h-4 w-4 mr-2" />
-                      View Signal
+                      {buttonText}
                     </Button>
                   </div>
                 </CardContent>
@@ -385,10 +396,10 @@ const Signals: React.FC = () => {
         {/* Signal Modal */}
         <SignalModal
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={handleModalClose}
           signal={selectedSignal}
           onExecuteTrade={handleExecuteTrade}
-          existingPositions={existingPositions}
+          existingPositions={[]} // Not needed anymore, context handles this
         />
 
         {/* Disclaimer */}

@@ -38,6 +38,37 @@ export const useExecutePaperTrade = () => {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
+  // Check if user has existing position in this ticker
+  const checkExistingPosition = async (ticker: string): Promise<boolean> => {
+    if (!user) return false;
+
+    try {
+      const { data, error } = await supabase
+        .from("paper_trades")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("ticker", ticker)
+        .eq("status", "open")
+        .limit(1);
+
+      if (error) {
+        console.error("Error checking existing position:", error);
+        return false;
+      }
+
+      return data && data.length > 0;
+    } catch (error) {
+      console.error("Error in checkExistingPosition:", error);
+      return false;
+    }
+  };
+
+  // Get button text based on existing position
+  const getButtonText = async (ticker: string): Promise<string> => {
+    const hasPosition = await checkExistingPosition(ticker);
+    return hasPosition ? "Add to Position" : "Execute Paper Trade";
+  };
+
   const executePaperTrade = async (
     tradeData: ExecuteTradeData
   ): Promise<PaperTrade | null> => {
@@ -191,6 +222,8 @@ export const useExecutePaperTrade = () => {
     executePaperTrade,
     getPaperTrades,
     closePaperTrade,
+    checkExistingPosition,
+    getButtonText,
     isExecuting,
     error,
     clearError: () => setError(null),

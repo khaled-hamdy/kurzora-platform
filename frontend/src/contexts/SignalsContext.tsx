@@ -47,17 +47,19 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
   const [lastFetched, setLastFetched] = useState<number | null>(null);
 
   const fetchSignals = async (forceRefresh: boolean = false) => {
-    // If we have recent data (less than 2 minutes old), use cache unless forced
+    // Extended cache: 10 minutes for trading signals (more appropriate)
     const now = Date.now();
-    const twoMinutes = 2 * 60 * 1000;
+    const tenMinutes = 10 * 60 * 1000; // Changed from 2 minutes to 10 minutes
 
     if (
       !forceRefresh &&
       lastFetched &&
       signals.length > 0 &&
-      now - lastFetched < twoMinutes
+      now - lastFetched < tenMinutes
     ) {
-      console.log("🚀 Using cached signals (less than 2 minutes old)");
+      console.log(
+        "🚀 Using cached signals (less than 10 minutes old) - INSTANT LOAD"
+      );
       setLoading(false);
       return;
     }
@@ -119,7 +121,7 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
       setSignals(transformedSignals);
       setLastFetched(now);
       console.log(
-        `✅ Successfully loaded ${transformedSignals.length} signals and cached for 2 minutes`
+        `✅ Successfully loaded ${transformedSignals.length} signals and cached for 10 minutes`
       );
     } catch (err) {
       const errorMessage =
@@ -136,7 +138,21 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
     fetchSignals();
   }, []);
 
+  // Smart refetch: Only force refresh if data is older than 5 minutes
   const refetch = async () => {
+    const now = Date.now();
+    const fiveMinutes = 5 * 60 * 1000;
+
+    if (lastFetched && now - lastFetched < fiveMinutes) {
+      console.log(
+        "🚀 Skipping refetch - data is still fresh (less than 5 minutes old)"
+      );
+      return;
+    }
+
+    console.log(
+      "🔄 Refetch: Data is older than 5 minutes, fetching fresh data..."
+    );
     await fetchSignals(true); // Force refresh
   };
 

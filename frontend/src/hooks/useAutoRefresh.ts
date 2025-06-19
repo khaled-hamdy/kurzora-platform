@@ -17,8 +17,8 @@ interface UseAutoRefreshReturn {
 
 export const useAutoRefresh = ({
   refreshFunction,
-  intervalMs = 2 * 60 * 1000,
-  enabledByDefault = true,
+  intervalMs = 15 * 60 * 1000, // 15 minutes
+  enabledByDefault = false, // CHANGED: Disabled by default
 }: UseAutoRefreshProps): UseAutoRefreshReturn => {
   const [isAutoRefreshEnabled, setIsAutoRefreshEnabled] =
     useState(enabledByDefault);
@@ -43,15 +43,26 @@ export const useAutoRefresh = ({
   const toggleAutoRefresh = useCallback(() => {
     setIsAutoRefreshEnabled((prev) => {
       const newState = !prev;
-      console.log(`🔄 Auto-refresh ${newState ? "ENABLED" : "DISABLED"}`);
+      console.log(
+        `🔄 Auto-refresh ${newState ? "ENABLED" : "DISABLED"} (${
+          intervalMs / 60000
+        } min intervals)`
+      );
       return newState;
     });
-  }, []);
+  }, [intervalMs]);
 
-  const setAutoRefreshEnabled = useCallback((enabled: boolean) => {
-    console.log(`🔄 Auto-refresh ${enabled ? "ENABLED" : "DISABLED"}`);
-    setIsAutoRefreshEnabled(enabled);
-  }, []);
+  const setAutoRefreshEnabled = useCallback(
+    (enabled: boolean) => {
+      console.log(
+        `🔄 Auto-refresh ${enabled ? "ENABLED" : "DISABLED"} (${
+          intervalMs / 60000
+        } min intervals)`
+      );
+      setIsAutoRefreshEnabled(enabled);
+    },
+    [intervalMs]
+  );
 
   useEffect(() => {
     if (intervalRef.current) {
@@ -62,7 +73,9 @@ export const useAutoRefresh = ({
     }
 
     if (isAutoRefreshEnabled) {
-      console.log(`🔄 Starting auto-refresh (${intervalMs / 1000}s interval)`);
+      console.log(
+        `🔄 Starting auto-refresh (${intervalMs / 60000} minute interval)`
+      );
 
       intervalRef.current = setInterval(async () => {
         await forceRefresh();
@@ -80,7 +93,8 @@ export const useAutoRefresh = ({
         }
       }, 1000);
 
-      forceRefresh();
+      // Don't auto-refresh on mount, only when manually enabled
+      // forceRefresh(); // REMOVED: This was causing immediate refresh
     } else {
       console.log("🔄 Auto-refresh stopped");
       setNextRefreshIn(0);
@@ -120,10 +134,13 @@ export const useAutoRefresh = ({
 export const formatCountdown = (seconds: number): string => {
   if (seconds <= 0) return "0s";
 
-  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
   const remainingSeconds = seconds % 60;
 
-  if (minutes > 0) {
+  if (hours > 0) {
+    return `${hours}h ${minutes}m ${remainingSeconds}s`;
+  } else if (minutes > 0) {
     return `${minutes}m ${remainingSeconds}s`;
   }
   return `${remainingSeconds}s`;
