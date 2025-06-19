@@ -7,6 +7,7 @@ import SignalTable from "./SignalTable";
 import SignalSummaryStats from "./SignalSummaryStats";
 import SignalHeatmapHeader from "./SignalHeatmapHeader";
 import { useSignals } from "../../hooks/useSignals";
+import { useAutoRefresh } from "../../hooks/useAutoRefresh"; // NEW: Add this import
 import {
   filterSignals,
   calculateFinalScore,
@@ -26,10 +27,43 @@ const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
   const [highlightedCategory, setHighlightedCategory] = useState<string | null>(
     null
   );
+
+  // ORIGINAL: Keep your existing autoRefresh state
   const [autoRefresh, setAutoRefresh] = useState(true);
 
   // Real data from Supabase
-  const { signals, loading, error } = useSignals();
+  const { signals, loading, error, refetch } = useSignals(); // Make sure refetch is available
+
+  // NEW: Add functional auto-refresh that works with your existing toggle
+  const {
+    isAutoRefreshEnabled,
+    toggleAutoRefresh,
+    lastRefreshTime,
+    nextRefreshIn,
+    forceRefresh,
+  } = useAutoRefresh({
+    refreshFunction: refetch || (() => window.location.reload()), // Use refetch if available
+    intervalMs: 2 * 60 * 1000, // 2 minutes
+    enabledByDefault: autoRefresh,
+  });
+
+  // NEW: Sync the functional auto-refresh with your existing state
+  React.useEffect(() => {
+    if (isAutoRefreshEnabled !== autoRefresh) {
+      setAutoRefresh(isAutoRefreshEnabled);
+    }
+  }, [isAutoRefreshEnabled, autoRefresh]);
+
+  // NEW: Enhanced toggle that matches SignalHeatmapHeader's expected signature
+  const handleAutoRefreshToggle = (value: boolean) => {
+    console.log(`🔄 Auto-refresh ${value ? "ENABLED" : "DISABLED"}`);
+    setAutoRefresh(value);
+
+    // Sync with functional auto-refresh
+    if (value !== isAutoRefreshEnabled) {
+      toggleAutoRefresh();
+    }
+  };
 
   const handleViewSignal = (signal: Signal, timeframe: string) => {
     const finalScore = calculateFinalScore(signal.signals);
@@ -60,7 +94,10 @@ const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
         <CardTitle>
           <SignalHeatmapHeader
             autoRefresh={autoRefresh}
-            setAutoRefresh={setAutoRefresh}
+            setAutoRefresh={handleAutoRefreshToggle} // Use enhanced toggle that accepts boolean
+            lastRefreshTime={lastRefreshTime} // NEW: Pass refresh time
+            nextRefreshIn={nextRefreshIn} // NEW: Pass countdown
+            onForceRefresh={forceRefresh} // NEW: Pass manual refresh function
           />
         </CardTitle>
 
@@ -81,6 +118,16 @@ const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
           language={language}
         />
 
+        {/* NEW: Loading indicator when auto-refreshing */}
+        {loading && autoRefresh && (
+          <div className="text-center py-2">
+            <div className="inline-flex items-center space-x-2 text-emerald-400">
+              <div className="w-3 h-3 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-sm">Auto-refreshing signals...</span>
+            </div>
+          </div>
+        )}
+
         <SignalTable
           filteredSignals={filteredSignals}
           timeFilter={timeFilter}
@@ -94,6 +141,20 @@ const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
           highlightedCategory={highlightedCategory}
           setHighlightedCategory={setHighlightedCategory}
         />
+
+        {/* NEW: Auto-refresh status indicator */}
+        <div className="text-center text-xs text-slate-500 border-t border-slate-700 pt-3">
+          {autoRefresh ? (
+            <span>
+              🔄 Auto-refresh active • Next update in{" "}
+              {Math.floor(nextRefreshIn / 60)}m {nextRefreshIn % 60}s
+            </span>
+          ) : (
+            <span>
+              ⏸️ Auto-refresh paused • Toggle to enable automatic updates
+            </span>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
