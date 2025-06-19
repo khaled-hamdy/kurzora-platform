@@ -100,7 +100,7 @@ const SignalTable: React.FC<SignalTableProps> = ({
     }
   };
 
-  // NEW: Dynamic button based on signal status
+  // UPDATED: Execute button only - no more View button
   const getActionButton = (signal: Signal) => {
     const { status, has_open_position } = signal;
 
@@ -109,7 +109,7 @@ const SignalTable: React.FC<SignalTableProps> = ({
         <Button
           size="sm"
           className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1"
-          onClick={() => onViewSignal(signal, timeFilter)}
+          onClick={() => onViewSignal(signal, "execute")}
         >
           Manage Position
         </Button>
@@ -128,13 +128,14 @@ const SignalTable: React.FC<SignalTableProps> = ({
       );
     }
 
+    // SIMPLIFIED: Only Execute button for active signals
     return (
       <Button
         size="sm"
         className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1"
-        onClick={() => onViewSignal(signal, timeFilter)}
+        onClick={() => onViewSignal(signal, "execute")}
       >
-        {t("signals.view")}
+        Execute Trade
       </Button>
     );
   };
@@ -362,7 +363,7 @@ const SignalTable: React.FC<SignalTableProps> = ({
                   </div>
                 </div>
 
-                {/* NEW: Dynamic Action Button */}
+                {/* UPDATED: Single Action Button */}
                 <div className="flex justify-center">
                   {getActionButton(signal)}
                 </div>

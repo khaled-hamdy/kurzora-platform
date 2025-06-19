@@ -1,0 +1,296 @@
+// src/components/dashboard/ExecuteTradeModal.tsx
+import React, { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Target,
+  AlertTriangle,
+  CheckCircle,
+  Loader2,
+} from "lucide-react";
+import {
+  useExecutePaperTrade,
+  ExecuteTradeData,
+} from "@/hooks/useExecutePaperTrade";
+
+interface Signal {
+  id: string;
+  ticker: string;
+  company_name?: string;
+  current_price: number;
+  entry_price?: number;
+  confidence_score: number;
+  sector?: string;
+  market?: string;
+  status?: string;
+}
+
+interface ExecuteTradeModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  signal: Signal | null;
+  onSuccess?: (trade: any) => void;
+}
+
+export const ExecuteTradeModal: React.FC<ExecuteTradeModalProps> = ({
+  isOpen,
+  onClose,
+  signal,
+  onSuccess,
+}) => {
+  const [quantity, setQuantity] = useState(100);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const { executePaperTrade, isExecuting, error, clearError } =
+    useExecutePaperTrade();
+
+  if (!signal) return null;
+
+  const entryPrice = signal.entry_price || signal.current_price;
+  const totalInvestment = entryPrice * quantity;
+  const isHighConfidence = signal.confidence_score >= 85;
+
+  const handleExecute = async () => {
+    clearError();
+
+    const tradeData: ExecuteTradeData = {
+      signalId: signal.id,
+      ticker: signal.ticker,
+      companyName: signal.company_name || signal.ticker,
+      entryPrice: entryPrice,
+      currentPrice: signal.current_price,
+      market: signal.market || "USA",
+      sector: signal.sector || "Technology",
+      quantity: quantity,
+    };
+
+    const result = await executePaperTrade(tradeData);
+
+    if (result) {
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+        onClose();
+        onSuccess?.(result);
+      }, 2000);
+    }
+  };
+
+  const handleClose = () => {
+    setQuantity(100);
+    clearError();
+    setShowSuccess(false);
+    onClose();
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 90) return "bg-emerald-500";
+    if (score >= 80) return "bg-blue-500";
+    if (score >= 70) return "bg-yellow-500";
+    return "bg-red-500";
+  };
+
+  const getScoreLabel = (score: number) => {
+    if (score >= 90) return "Excellent";
+    if (score >= 80) return "Strong";
+    if (score >= 70) return "Moderate";
+    return "Weak";
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-md bg-slate-900 border-slate-800">
+        <DialogHeader>
+          <DialogTitle className="text-white flex items-center gap-2">
+            <DollarSign className="h-5 w-5 text-emerald-400" />
+            Execute Paper Trade
+          </DialogTitle>
+        </DialogHeader>
+
+        {showSuccess ? (
+          <div className="py-8 text-center">
+            <CheckCircle className="h-16 w-16 text-emerald-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Trade Executed!
+            </h3>
+            <p className="text-slate-400">
+              Your paper trade for {signal.ticker} has been successfully
+              executed.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Signal Information */}
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="text-lg font-bold text-white">
+                      {signal.ticker}
+                    </h3>
+                    <p className="text-sm text-slate-400">
+                      {signal.company_name || "Company"}
+                    </p>
+                  </div>
+                  <Badge
+                    className={`${getScoreColor(
+                      signal.confidence_score
+                    )} text-white px-3 py-1`}
+                  >
+                    {signal.confidence_score}/100
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <Label className="text-slate-400">Entry Price</Label>
+                    <p className="text-white font-semibold">
+                      ${entryPrice.toFixed(2)}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-slate-400">Current Price</Label>
+                    <p className="text-white font-semibold">
+                      ${signal.current_price.toFixed(2)}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-slate-400">Signal Strength</Label>
+                    <p className="text-white font-semibold">
+                      {getScoreLabel(signal.confidence_score)}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-slate-400">Sector</Label>
+                    <p className="text-white font-semibold">
+                      {signal.sector || "Technology"}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Trade Configuration */}
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="quantity" className="text-slate-300">
+                  Quantity (Shares)
+                </Label>
+                <Input
+                  id="quantity"
+                  type="number"
+                  value={quantity}
+                  onChange={(e) =>
+                    setQuantity(Math.max(1, parseInt(e.target.value) || 1))
+                  }
+                  min="1"
+                  max="10000"
+                  className="bg-slate-800 border-slate-700 text-white mt-1"
+                />
+              </div>
+
+              {/* Investment Summary */}
+              <Card className="bg-slate-800/30 border-slate-700">
+                <CardContent className="p-4">
+                  <h4 className="text-white font-semibold mb-3">
+                    Investment Summary
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Shares:</span>
+                      <span className="text-white">
+                        {quantity.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Price per share:</span>
+                      <span className="text-white">
+                        ${entryPrice.toFixed(2)}
+                      </span>
+                    </div>
+                    <Separator className="bg-slate-700" />
+                    <div className="flex justify-between font-semibold">
+                      <span className="text-slate-300">Total Investment:</span>
+                      <span className="text-emerald-400">
+                        ${totalInvestment.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Risk Warning */}
+            {!isHighConfidence && (
+              <Alert className="bg-yellow-500/10 border-yellow-500/30">
+                <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                <AlertDescription className="text-yellow-200">
+                  This signal has a moderate confidence score (
+                  {signal.confidence_score}/100). Consider the risk before
+                  executing.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Error Display */}
+            {error && (
+              <Alert className="bg-red-500/10 border-red-500/30">
+                <AlertTriangle className="h-4 w-4 text-red-500" />
+                <AlertDescription className="text-red-200">
+                  {error}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={handleClose}
+                disabled={isExecuting}
+                className="flex-1 border-slate-700 text-slate-300 hover:bg-slate-800"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleExecute}
+                disabled={isExecuting}
+                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                {isExecuting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Executing...
+                  </>
+                ) : (
+                  <>
+                    <Target className="h-4 w-4 mr-2" />
+                    Execute Paper Trade
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {/* Disclaimer */}
+            <p className="text-xs text-slate-500 text-center">
+              This is a simulated paper trade. No real money will be invested.
+            </p>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};

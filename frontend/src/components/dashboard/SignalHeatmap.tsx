@@ -65,8 +65,37 @@ const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
     }
   };
 
+  // UPDATED: Enhanced handleViewSignal to support Execute functionality
   const handleViewSignal = (signal: Signal, timeframe: string) => {
     const finalScore = calculateFinalScore(signal.signals);
+
+    // Check if this is an "execute" action
+    if (timeframe === "execute") {
+      // For execute, we want to trigger your existing execute modal
+      // Your existing modal should already be set up to handle this data format
+      const executeSignalData = {
+        symbol: signal.ticker,
+        name: signal.name,
+        price: signal.price,
+        change: signal.change,
+        signalScore: finalScore,
+        // Add additional data your execute modal might need
+        entryPrice: signal.price,
+        currentPrice: signal.price,
+        sector: signal.sector,
+        market: signal.market,
+        status: signal.status,
+        // Indicate this is for execution
+        action: "execute",
+      };
+
+      if (onOpenSignalModal) {
+        onOpenSignalModal(executeSignalData);
+      }
+      return;
+    }
+
+    // For regular "view" actions, use the original logic
     const signalData = {
       symbol: signal.ticker,
       name: signal.name,
