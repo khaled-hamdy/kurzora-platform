@@ -4,13 +4,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import { SignalsProvider } from "./contexts/SignalsContext";
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
 import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
 import Signals from "./pages/Signals";
-import OpenPositions from './pages/OpenPositions';
-import Orders from './pages/Orders';
-import OrdersHistory from './pages/OrdersHistory';
+import OpenPositions from "./pages/OpenPositions";
+import Orders from "./pages/Orders";
+import OrdersHistory from "./pages/OrdersHistory";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import SignalDetail from "./pages/SignalDetail";
@@ -52,58 +53,81 @@ function App() {
         <Sonner />
         <LanguageProvider>
           <AuthProvider>
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/signals" element={<Signals />} />
-              <Route path="/signals/:symbol" element={<SignalDetail />} />
-              <Route path="/open-positions" element={<OpenPositions />} />
-              <Route path="/orders" element={<Orders />} />
-              <Route path="/orders-history" element={<OrdersHistory />} />
-              <Route path="/admin-old" element={<Admin />} />
-              <Route path="/how-it-works" element={<HowItWorks />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/broker-integration" element={<BrokerIntegration />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/profile" element={<Profile />} />
-              
-              {/* Admin Routes - Protected */}
-              <Route path="/admin" element={
-                <AdminProtectedRoute>
-                  <AdminDashboard />
-                </AdminProtectedRoute>
-              } />
-              <Route path="/admin/users" element={
-                <AdminProtectedRoute>
-                  <AdminUsers />
-                </AdminProtectedRoute>
-              } />
-              <Route path="/admin/signals" element={
-                <AdminProtectedRoute>
-                  <AdminSignals />
-                </AdminProtectedRoute>
-              } />
-              <Route path="/admin/settings" element={
-                <AdminProtectedRoute>
-                  <AdminSettings />
-                </AdminProtectedRoute>
-              } />
-              
-              {/* Legal Pages */}
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/terms-of-service" element={<TermsOfService />} />
-              <Route path="/de/terms-of-service" element={<GermanTermsOfService />} />
-              <Route path="/risk-disclosure" element={<RiskDisclosure />} />
-              <Route path="/shariah-compliance" element={<ShariahCompliance />} />
-              <Route path="/gdpr-compliance" element={<GDPRCompliance />} />
-              <Route path="/cookie-notice" element={<CookieNotice />} />
-              
-              {/* Catch-all route */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <SignalsProvider>
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/signals" element={<Signals />} />
+                <Route path="/signals/:symbol" element={<SignalDetail />} />
+                <Route path="/open-positions" element={<OpenPositions />} />
+                <Route path="/orders" element={<Orders />} />
+                <Route path="/orders-history" element={<OrdersHistory />} />
+                <Route path="/admin-old" element={<Admin />} />
+                <Route path="/how-it-works" element={<HowItWorks />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route
+                  path="/broker-integration"
+                  element={<BrokerIntegration />}
+                />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/profile" element={<Profile />} />
+
+                {/* Admin Routes - Protected */}
+                <Route
+                  path="/admin"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminDashboard />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/users"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminUsers />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/signals"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminSignals />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/settings"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminSettings />
+                    </AdminProtectedRoute>
+                  }
+                />
+
+                {/* Legal Pages */}
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-of-service" element={<TermsOfService />} />
+                <Route
+                  path="/de/terms-of-service"
+                  element={<GermanTermsOfService />}
+                />
+                <Route path="/risk-disclosure" element={<RiskDisclosure />} />
+                <Route
+                  path="/shariah-compliance"
+                  element={<ShariahCompliance />}
+                />
+                <Route path="/gdpr-compliance" element={<GDPRCompliance />} />
+                <Route path="/cookie-notice" element={<CookieNotice />} />
+
+                {/* Catch-all route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </SignalsProvider>
           </AuthProvider>
         </LanguageProvider>
       </QueryClientProvider>
