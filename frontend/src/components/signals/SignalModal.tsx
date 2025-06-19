@@ -16,6 +16,7 @@ import {
 import { useToast } from "../../hooks/use-toast";
 import { useExecutePaperTrade } from "../../hooks/useExecutePaperTrade";
 import { usePositions } from "../../contexts/PositionsContext";
+import { useNavigate } from "react-router-dom"; // ✅ NEW: Import navigation
 
 interface SignalModalProps {
   isOpen: boolean;
@@ -43,14 +44,15 @@ const SignalModal: React.FC<SignalModalProps> = ({
   const [portfolioBalance, setPortfolioBalance] = useState(8000);
   const [customRiskPercent, setCustomRiskPercent] = useState([2]);
   const { toast } = useToast();
+  const navigate = useNavigate(); // ✅ NEW: Navigation hook
 
   const { executePaperTrade, isExecuting, error, clearError } =
     useExecutePaperTrade();
-  const { refreshPositions } = usePositions();
+  const { refreshPositions, hasPosition } = usePositions();
 
   if (!signal) return null;
 
-  const hasExistingPosition = existingPositions.includes(signal.symbol);
+  const hasExistingPosition = hasPosition(signal.symbol);
   const maxRiskPercent = customRiskPercent[0];
   const maxRiskAmount = (portfolioBalance * maxRiskPercent) / 100;
   const entryPrice = signal.price;
@@ -62,8 +64,6 @@ const SignalModal: React.FC<SignalModalProps> = ({
   const isRiskTooHigh = maxRiskPercent > 2;
 
   const handleExecuteTrade = async () => {
-    // ← ADDED: Extra debug message to test if button click works
-    console.log("🔥🔥🔥 EXECUTE BUTTON CLICKED! 🔥🔥🔥");
     console.log(
       "🚀 DEBUG - SignalModal Execute Trade clicked for:",
       signal.symbol
@@ -97,6 +97,7 @@ const SignalModal: React.FC<SignalModalProps> = ({
       if (result) {
         console.log("✅ DEBUG - Trade executed successfully:", result);
 
+        // ✅ FIX: Refresh positions and wait for completion
         console.log("🔄 DEBUG - Refreshing positions...");
         await refreshPositions();
         console.log("✅ DEBUG - Positions refreshed successfully");
@@ -113,18 +114,29 @@ const SignalModal: React.FC<SignalModalProps> = ({
           description: descriptionText,
         });
 
+        // ✅ FIX: Close modal first
         onClose();
 
-        onExecuteTrade({
-          symbol: signal.symbol,
-          name: signal.name,
-          entryPrice: entryPrice,
-          shares: maxShares,
-          stopLoss: stopLoss,
-          takeProfit: takeProfit,
-          investmentAmount: investmentAmount,
-          signalScore: signal.signalScore,
-          isAddingToPosition: hasExistingPosition,
+        // ✅ NEW: Redirect to Open Positions WITHOUT calling onExecuteTrade (prevents duplicates)
+        console.log("🚀 DEBUG - Navigating to Open Positions page");
+        navigate("/open-positions", {
+          state: {
+            newTrade: {
+              symbol: signal.symbol,
+              name: signal.name,
+              entryPrice: entryPrice,
+              shares: maxShares,
+              stopLoss: stopLoss,
+              takeProfit: takeProfit,
+              investmentAmount: investmentAmount,
+              signalScore: signal.signalScore,
+              isAddingToPosition: hasExistingPosition,
+              // Add timestamp for tracking
+              executedAt: new Date().toISOString(),
+            },
+            // Flag to trigger refresh on Open Positions page
+            shouldRefresh: true,
+          },
         });
       } else {
         console.error("❌ DEBUG - Trade execution failed");

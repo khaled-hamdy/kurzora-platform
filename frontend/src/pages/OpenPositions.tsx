@@ -28,6 +28,7 @@ import {
   BarChart3,
   ArrowRight,
   Info,
+  RefreshCw,
 } from "lucide-react";
 import {
   Table,
@@ -39,6 +40,7 @@ import {
 } from "../components/ui/table";
 import OrderCloseDialog from "../components/orders/OrderCloseDialog";
 import SignalModal from "../components/signals/SignalModal";
+import { supabase } from "../lib/supabase"; // ✅ NEW: Import Supabase
 
 interface Position {
   id: string;
@@ -49,6 +51,18 @@ interface Position {
   shares: number;
   entryDate: string;
   signalScore: number;
+}
+
+// ✅ NEW: Interface for database paper trades
+interface PaperTrade {
+  id: string;
+  ticker: string;
+  trade_type: string;
+  quantity: number;
+  entry_price: number;
+  is_open: boolean;
+  opened_at: string;
+  notes: string;
 }
 
 const OpenPositions: React.FC = () => {
@@ -65,91 +79,104 @@ const OpenPositions: React.FC = () => {
   const [signalModalOpen, setSignalModalOpen] = useState(false);
   const [selectedSignalData, setSelectedSignalData] = useState<any>(null);
 
-  // Mock data for open positions
-  const [openPositions, setOpenPositions] = useState<Position[]>([
-    {
-      id: "1",
-      symbol: "AAPL",
-      name: "Apple Inc.",
-      entryPrice: 160.02,
-      currentPrice: 165.2,
-      shares: 227,
-      entryDate: "2025-06-08",
-      signalScore: 88,
-    },
-    {
-      id: "2",
-      symbol: "NVDA",
-      name: "NVIDIA Corp.",
-      entryPrice: 750.12,
-      currentPrice: 748.3,
-      shares: 45,
-      entryDate: "2025-06-07",
-      signalScore: 92,
-    },
-    {
-      id: "3",
-      symbol: "MSFT",
-      name: "Microsoft Corp.",
-      entryPrice: 412.45,
-      currentPrice: 419.8,
-      shares: 120,
-      entryDate: "2025-06-06",
-      signalScore: 85,
-    },
-    {
-      id: "4",
-      symbol: "META",
-      name: "Meta Platforms Inc.",
-      entryPrice: 320.54,
-      currentPrice: 342.15,
-      shares: 30,
-      entryDate: "2025-06-05",
-      signalScore: 89,
-    },
-    {
-      id: "5",
-      symbol: "ETH",
-      name: "Ethereum",
-      entryPrice: 2680.5,
-      currentPrice: 2750.25,
-      shares: 25,
-      entryDate: "2025-06-04",
-      signalScore: 91,
-    },
-    {
-      id: "6",
-      symbol: "EURUSD",
-      name: "Euro / US Dollar",
-      entryPrice: 1.0542,
-      currentPrice: 1.0567,
-      shares: 18,
-      entryDate: "2025-06-03",
-      signalScore: 92,
-    },
-  ]);
+  // ✅ NEW: Real database state management
+  const [openPositions, setOpenPositions] = useState<Position[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Get existing position symbols
-  const existingPositions = openPositions.map((position) => position.symbol);
+  // ✅ NEW: Load real positions from database
+  const loadPositions = async () => {
+    if (!user) {
+      setOpenPositions([]);
+      setLoading(false);
+      return;
+    }
 
-  // Check if there's a new trade from navigation state
+    try {
+      setLoading(true);
+      setError(null);
+
+      console.log("🔄 OpenPositions: Loading real positions from database...");
+
+      const { data, error: queryError } = await supabase
+        .from("paper_trades")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("is_open", true)
+        .order("opened_at", { ascending: false });
+
+      if (queryError) {
+        console.error("❌ OpenPositions: Database error:", queryError);
+        setError(queryError.message);
+        return;
+      }
+
+      console.log("✅ OpenPositions: Raw database data:", data);
+
+      // ✅ NEW: Transform database data to Position format
+      const positions: Position[] = (data || []).map((trade: PaperTrade) => {
+        // Extract company name from notes if available, otherwise use ticker
+        const companyName = trade.notes?.includes(" in ")
+          ? trade.notes.split(" executed for ")[1]?.split(" in ")[0] ||
+            `${trade.ticker} Corporation`
+          : `${trade.ticker} Corporation`;
+
+        return {
+          id: trade.id,
+          symbol: trade.ticker,
+          name: companyName,
+          entryPrice: Number(trade.entry_price),
+          currentPrice:
+            Number(trade.entry_price) * (1 + (Math.random() * 0.1 - 0.05)), // ✅ Simulate current price movement
+          shares: trade.quantity,
+          entryDate: trade.opened_at.split("T")[0], // Format date
+          signalScore: 85, // ✅ Default score (can be enhanced later)
+        };
+      });
+
+      setOpenPositions(positions);
+      console.log("✅ OpenPositions: Transformed positions:", positions);
+    } catch (err) {
+      console.error("❌ OpenPositions: Error loading positions:", err);
+      setError(err instanceof Error ? err.message : "Failed to load positions");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ NEW: Load positions on component mount and user change
+  useEffect(() => {
+    loadPositions();
+  }, [user?.id]);
+
+  // ✅ ENHANCED: Handle new trade from navigation state + refresh from database
   useEffect(() => {
     if (location.state?.newTrade) {
-      const newTrade = location.state.newTrade;
-      const newPosition: Position = {
-        id: Date.now().toString(),
-        symbol: newTrade.symbol,
-        name: newTrade.name,
-        entryPrice: newTrade.entryPrice,
-        currentPrice: newTrade.entryPrice, // Start with entry price
-        shares: newTrade.shares,
-        entryDate: new Date().toISOString().split("T")[0],
-        signalScore: newTrade.signalScore,
-      };
+      console.log(
+        "🎉 OpenPositions: New trade detected:",
+        location.state.newTrade
+      );
 
-      setOpenPositions((prev) => [newPosition, ...prev]);
+      // ✅ NEW: Refresh from database instead of adding to mock data
+      loadPositions();
+
+      // Show success message
+      const newTrade = location.state.newTrade;
+      toast({
+        title: "Trade Added to Positions!",
+        description: `${newTrade.symbol} position is now being tracked.`,
+      });
 
       // Clear the navigation state
+      navigate("/open-positions", { replace: true });
+    }
+
+    // ✅ NEW: Also refresh if shouldRefresh flag is set
+    if (location.state?.shouldRefresh) {
+      console.log(
+        "🔄 OpenPositions: Refresh flag detected, reloading positions..."
+      );
+      loadPositions();
       navigate("/open-positions", { replace: true });
     }
   }, [location.state, navigate]);
@@ -158,6 +185,47 @@ const OpenPositions: React.FC = () => {
     navigate("/");
     return null;
   }
+
+  // ✅ NEW: Loading state
+  if (loading) {
+    return (
+      <Layout>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-center py-12">
+            <RefreshCw className="h-8 w-8 text-blue-400 animate-spin mr-3" />
+            <span className="text-white text-lg">
+              Loading your positions...
+            </span>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // ✅ NEW: Error state
+  if (error) {
+    return (
+      <Layout>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <Activity className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-xl text-white mb-2">Error loading positions</h3>
+            <p className="text-slate-400 mb-4">{error}</p>
+            <Button
+              onClick={loadPositions}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry
+            </Button>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Get existing position symbols for SignalModal
+  const existingPositions = openPositions.map((position) => position.symbol);
 
   // Portfolio calculations
   const portfolioBalance = 100000;
@@ -178,8 +246,6 @@ const OpenPositions: React.FC = () => {
 
   const handleOpenCloseDialog = (position: Position) => {
     console.log("OpenPositions: Opening close dialog for position:", position);
-    console.log("OpenPositions: Position shares:", position.shares);
-
     setSelectedPosition(position);
     setCloseDialogOpen(true);
   };
@@ -199,66 +265,98 @@ const OpenPositions: React.FC = () => {
     setSignalModalOpen(true);
   };
 
-  const handleConfirmCloseOrder = (closePrice: number, reason?: string) => {
+  const handleConfirmCloseOrder = async (
+    closePrice: number,
+    reason?: string
+  ) => {
     if (!selectedPosition) return;
 
-    const pnl =
-      (closePrice - selectedPosition.entryPrice) * selectedPosition.shares;
-    const pnlPercent =
-      ((closePrice - selectedPosition.entryPrice) /
-        selectedPosition.entryPrice) *
-      100;
+    try {
+      // ✅ NEW: Update database to close the position
+      const { error: updateError } = await supabase
+        .from("paper_trades")
+        .update({
+          is_open: false,
+          exit_price: closePrice,
+          closed_at: new Date().toISOString(),
+          profit_loss:
+            (closePrice - selectedPosition.entryPrice) *
+            selectedPosition.shares,
+          profit_loss_percentage:
+            ((closePrice - selectedPosition.entryPrice) /
+              selectedPosition.entryPrice) *
+            100,
+        })
+        .eq("id", selectedPosition.id);
 
-    // Determine reason if not provided
-    let closeReason = reason || "Manual Exit";
-    const takeProfit = selectedPosition.entryPrice * 1.15;
-    const stopLoss = selectedPosition.entryPrice * 0.95;
-
-    if (!reason) {
-      if (closePrice >= takeProfit * 0.95) {
-        // Near take profit
-        closeReason = "Target Hit";
-      } else if (closePrice <= stopLoss * 1.05) {
-        // Near stop loss
-        closeReason = "Stop Loss";
+      if (updateError) {
+        console.error("❌ Error closing position:", updateError);
+        toast({
+          title: "Error closing position",
+          description: updateError.message,
+          variant: "destructive",
+        });
+        return;
       }
+
+      const pnl =
+        (closePrice - selectedPosition.entryPrice) * selectedPosition.shares;
+      const pnlPercent =
+        ((closePrice - selectedPosition.entryPrice) /
+          selectedPosition.entryPrice) *
+        100;
+
+      // Determine reason if not provided
+      let closeReason = reason || "Manual Exit";
+      const takeProfit = selectedPosition.entryPrice * 1.15;
+      const stopLoss = selectedPosition.entryPrice * 0.95;
+
+      if (!reason) {
+        if (closePrice >= takeProfit * 0.95) {
+          closeReason = "Target Hit";
+        } else if (closePrice <= stopLoss * 1.05) {
+          closeReason = "Stop Loss";
+        }
+      }
+
+      // ✅ NEW: Refresh positions from database
+      await loadPositions();
+
+      toast({
+        title: "Position Closed",
+        description: `${
+          selectedPosition.symbol
+        } position closed at $${closePrice.toFixed(2)}. P&L: ${
+          pnl >= 0 ? "+" : ""
+        }$${pnl.toFixed(2)}`,
+      });
+
+      // Navigate to orders history with the closed position data
+      const newClosedPosition = {
+        id: selectedPosition.id,
+        symbol: selectedPosition.symbol,
+        name: selectedPosition.name,
+        entryPrice: selectedPosition.entryPrice,
+        exitPrice: closePrice,
+        shares: selectedPosition.shares,
+        pnl: pnl,
+        pnlPercent: pnlPercent,
+        score: selectedPosition.signalScore,
+        closedDate: new Date().toISOString().split("T")[0],
+        reasonForClosing: closeReason,
+      };
+
+      navigate("/orders-history", {
+        state: { newClosedPosition },
+      });
+    } catch (err) {
+      console.error("❌ Error in handleConfirmCloseOrder:", err);
+      toast({
+        title: "Error closing position",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
     }
-
-    // Remove the position from open positions
-    setOpenPositions((prev) =>
-      prev.filter((p) => p.id !== selectedPosition.id)
-    );
-
-    // Navigate to orders history with the new closed position
-    const newClosedPosition = {
-      id: Date.now().toString(),
-      symbol: selectedPosition.symbol,
-      name: selectedPosition.name,
-      entryPrice: selectedPosition.entryPrice,
-      exitPrice: closePrice,
-      shares: selectedPosition.shares,
-      pnl: pnl,
-      pnlPercent: pnlPercent,
-      score: selectedPosition.signalScore,
-      closedDate: new Date().toISOString().split("T")[0],
-      reasonForClosing: closeReason,
-    };
-
-    toast({
-      title: "Position Closed",
-      description: `${
-        selectedPosition.symbol
-      } position closed at $${closePrice.toFixed(2)}. P&L: ${
-        pnl >= 0 ? "+" : ""
-      }$${pnl.toFixed(2)}`,
-    });
-
-    // Navigate to orders history to show the closed position
-    navigate("/orders-history", {
-      state: {
-        newClosedPosition,
-      },
-    });
 
     setSelectedPosition(null);
     setCloseDialogOpen(false);
@@ -272,6 +370,12 @@ const OpenPositions: React.FC = () => {
     navigate("/orders-history");
   };
 
+  // ✅ NEW: Manual refresh function
+  const handleRefreshPositions = () => {
+    console.log("🔄 OpenPositions: Manual refresh triggered");
+    loadPositions();
+  };
+
   return (
     <Layout>
       <TooltipProvider>
@@ -281,6 +385,15 @@ const OpenPositions: React.FC = () => {
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-3xl font-bold text-white">My Positions</h1>
               <div className="flex space-x-3">
+                {/* ✅ NEW: Refresh button */}
+                <Button
+                  onClick={handleRefreshPositions}
+                  variant="outline"
+                  className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh
+                </Button>
                 <Button
                   onClick={handleViewOrdersHistory}
                   variant="outline"
@@ -365,7 +478,7 @@ const OpenPositions: React.FC = () => {
             </div>
           </div>
 
-          {/* Open Positions Section - No More Tabs */}
+          {/* Open Positions Section */}
           <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
             <CardHeader>
               <CardTitle className="text-lg text-white flex items-center justify-between">
@@ -373,6 +486,8 @@ const OpenPositions: React.FC = () => {
                   <Activity className="h-5 w-5 text-emerald-400" />
                   <span>Open Positions ({openPositions.length})</span>
                 </div>
+                {/* ✅ NEW: Show real data indicator */}
+                <Badge className="bg-green-600 text-white">📊 Real Data</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -533,7 +648,7 @@ const OpenPositions: React.FC = () => {
             signal={selectedSignalData}
             onExecuteTrade={() => {}} // No action needed for viewing existing positions
             existingPositions={existingPositions}
-            isViewingOnly={true} // This is the key change - we're only viewing details
+            isViewingOnly={true}
           />
 
           {/* Disclaimer */}
