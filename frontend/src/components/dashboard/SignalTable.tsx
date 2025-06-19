@@ -42,7 +42,16 @@ const SignalTable: React.FC<SignalTableProps> = ({
     hasPosition,
     getButtonText,
     isLoading: positionsLoading,
+    existingPositions, // ← ADDED THIS
   } = usePositions();
+
+  // ← ADDED DEBUG CODE
+  console.log("🔍 DEBUG - Current existingPositions:", existingPositions);
+  console.log("🔍 DEBUG - AMZN hasPosition:", hasPosition("AMZN"));
+  console.log("🔍 DEBUG - 2222.SR hasPosition:", hasPosition("2222.SR"));
+  console.log("🔍 DEBUG - NVDA hasPosition:", hasPosition("NVDA"));
+  console.log("🔍 DEBUG - positionsLoading:", positionsLoading);
+
   const timeframes = ["1H", "4H", "1D", "1W"];
 
   const getSignalColor = (score: number) => {
@@ -113,6 +122,13 @@ const SignalTable: React.FC<SignalTableProps> = ({
     const hasRealPosition = hasPosition(signal.ticker);
     const buttonText = getButtonText(signal.ticker);
 
+    // ← ADDED DEBUG FOR EACH BUTTON
+    console.log(`🔍 DEBUG - ${signal.ticker} button:`, {
+      hasRealPosition,
+      buttonText,
+      status,
+    });
+
     if (status === "expired" || status === "cancelled") {
       return (
         <Button
@@ -133,7 +149,10 @@ const SignalTable: React.FC<SignalTableProps> = ({
             ? "bg-blue-600 hover:bg-blue-700"
             : "bg-emerald-600 hover:bg-emerald-700"
         }`}
-        onClick={() => onViewSignal(signal, "execute")}
+        onClick={() => {
+          console.log(`🚀 DEBUG - Button clicked for ${signal.ticker}`);
+          onViewSignal(signal, "execute");
+        }}
         disabled={positionsLoading && buttonText === "Loading..."}
       >
         {buttonText}

@@ -1,231 +1,90 @@
-// src/hooks/useExecutePaperTrade.ts
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "../lib/supabase";
 
 export interface ExecuteTradeData {
-  signalId: string;
+  signalId?: string; // Make this optional
   ticker: string;
   companyName: string;
   entryPrice: number;
   currentPrice: number;
   market: string;
   sector: string;
-  quantity?: number;
-}
-
-export interface PaperTrade {
-  id: string;
-  user_id: string;
-  signal_id: string;
-  ticker: string;
-  company_name: string;
-  entry_price: number;
-  current_price: number;
   quantity: number;
-  total_investment: number;
-  current_value: number;
-  profit_loss: number;
-  profit_loss_percentage: number;
-  status: string;
-  executed_at: string;
-  market: string;
-  sector: string;
 }
 
 export const useExecutePaperTrade = () => {
   const [isExecuting, setIsExecuting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
 
-  // Check if user has existing position in this ticker
-  const checkExistingPosition = async (ticker: string): Promise<boolean> => {
-    if (!user) return false;
+  const clearError = () => setError(null);
 
-    try {
-      const { data, error } = await supabase
-        .from("paper_trades")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("ticker", ticker)
-        .eq("status", "open")
-        .limit(1);
-
-      if (error) {
-        console.error("Error checking existing position:", error);
-        return false;
-      }
-
-      return data && data.length > 0;
-    } catch (error) {
-      console.error("Error in checkExistingPosition:", error);
-      return false;
-    }
-  };
-
-  // Get button text based on existing position
-  const getButtonText = async (ticker: string): Promise<string> => {
-    const hasPosition = await checkExistingPosition(ticker);
-    return hasPosition ? "Add to Position" : "Execute Paper Trade";
-  };
-
-  const executePaperTrade = async (
-    tradeData: ExecuteTradeData
-  ): Promise<PaperTrade | null> => {
-    if (!user) {
-      setError("User not authenticated");
-      return null;
-    }
-
+  const executePaperTrade = async (tradeData: ExecuteTradeData) => {
+    console.log(`🚀 DEBUG - Executing paper trade for ${tradeData.ticker}...`);
     setIsExecuting(true);
     setError(null);
 
     try {
-      // Default quantity to 100 shares if not specified
-      const quantity = tradeData.quantity || 100;
-      const totalInvestment = tradeData.entryPrice * quantity;
-      const currentValue = tradeData.currentPrice * quantity;
-      const profitLoss = currentValue - totalInvestment;
-      const profitLossPercentage = (profitLoss / totalInvestment) * 100;
+      // Get current user
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
 
-      // Create paper trade record
-      const { data: paperTrade, error: insertError } = await supabase
+      if (authError || !user) {
+        throw new Error("User not authenticated");
+      }
+
+      // ← FIXED: Set signal_id to null to match existing data pattern
+      const paperTradeData = {
+        user_id: user.id,
+        signal_id: null, // ← Set to null instead of the UUID
+        ticker: tradeData.ticker,
+        trade_type: "buy" as const,
+        quantity: tradeData.quantity,
+        entry_price: tradeData.entryPrice,
+        exit_price: null,
+        stop_loss: tradeData.entryPrice * 0.95, // 5% stop loss
+        take_profit: tradeData.entryPrice * 1.15, // 15% take profit
+        profit_loss: null,
+        profit_loss_percentage: null,
+        is_open: true,
+        opened_at: new Date().toISOString(),
+        closed_at: null,
+        notes: `Paper trade executed for ${tradeData.companyName} in ${tradeData.sector} sector`,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      console.log("📝 DEBUG - Creating paper trade with data:", paperTradeData);
+
+      const { data, error: insertError } = await supabase
         .from("paper_trades")
-        .insert({
-          user_id: user.id,
-          signal_id: tradeData.signalId,
-          ticker: tradeData.ticker,
-          company_name: tradeData.companyName,
-          entry_price: tradeData.entryPrice,
-          current_price: tradeData.currentPrice,
-          quantity: quantity,
-          total_investment: totalInvestment,
-          current_value: currentValue,
-          profit_loss: profitLoss,
-          profit_loss_percentage: profitLossPercentage,
-          status: "open",
-          market: tradeData.market,
-          sector: tradeData.sector,
-          executed_at: new Date().toISOString(),
-        })
+        .insert([paperTradeData])
         .select()
         .single();
 
       if (insertError) {
+        console.error("❌ DEBUG - Database insert error:", insertError);
         throw insertError;
       }
 
-      // Update the signal status to 'triggered' and mark as having an open position
-      const { error: updateError } = await supabase
-        .from("trading_signals")
-        .update({
-          status: "triggered",
-          has_open_position: true,
-          position_id: paperTrade.id,
-          executed_at: new Date().toISOString(),
-        })
-        .eq("id", tradeData.signalId);
-
-      if (updateError) {
-        console.warn("Failed to update signal status:", updateError);
-        // Don't throw here as the paper trade was successfully created
-      }
-
-      console.log("✅ Paper trade executed successfully:", paperTrade);
-      return paperTrade;
+      console.log("✅ DEBUG - Trade inserted successfully:", data);
+      return data;
     } catch (err) {
-      console.error("❌ Failed to execute paper trade:", err);
-      setError(err instanceof Error ? err.message : "Failed to execute trade");
+      console.error("❌ DEBUG - Failed to execute paper trade:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Unknown error occurred";
+      setError(errorMessage);
       return null;
     } finally {
       setIsExecuting(false);
     }
   };
 
-  const getPaperTrades = async (): Promise<PaperTrade[]> => {
-    if (!user) return [];
-
-    try {
-      const { data, error } = await supabase
-        .from("paper_trades")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("executed_at", { ascending: false });
-
-      if (error) throw error;
-      return data || [];
-    } catch (err) {
-      console.error("Failed to fetch paper trades:", err);
-      return [];
-    }
-  };
-
-  const closePaperTrade = async (
-    tradeId: string,
-    exitPrice: number
-  ): Promise<boolean> => {
-    if (!user) return false;
-
-    try {
-      // Get the current trade
-      const { data: trade, error: fetchError } = await supabase
-        .from("paper_trades")
-        .select("*")
-        .eq("id", tradeId)
-        .eq("user_id", user.id)
-        .single();
-
-      if (fetchError || !trade) {
-        throw new Error("Trade not found");
-      }
-
-      // Calculate final P&L
-      const currentValue = exitPrice * trade.quantity;
-      const profitLoss = currentValue - trade.total_investment;
-      const profitLossPercentage = (profitLoss / trade.total_investment) * 100;
-
-      // Update trade as closed
-      const { error: updateError } = await supabase
-        .from("paper_trades")
-        .update({
-          status: "closed",
-          current_price: exitPrice,
-          current_value: currentValue,
-          profit_loss: profitLoss,
-          profit_loss_percentage: profitLossPercentage,
-          closed_at: new Date().toISOString(),
-        })
-        .eq("id", tradeId);
-
-      if (updateError) throw updateError;
-
-      // Update signal status
-      if (trade.signal_id) {
-        await supabase
-          .from("trading_signals")
-          .update({
-            has_open_position: false,
-            position_id: null,
-          })
-          .eq("id", trade.signal_id);
-      }
-
-      return true;
-    } catch (err) {
-      console.error("Failed to close paper trade:", err);
-      setError(err instanceof Error ? err.message : "Failed to close trade");
-      return false;
-    }
-  };
-
   return {
     executePaperTrade,
-    getPaperTrades,
-    closePaperTrade,
-    checkExistingPosition,
-    getButtonText,
     isExecuting,
     error,
-    clearError: () => setError(null),
+    clearError,
   };
 };

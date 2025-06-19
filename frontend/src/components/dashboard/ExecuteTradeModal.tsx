@@ -26,6 +26,7 @@ import {
   useExecutePaperTrade,
   ExecuteTradeData,
 } from "@/hooks/useExecutePaperTrade";
+import { usePositions } from "@/contexts/PositionsContext";
 
 interface Signal {
   id: string;
@@ -56,6 +57,7 @@ export const ExecuteTradeModal: React.FC<ExecuteTradeModalProps> = ({
   const [showSuccess, setShowSuccess] = useState(false);
   const { executePaperTrade, isExecuting, error, clearError } =
     useExecutePaperTrade();
+  const { refreshPositions } = usePositions();
 
   if (!signal) return null;
 
@@ -64,6 +66,7 @@ export const ExecuteTradeModal: React.FC<ExecuteTradeModalProps> = ({
   const isHighConfidence = signal.confidence_score >= 85;
 
   const handleExecute = async () => {
+    console.log(`🚀 DEBUG - Button clicked for ${signal.ticker}`);
     clearError();
 
     const tradeData: ExecuteTradeData = {
@@ -77,19 +80,72 @@ export const ExecuteTradeModal: React.FC<ExecuteTradeModalProps> = ({
       quantity: quantity,
     };
 
-    const result = await executePaperTrade(tradeData);
+    console.log(`🚀 DEBUG - Executing trade for: ${signal.ticker}`, tradeData);
 
-    if (result) {
-      setShowSuccess(true);
-      setTimeout(() => {
-        setShowSuccess(false);
-        onClose();
-        onSuccess?.(result);
-      }, 2000);
+    try {
+      const result = await executePaperTrade(tradeData);
+
+      if (result) {
+        console.log("✅ DEBUG - Trade executed successfully:", result);
+
+        // CRITICAL: Force multiple refresh attempts to ensure state updates
+        console.log("🔄 DEBUG - Starting position refresh sequence...");
+
+        // First refresh attempt
+        try {
+          await refreshPositions();
+          console.log("✅ DEBUG - First refresh completed");
+        } catch (refreshError) {
+          console.error("❌ DEBUG - First refresh failed:", refreshError);
+        }
+
+        // Wait and try again to ensure the database has the new data
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Second refresh attempt
+        try {
+          await refreshPositions();
+          console.log("✅ DEBUG - Second refresh completed");
+        } catch (refreshError) {
+          console.error("❌ DEBUG - Second refresh failed:", refreshError);
+        }
+
+        // Third refresh attempt after another delay
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        try {
+          await refreshPositions();
+          console.log("✅ DEBUG - Final refresh completed");
+        } catch (refreshError) {
+          console.error("❌ DEBUG - Final refresh failed:", refreshError);
+        }
+
+        console.log("🎉 DEBUG - All refresh attempts completed");
+
+        setShowSuccess(true);
+
+        // Close modal and trigger success callback
+        setTimeout(() => {
+          setShowSuccess(false);
+          onClose();
+          onSuccess?.(result);
+
+          // One final refresh after modal closes
+          setTimeout(() => {
+            console.log("🔄 DEBUG - Final background refresh");
+            refreshPositions().catch(console.error);
+          }, 500);
+        }, 2000);
+      } else {
+        console.error("❌ DEBUG - Trade execution failed - no result returned");
+      }
+    } catch (executeError) {
+      console.error("❌ DEBUG - Trade execution error:", executeError);
     }
   };
 
   const handleClose = () => {
+    console.log("🚪 DEBUG - Modal closing");
     setQuantity(100);
     clearError();
     setShowSuccess(false);
@@ -128,7 +184,7 @@ export const ExecuteTradeModal: React.FC<ExecuteTradeModalProps> = ({
             </h3>
             <p className="text-slate-400">
               Your paper trade for {signal.ticker} has been successfully
-              executed.
+              executed. The button should update momentarily.
             </p>
           </div>
         ) : (

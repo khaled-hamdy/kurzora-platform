@@ -11,8 +11,11 @@ import {
   Calculator,
   AlertTriangle,
   Plus,
+  Loader2,
 } from "lucide-react";
 import { useToast } from "../../hooks/use-toast";
+import { useExecutePaperTrade } from "../../hooks/useExecutePaperTrade";
+import { usePositions } from "../../contexts/PositionsContext";
 
 interface SignalModalProps {
   isOpen: boolean;
@@ -25,8 +28,8 @@ interface SignalModalProps {
     signalScore: number;
   } | null;
   onExecuteTrade: (tradeData: any) => void;
-  existingPositions?: string[]; // Array of symbols with existing positions
-  isViewingOnly?: boolean; // New prop to indicate if this is just for viewing details
+  existingPositions?: string[];
+  isViewingOnly?: boolean;
 }
 
 const SignalModal: React.FC<SignalModalProps> = ({
@@ -41,21 +44,32 @@ const SignalModal: React.FC<SignalModalProps> = ({
   const [customRiskPercent, setCustomRiskPercent] = useState([2]);
   const { toast } = useToast();
 
+  const { executePaperTrade, isExecuting, error, clearError } =
+    useExecutePaperTrade();
+  const { refreshPositions } = usePositions();
+
   if (!signal) return null;
 
   const hasExistingPosition = existingPositions.includes(signal.symbol);
   const maxRiskPercent = customRiskPercent[0];
   const maxRiskAmount = (portfolioBalance * maxRiskPercent) / 100;
   const entryPrice = signal.price;
-  const stopLoss = entryPrice * 0.95; // 5% stop loss
-  const takeProfit = entryPrice * 1.15; // 15% take profit
+  const stopLoss = entryPrice * 0.95;
+  const takeProfit = entryPrice * 1.15;
   const riskPerShare = entryPrice - stopLoss;
   const maxShares = Math.floor(maxRiskAmount / riskPerShare);
   const investmentAmount = maxShares * entryPrice;
   const isRiskTooHigh = maxRiskPercent > 2;
 
-  const handleExecuteTrade = () => {
-    // REMOVED: Blocking logic for existing positions - now allows adding to position
+  const handleExecuteTrade = async () => {
+    // ← ADDED: Extra debug message to test if button click works
+    console.log("🔥🔥🔥 EXECUTE BUTTON CLICKED! 🔥🔥🔥");
+    console.log(
+      "🚀 DEBUG - SignalModal Execute Trade clicked for:",
+      signal.symbol
+    );
+
+    clearError();
 
     if (isRiskTooHigh) {
       toast({
@@ -63,41 +77,77 @@ const SignalModal: React.FC<SignalModalProps> = ({
         description: `Consider reducing position size to stay within risk limits.`,
         variant: "destructive",
       });
-      // Allow trade to continue but with warning
     }
 
-    const tradeData = {
-      symbol: signal.symbol,
-      name: signal.name,
-      entryPrice: entryPrice,
-      shares: maxShares,
-      stopLoss: stopLoss,
-      takeProfit: takeProfit,
-      investmentAmount: investmentAmount,
-      signalScore: signal.signalScore,
-      isAddingToPosition: hasExistingPosition, // Flag to indicate if this is adding to existing position
-    };
+    try {
+      const tradeData = {
+        signalId: crypto.randomUUID(),
+        ticker: signal.symbol,
+        companyName: signal.name,
+        entryPrice: entryPrice,
+        currentPrice: signal.price,
+        market: "USA",
+        sector: "Technology",
+        quantity: maxShares,
+      };
 
-    onExecuteTrade(tradeData);
+      console.log("🚀 DEBUG - Executing trade with data:", tradeData);
+      const result = await executePaperTrade(tradeData);
 
-    // ENHANCED: Different success messages based on action type
-    const actionText = hasExistingPosition
-      ? "Position Extended!"
-      : "Trade Started!";
-    const descriptionText = hasExistingPosition
-      ? `Added ${maxShares} shares to your existing ${signal.symbol} position.`
-      : `Tracking ${signal.symbol} under Open Positions.`;
+      if (result) {
+        console.log("✅ DEBUG - Trade executed successfully:", result);
 
-    toast({
-      title: actionText,
-      description: descriptionText,
-    });
+        console.log("🔄 DEBUG - Refreshing positions...");
+        await refreshPositions();
+        console.log("✅ DEBUG - Positions refreshed successfully");
 
-    onClose();
+        const actionText = hasExistingPosition
+          ? "Position Extended!"
+          : "Trade Started!";
+        const descriptionText = hasExistingPosition
+          ? `Added ${maxShares} shares to your existing ${signal.symbol} position.`
+          : `Tracking ${signal.symbol} under Open Positions.`;
+
+        toast({
+          title: actionText,
+          description: descriptionText,
+        });
+
+        onClose();
+
+        onExecuteTrade({
+          symbol: signal.symbol,
+          name: signal.name,
+          entryPrice: entryPrice,
+          shares: maxShares,
+          stopLoss: stopLoss,
+          takeProfit: takeProfit,
+          investmentAmount: investmentAmount,
+          signalScore: signal.signalScore,
+          isAddingToPosition: hasExistingPosition,
+        });
+      } else {
+        console.error("❌ DEBUG - Trade execution failed");
+        toast({
+          title: "Failed to execute trade",
+          description: error || "Unknown error occurred",
+          variant: "destructive",
+        });
+      }
+    } catch (executeError) {
+      console.error("❌ DEBUG - Trade execution error:", executeError);
+      toast({
+        title: "Failed to execute trade",
+        description:
+          executeError instanceof Error
+            ? executeError.message
+            : "Unknown error occurred",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleCancel = () => {
-    // Only show cancel toast if not in viewing mode
     if (!isViewingOnly) {
       toast({
         title: "Trade cancelled",
@@ -153,7 +203,6 @@ const SignalModal: React.FC<SignalModalProps> = ({
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6 scrollbar-thin scrollbar-track-slate-700 scrollbar-thumb-slate-500 hover:scrollbar-thumb-slate-400">
-          {/* ENHANCED: Position Enhancement Notice (instead of warning) */}
           {hasExistingPosition && (
             <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-lg">
               <div className="flex items-center space-x-2">
@@ -171,7 +220,15 @@ const SignalModal: React.FC<SignalModalProps> = ({
             </div>
           )}
 
-          {/* Price Information */}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <AlertTriangle className="h-5 w-5 text-red-400" />
+                <p className="text-red-200 text-sm">{error}</p>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-slate-700/50 p-4 rounded-lg">
               <p className="text-slate-400 text-sm">Entry Price</p>
@@ -193,7 +250,6 @@ const SignalModal: React.FC<SignalModalProps> = ({
             </div>
           </div>
 
-          {/* Portfolio Balance */}
           {!isViewingOnly && (
             <div>
               <label className="text-slate-300 text-sm font-medium mb-2 block">
@@ -209,7 +265,6 @@ const SignalModal: React.FC<SignalModalProps> = ({
             </div>
           )}
 
-          {/* Custom Risk Slider */}
           {!isViewingOnly && (
             <div>
               <label className="text-slate-300 text-sm font-medium mb-2 block">
@@ -224,7 +279,6 @@ const SignalModal: React.FC<SignalModalProps> = ({
                 className="w-full"
               />
 
-              {/* Risk Warning */}
               {isRiskTooHigh && (
                 <div className="bg-red-500/10 border border-red-500/30 p-3 rounded-lg mt-3">
                   <div className="flex items-start space-x-2">
@@ -245,7 +299,6 @@ const SignalModal: React.FC<SignalModalProps> = ({
             </div>
           )}
 
-          {/* Position Sizing */}
           {!isViewingOnly && (
             <div className="bg-slate-700/30 p-4 rounded-lg">
               <div className="flex items-center space-x-2 mb-3">
@@ -295,7 +348,6 @@ const SignalModal: React.FC<SignalModalProps> = ({
             </div>
           )}
 
-          {/* Technical Summary */}
           <div className="bg-slate-700/30 p-4 rounded-lg">
             <h3 className="text-lg font-semibold mb-3">Technical Summary</h3>
             <ul className="space-y-2">
@@ -308,7 +360,6 @@ const SignalModal: React.FC<SignalModalProps> = ({
             </ul>
           </div>
 
-          {/* Disclaimer */}
           <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-lg">
             <div className="flex items-center space-x-2">
               <Shield className="h-5 w-5 text-amber-400" />
@@ -319,12 +370,12 @@ const SignalModal: React.FC<SignalModalProps> = ({
           </div>
         </div>
 
-        {/* ENHANCED: Action Buttons with Smart Text */}
         <div className="p-6 pt-4 border-t border-slate-700 flex-shrink-0">
           <div className="flex space-x-3">
             <Button
               variant="outline"
               onClick={handleCancel}
+              disabled={isExecuting}
               className="flex-1 bg-slate-600 border-slate-500 text-white hover:bg-slate-500 hover:border-slate-400 transition-all duration-200"
             >
               {isViewingOnly ? "Close" : "Cancel"}
@@ -332,13 +383,19 @@ const SignalModal: React.FC<SignalModalProps> = ({
             {!isViewingOnly && (
               <Button
                 onClick={handleExecuteTrade}
+                disabled={isExecuting}
                 className={`flex-1 text-white ${
                   hasExistingPosition
                     ? "bg-blue-600 hover:bg-blue-700"
                     : "bg-emerald-600 hover:bg-emerald-700"
                 }`}
               >
-                {hasExistingPosition ? (
+                {isExecuting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Executing...
+                  </>
+                ) : hasExistingPosition ? (
                   <>
                     <Plus className="h-4 w-4 mr-2" />
                     Add to Position

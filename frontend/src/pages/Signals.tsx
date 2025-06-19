@@ -28,7 +28,7 @@ import {
 import { useToast } from "../hooks/use-toast";
 import SignalModal from "../components/signals/SignalModal";
 import { useSignalsPageData } from "../hooks/useSignalsPageData";
-import { usePositions } from "../contexts/PositionsContext"; // Use shared context!
+import { usePositions } from "../contexts/PositionsContext";
 import {
   filterSignals,
   calculateFinalScore,
@@ -40,13 +40,15 @@ const Signals: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // OPTIMIZED: Use shared context instead of individual database calls
-  const { hasPosition, getButtonText, refreshPositions } = usePositions();
+  // Use shared context instead of individual database calls
+  const { hasPosition, getButtonText, refreshPositions, existingPositions } =
+    usePositions();
 
   const [timeFilter, setTimeFilter] = useState("1D");
   const [scoreThreshold, setScoreThreshold] = useState([70]);
   const [sectorFilter, setSectorFilter] = useState("all");
   const [marketFilter, setMarketFilter] = useState("global");
+  // ← FIXED: Signal state to match SignalModal interface exactly
   const [selectedSignal, setSelectedSignal] = useState<{
     symbol: string;
     name: string;
@@ -127,32 +129,49 @@ const Signals: React.FC = () => {
     marketFilter
   );
 
+  // ← FIXED: Create signal data that exactly matches SignalModal interface
   const handleViewSignal = (signal: Signal) => {
+    console.log(
+      "🚀 DEBUG - Signals.tsx handleViewSignal called for:",
+      signal.ticker
+    );
+
     const finalScore = calculateFinalScore(signal.signals);
     const signalData = {
-      symbol: signal.ticker,
+      symbol: signal.ticker, // ← Correct field name for SignalModal
       name: signal.name,
       price: signal.price,
       change: signal.change,
-      signalScore: finalScore,
+      signalScore: finalScore, // ← Correct field name for SignalModal
     };
 
+    console.log("🚀 DEBUG - Signal data being passed to modal:", signalData);
     setSelectedSignal(signalData);
     setIsModalOpen(true);
   };
 
+  // ← FIXED: Handle trade execution from SignalModal
   const handleExecuteTrade = (tradeData: any) => {
+    console.log(
+      "🎉 DEBUG - Trade executed successfully in Signals page:",
+      tradeData
+    );
+
     // Navigate to open positions with the new trade data
     navigate("/open-positions", {
       state: {
         newTrade: tradeData,
       },
     });
+
+    // Close modal
+    setIsModalOpen(false);
   };
 
   const handleModalClose = () => {
+    console.log("🚪 DEBUG - Modal closing, refreshing positions");
     setIsModalOpen(false);
-    // OPTIMIZED: Just refresh positions context once instead of individual calls
+    // Refresh positions context once instead of individual calls
     refreshPositions();
   };
 
@@ -280,8 +299,8 @@ const Signals: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredSignals.map((signal) => {
             const finalScore = calculateFinalScore(signal.signals);
-            const hasExistingPosition = hasPosition(signal.ticker); // OPTIMIZED: Direct context call
-            const buttonText = getButtonText(signal.ticker); // OPTIMIZED: Direct context call
+            const hasExistingPosition = hasPosition(signal.ticker);
+            const buttonText = getButtonText(signal.ticker);
 
             return (
               <Card
@@ -358,7 +377,12 @@ const Signals: React.FC = () => {
                     </div>
 
                     <Button
-                      onClick={() => handleViewSignal(signal)}
+                      onClick={() => {
+                        console.log(
+                          `🚀 DEBUG - Button clicked for ${signal.ticker} in Signals.tsx`
+                        );
+                        handleViewSignal(signal);
+                      }}
                       className={`w-full text-white ${
                         hasExistingPosition
                           ? "bg-blue-600 hover:bg-blue-700"
@@ -393,13 +417,13 @@ const Signals: React.FC = () => {
           </div>
         )}
 
-        {/* Signal Modal */}
+        {/* ← FIXED: SignalModal with correct props and existingPositions from context */}
         <SignalModal
           isOpen={isModalOpen}
           onClose={handleModalClose}
           signal={selectedSignal}
           onExecuteTrade={handleExecuteTrade}
-          existingPositions={[]} // Not needed anymore, context handles this
+          existingPositions={existingPositions} // ← Pass real existing positions from context
         />
 
         {/* Disclaimer */}
