@@ -16,6 +16,11 @@ interface Signal {
   sector: string;
   market: string;
   timestamp: string;
+  // NEW: Add status tracking fields
+  status: "active" | "triggered" | "expired" | "cancelled";
+  has_open_position: boolean;
+  position_id?: string;
+  executed_at?: string;
 }
 
 interface SignalTableProps {
@@ -53,6 +58,85 @@ const SignalTable: React.FC<SignalTableProps> = ({
     if (score >= 80) return "✅";
     if (score >= 70) return "⚠️";
     return "";
+  };
+
+  // NEW: Status badge styling and logic
+  const getStatusBadge = (signal: Signal) => {
+    const { status, has_open_position } = signal;
+
+    if (has_open_position || status === "triggered") {
+      return {
+        text: "IN POSITION",
+        className: "bg-blue-500 text-white",
+        icon: "📈",
+      };
+    }
+
+    switch (status) {
+      case "active":
+        return {
+          text: "FRESH",
+          className: "bg-emerald-500 text-white animate-pulse",
+          icon: "🔥",
+        };
+      case "expired":
+        return {
+          text: "EXPIRED",
+          className: "bg-slate-500 text-slate-300",
+          icon: "⏰",
+        };
+      case "cancelled":
+        return {
+          text: "CANCELLED",
+          className: "bg-red-500 text-white",
+          icon: "❌",
+        };
+      default:
+        return {
+          text: "ACTIVE",
+          className: "bg-emerald-500 text-white",
+          icon: "✨",
+        };
+    }
+  };
+
+  // NEW: Dynamic button based on signal status
+  const getActionButton = (signal: Signal) => {
+    const { status, has_open_position } = signal;
+
+    if (has_open_position || status === "triggered") {
+      return (
+        <Button
+          size="sm"
+          className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1"
+          onClick={() => onViewSignal(signal, timeFilter)}
+        >
+          Manage Position
+        </Button>
+      );
+    }
+
+    if (status === "expired" || status === "cancelled") {
+      return (
+        <Button
+          size="sm"
+          className="bg-slate-600 text-slate-400 text-xs px-3 py-1"
+          disabled
+        >
+          Unavailable
+        </Button>
+      );
+    }
+
+    return (
+      <Button
+        size="sm"
+        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1"
+        onClick={() => onViewSignal(signal, timeFilter)}
+      >
+        {t("signals.view")}
+      </Button>
+    );
   };
 
   const formatPrice = (price: number, market: string) => {
@@ -186,6 +270,7 @@ const SignalTable: React.FC<SignalTableProps> = ({
             const finalScore = calculateFinalScore(signal.signals);
             const isFinalScoreHighlighted = shouldHighlightScore(finalScore);
             const shouldRowBlink = shouldBlinkRow(signal);
+            const statusBadge = getStatusBadge(signal);
 
             return (
               <div
@@ -194,9 +279,11 @@ const SignalTable: React.FC<SignalTableProps> = ({
                   shouldRowBlink
                     ? "animate-pulse bg-slate-700/50 ring-2 ring-emerald-400/50"
                     : ""
+                } ${
+                  signal.has_open_position ? "border-l-4 border-blue-400" : ""
                 }`}
               >
-                {/* Stock Info */}
+                {/* Stock Info with Status Badge */}
                 <div className="flex flex-col">
                   <div className="text-white font-bold text-sm flex items-center space-x-1">
                     <span>{getMarketFlag(signal.market)}</span>
@@ -204,6 +291,15 @@ const SignalTable: React.FC<SignalTableProps> = ({
                   </div>
                   <div className="text-slate-400 text-xs truncate">
                     {signal.name}
+                  </div>
+                  {/* NEW: Status Badge */}
+                  <div className="mt-1">
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-bold ${statusBadge.className}`}
+                    >
+                      <span className="mr-1">{statusBadge.icon}</span>
+                      {statusBadge.text}
+                    </span>
                   </div>
                 </div>
 
@@ -266,15 +362,9 @@ const SignalTable: React.FC<SignalTableProps> = ({
                   </div>
                 </div>
 
-                {/* Action Button */}
+                {/* NEW: Dynamic Action Button */}
                 <div className="flex justify-center">
-                  <Button
-                    size="sm"
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1"
-                    onClick={() => onViewSignal(signal, timeFilter)}
-                  >
-                    {t("signals.view")}
-                  </Button>
+                  {getActionButton(signal)}
                 </div>
               </div>
             );

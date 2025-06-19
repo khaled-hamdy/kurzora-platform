@@ -1,5 +1,5 @@
 // src/hooks/useSupabaseSignals.ts
-// FIXED VERSION - Matches SignalTable Interface
+// ENHANCED VERSION - Includes Status Tracking Fields
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 
@@ -17,6 +17,11 @@ export interface Signal {
   sector: string;
   market: string;
   timestamp: string;
+  // NEW: Add status tracking fields to match SignalTable interface
+  status: "active" | "triggered" | "expired" | "cancelled";
+  has_open_position: boolean;
+  position_id?: string;
+  executed_at?: string;
 }
 
 interface UseSignalsReturn {
@@ -36,9 +41,18 @@ export function useSupabaseSignals(): UseSignalsReturn {
       setLoading(true);
       setError(null);
 
+      // UPDATED: Include new status fields in the query
       const { data, error: queryError } = await supabase
         .from("trading_signals")
-        .select("*")
+        .select(
+          `
+          *,
+          status,
+          has_open_position,
+          position_id,
+          executed_at
+        `
+        )
         .eq("status", "active")
         .gte("confidence_score", 70)
         .order("confidence_score", { ascending: false })
@@ -81,14 +95,19 @@ export function useSupabaseSignals(): UseSignalsReturn {
           sector: record.sector || "Technology",
           market: record.market || "usa",
           timestamp: record.created_at,
+          // NEW: Include status tracking fields with safe defaults
+          status: record.status || "active",
+          has_open_position: record.has_open_position || false,
+          position_id: record.position_id || undefined,
+          executed_at: record.executed_at || undefined,
         };
       });
 
       setSignals(transformedSignals);
       console.log(
-        `✅ Successfully loaded ${transformedSignals.length} real trading signals from Supabase`
+        `✅ Successfully loaded ${transformedSignals.length} real trading signals with status tracking from Supabase`
       );
-      console.log("Sample signal:", transformedSignals[0]);
+      console.log("Sample signal with status:", transformedSignals[0]);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Unknown error occurred";
