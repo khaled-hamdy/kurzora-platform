@@ -14,9 +14,10 @@ interface EmailResponse {
 }
 
 export class EmailService {
-  // 🎯 Professional Kurzora Email Service
-  private static readonly SERVICE_ID = "service_0d7fb6k"; // Your Kurzora Server
-  private static readonly NOTIFICATION_TEMPLATE_ID = "template_mo3e2nj"; // Working perfectly!
+  // 🎯 Using your Kurzora Server (support@kurzora.com)
+  private static readonly SERVICE_ID = "service_0d7fb6k";
+  private static readonly NOTIFICATION_TEMPLATE_ID = "template_mo3e2nj"; // Works!
+  private static readonly AUTO_REPLY_TEMPLATE_ID = "template_p0gxqmq"; // Let's test this
   private static readonly PUBLIC_KEY = "ikJ4tcMd7GP9ZQ8Na";
 
   static async sendContactEmail(
@@ -36,7 +37,7 @@ export class EmailService {
         minute: "2-digit",
       });
 
-      // Send professional notification email to you
+      // 1️⃣ Send notification email to you (this works!)
       const notificationParams = {
         from_name: formData.name,
         from_email: formData.email,
@@ -50,22 +51,64 @@ export class EmailService {
         page_url: window.location.href,
       };
 
-      console.log("📤 Sending notification to support@kurzora.com...");
-      const response = await emailjs.send(
+      console.log("📤 Sending notification via Kurzora Server...");
+      const notificationResponse = await emailjs.send(
         this.SERVICE_ID,
         this.NOTIFICATION_TEMPLATE_ID,
         notificationParams
       );
 
-      console.log("✅ Notification sent successfully!", response.status);
+      console.log(
+        "✅ Notification sent successfully!",
+        notificationResponse.status
+      );
 
-      return {
-        success: true,
-        message:
-          "Thank you for your message! We'll get back to you within 24 hours.",
-      };
+      // 2️⃣ Try auto-reply again (with better error handling)
+      try {
+        const autoReplyParams = {
+          from_name: formData.name,
+          email: formData.email, // Customer's email (for "To" field)
+          from_email: formData.email, // Customer's email (for content)
+          subject: formData.subject,
+          message: formData.message,
+          timestamp: timestamp,
+        };
+
+        console.log("📤 Sending auto-reply via Kurzora Server...");
+        console.log("📧 Auto-reply will be sent to:", formData.email);
+        console.log("📋 Auto-reply params:", autoReplyParams);
+
+        const autoReplyResponse = await emailjs.send(
+          this.SERVICE_ID,
+          this.AUTO_REPLY_TEMPLATE_ID,
+          autoReplyParams
+        );
+
+        console.log(
+          "✅ Auto-reply sent successfully!",
+          autoReplyResponse.status
+        );
+
+        return {
+          success: true,
+          message:
+            "Thank you for your message! We've sent you a confirmation email and will get back to you within 24 hours.",
+        };
+      } catch (autoReplyError) {
+        console.error(
+          "❌ Auto-reply failed, but notification was sent:",
+          autoReplyError
+        );
+
+        // Still consider it success since notification worked
+        return {
+          success: true,
+          message:
+            "Thank you for your message! We'll get back to you within 24 hours.",
+        };
+      }
     } catch (error) {
-      console.error("❌ Failed to send notification:", error);
+      console.error("❌ EmailJS Error:", error);
       return {
         success: false,
         message:
@@ -74,19 +117,42 @@ export class EmailService {
     }
   }
 
-  // 🧪 Test function for verification
-  static async testEmailService(): Promise<EmailResponse> {
-    const testData: ContactFormData = {
-      name: "Test User",
-      email: "test@example.com",
-      subject: "Contact Form Test",
-      message:
-        "This is a test message to verify the Kurzora contact form is working correctly.",
-    };
+  // 🧪 Test auto-reply only
+  static async testAutoReplyOnly(
+    customerEmail: string
+  ): Promise<EmailResponse> {
+    try {
+      emailjs.init(this.PUBLIC_KEY);
 
-    console.log("🧪 Testing Kurzora email service...");
-    const result = await this.sendContactEmail(testData);
-    console.log("🧪 Test result:", result);
-    return result;
+      const testParams = {
+        from_name: "Test User",
+        email: customerEmail,
+        from_email: customerEmail,
+        subject: "Test Auto-Reply",
+        message: "This is a test of the auto-reply system.",
+        timestamp: new Date().toLocaleString(),
+      };
+
+      console.log("🧪 Testing auto-reply to:", customerEmail);
+      const response = await emailjs.send(
+        this.SERVICE_ID,
+        this.AUTO_REPLY_TEMPLATE_ID,
+        testParams
+      );
+
+      return {
+        success: response.status === 200,
+        message:
+          response.status === 200
+            ? "Auto-reply test successful!"
+            : "Auto-reply test failed",
+      };
+    } catch (error) {
+      console.error("❌ Auto-reply test failed:", error);
+      return {
+        success: false,
+        message: "Auto-reply test failed",
+      };
+    }
   }
 }
