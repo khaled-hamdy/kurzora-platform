@@ -122,7 +122,7 @@ const Contact: React.FC = () => {
                       ? "E-Mail"
                       : "Email"}
                   </h3>
-                  <p className="text-slate-400">info@kurzora.com</p>
+                  <p className="text-slate-400">support@kurzora.com</p>
                 </div>
               </div>
 
@@ -134,7 +134,7 @@ const Contact: React.FC = () => {
                   <h3 className="text-white font-semibold mb-1">Discord</h3>
                   <p className="text-slate-400">
                     <a
-                      href="https://discord.gg/kurzora-platform"
+                      href="https://discord.gg/dsnNThc6"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="hover:text-white transition-colors"
@@ -176,7 +176,7 @@ const Contact: React.FC = () => {
                       ? "Telefon"
                       : "Phone"}
                   </h3>
-                  <p className="text-slate-400">+49 176 32578451</p>
+                  <p className="text-slate-400">+49 176 32578461</p>
                 </div>
               </div>
 
