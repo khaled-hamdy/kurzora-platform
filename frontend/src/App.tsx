@@ -36,6 +36,7 @@ import ShariahCompliance from "./pages/legal/ShariahCompliance";
 import GDPRCompliance from "./pages/legal/GDPRCompliance";
 import CookieNotice from "./pages/legal/CookieNotice";
 import PolygonTest from "./pages/PolygonTest";
+import SignalsTest from "./pages/SignalsTest";
 
 // Create QueryClient with default options
 const queryClient = new QueryClient({
@@ -80,6 +81,9 @@ function App() {
 
                   {/* 🚀 POLYGON.IO TEST PAGE - NEW! */}
                   <Route path="/polygon-test" element={<PolygonTest />} />
+
+                  {/* 🎯 SIGNAL GENERATION TEST PAGE - NEW! */}
+                  <Route path="/signals-test" element={<SignalsTest />} />
 
                   {/* Admin Routes - Protected */}
                   <Route
