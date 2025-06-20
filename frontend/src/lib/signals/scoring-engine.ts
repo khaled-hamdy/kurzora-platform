@@ -849,15 +849,20 @@ export class ScoringEngine {
       else if (avgQualityScore >= 50) dataQualityLevel = "Limited";
       else dataQualityLevel = "Insufficient";
 
-      // Determine signal strength - INDUSTRY STANDARD PRESERVED
+      // NEW REALISTIC SIGNAL STRENGTH THRESHOLDS - UPDATED FOR REAL TRADING CONDITIONS
       let signalStrength: FinalSignalScore["signalStrength"];
-      if (finalScore >= 90) signalStrength = "STRONG_BUY";
-      else if (finalScore >= 80) signalStrength = "BUY";
-      else if (finalScore >= 60) signalStrength = "WEAK_BUY";
-      else if (finalScore >= 40) signalStrength = "NEUTRAL";
-      else if (finalScore >= 20) signalStrength = "WEAK_SELL";
-      else if (finalScore >= 10) signalStrength = "SELL";
-      else signalStrength = "STRONG_SELL";
+      if (finalScore >= 75)
+        signalStrength = "STRONG_BUY"; // ≥75 (instead of ≥90)
+      else if (finalScore >= 65) signalStrength = "BUY"; // ≥65 (instead of ≥80)
+      else if (finalScore >= 55)
+        signalStrength = "WEAK_BUY"; // ≥55 (instead of ≥60)
+      else if (finalScore >= 45)
+        signalStrength = "NEUTRAL"; // 45-54 (instead of 40-59)
+      else if (finalScore >= 35)
+        signalStrength = "WEAK_SELL"; // 35-44 (instead of 20-39)
+      else if (finalScore >= 25)
+        signalStrength = "SELL"; // 25-34 (instead of 10-19)
+      else signalStrength = "STRONG_SELL"; // <25 (instead of <10)
 
       // Enhanced confidence calculation
       const confidenceValues = Object.values(timeframeScores).map(
@@ -953,7 +958,7 @@ export class ScoringEngine {
     };
   }
 
-  // Enhanced recommendation generation
+  // Enhanced recommendation generation with realistic thresholds context
   private generateEnhancedRecommendation(
     score: number,
     strength: string,
@@ -963,19 +968,21 @@ export class ScoringEngine {
   ): string {
     let recommendation = "";
 
-    // Base recommendation - INDUSTRY STANDARD PRESERVED
-    if (score >= 85) {
-      recommendation = `Strong ${strength} signal with high timeframe alignment`;
-    } else if (score >= 70) {
-      recommendation = `Good ${strength} opportunity with solid indicator confluence`;
-    } else if (score >= 60) {
-      recommendation = `Moderate ${strength} signal. Consider position sizing`;
-    } else if (score <= 15) {
-      recommendation = `Strong ${strength} signal with bearish momentum`;
-    } else if (score <= 30) {
-      recommendation = `${strength} bias with downward pressure`;
+    // Base recommendation with NEW REALISTIC THRESHOLDS
+    if (score >= 75) {
+      recommendation = `Strong ${strength} signal with excellent timeframe alignment - High conviction trade`;
+    } else if (score >= 65) {
+      recommendation = `Solid ${strength} opportunity with good indicator confluence - Recommended entry`;
+    } else if (score >= 55) {
+      recommendation = `Moderate ${strength} signal with decent setup - Consider scaled entry`;
+    } else if (score >= 45) {
+      recommendation = `Neutral signal with mixed readings - Wait for clearer direction`;
+    } else if (score >= 35) {
+      recommendation = `${strength} bias developing - Monitor for confirmation`;
+    } else if (score >= 25) {
+      recommendation = `${strength} signal with bearish momentum - Consider short position`;
     } else {
-      recommendation = `Neutral signal with mixed timeframe readings`;
+      recommendation = `Strong ${strength} signal with major downside risk - High conviction short`;
     }
 
     // Add data quality context - NEW ENHANCEMENT
@@ -1018,9 +1025,9 @@ export class ScoringEngine {
         ? "Moderate"
         : "Low"
     } - ${
-      score >= 70 && qualityScore >= 80
+      score >= 65 && qualityScore >= 80
         ? "High confidence signal"
-        : score >= 60 || qualityScore >= 60
+        : score >= 55 || qualityScore >= 60
         ? "Moderate confidence signal"
         : "Low confidence signal"
     }`;
