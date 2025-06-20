@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import Layout from "../components/Layout";
-import { Mail, MessageCircle, Phone, MapPin, Send } from "lucide-react";
+import { Mail, MessageCircle, MapPin, Send } from "lucide-react"; // 👈 REMOVED: Phone import
 import { Button } from "../components/ui/button";
 import { toast } from "sonner";
 import { EmailService } from "../services/emailService"; // 👈 NEW: Import our email service
@@ -164,21 +164,7 @@ const Contact: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-start space-x-4">
-                <div className="p-3 bg-amber-600/20 rounded-lg">
-                  <Phone className="h-6 w-6 text-amber-400" />
-                </div>
-                <div>
-                  <h3 className="text-white font-semibold mb-1">
-                    {language === "ar"
-                      ? "الهاتف"
-                      : language === "de"
-                      ? "Telefon"
-                      : "Phone"}
-                  </h3>
-                  <p className="text-slate-400">+49 176 32578461</p>
-                </div>
-              </div>
+              {/* 👈 REMOVED: Entire phone contact section deleted */}
 
               <div className="flex items-start space-x-4">
                 <div className="p-3 bg-blue-600/20 rounded-lg">
