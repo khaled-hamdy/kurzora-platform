@@ -1,4 +1,4 @@
-// Scoring Engine - Multi-Timeframe 0-100 Signal Scoring
+// Enhanced Scoring Engine - Multi-Timeframe 0-100 Signal Scoring with Data Quality Integration
 // File: src/lib/signals/scoring-engine.ts
 
 import {
@@ -10,6 +10,7 @@ import {
   VolumeAnalysis,
   SupportResistanceAnalysis,
   PriceData,
+  DataQuality,
 } from "./technical-indicators";
 
 export interface TimeframeScore {
@@ -22,42 +23,56 @@ export interface TimeframeScore {
   volumeScore: number;
   compositeScore: number;
   confidence: number;
+  dataQualityScore: number; // NEW: Overall data quality score for this timeframe
+  dataQualityLevel: string; // NEW: Overall data quality level
   breakdown: {
     rsi: {
       score: number;
       weight: number;
       contribution: number;
       reason: string;
+      dataQuality: DataQuality | null; // NEW: Data quality info
+      qualityAdjustedContribution: number; // NEW: Quality-weighted contribution
     };
     macd: {
       score: number;
       weight: number;
       contribution: number;
       reason: string;
+      dataQuality: DataQuality | null;
+      qualityAdjustedContribution: number;
     };
     ema: {
       score: number;
       weight: number;
       contribution: number;
       reason: string;
+      dataQuality: DataQuality | null;
+      qualityAdjustedContribution: number;
     };
     bollinger: {
       score: number;
       weight: number;
       contribution: number;
       reason: string;
+      dataQuality: DataQuality | null;
+      qualityAdjustedContribution: number;
     };
     supportResistance: {
       score: number;
       weight: number;
       contribution: number;
       reason: string;
+      dataQuality: DataQuality | null;
+      qualityAdjustedContribution: number;
     };
     volume: {
       score: number;
       weight: number;
       contribution: number;
       reason: string;
+      dataQuality: DataQuality | null;
+      qualityAdjustedContribution: number;
     };
   };
 }
@@ -75,6 +90,8 @@ export interface FinalSignalScore {
     | "STRONG_SELL";
   timeframeScores: Record<string, TimeframeScore>;
   confidence: number;
+  dataQualityScore: number; // NEW: Overall data quality across all timeframes
+  dataQualityLevel: string; // NEW: Overall data quality level
   recommendation: string;
   entryPrice: number;
   stopLoss: number;
@@ -85,7 +102,7 @@ export interface FinalSignalScore {
 }
 
 export class ScoringEngine {
-  // Indicator weights (must sum to 1.0)
+  // Indicator weights (must sum to 1.0) - INDUSTRY STANDARD PRESERVED
   private indicatorWeights = {
     rsi: 0.25, // 25% - Most important for momentum
     macd: 0.25, // 25% - Trend confirmation
@@ -95,7 +112,7 @@ export class ScoringEngine {
     volume: 0.05, // 5% - Confirmation
   };
 
-  // Timeframe weights (must sum to 1.0)
+  // Timeframe weights (must sum to 1.0) - INDUSTRY STANDARD PRESERVED
   private timeframeWeights = {
     "1H": 0.4, // 40% - Most responsive
     "4H": 0.3, // 30% - Balance of speed/reliability
@@ -103,14 +120,36 @@ export class ScoringEngine {
     "1W": 0.1, // 10% - Long-term trend
   };
 
-  // Score individual RSI indicator
-  private scoreRSI(rsi: RSIResult | null): { score: number; reason: string } {
-    if (!rsi) return { score: 50, reason: "No RSI data available" };
+  // NEW: Data Quality Weight Multipliers
+  private qualityMultipliers = {
+    Excellent: 1.0, // Full weight
+    Good: 0.9, // 90% weight
+    Limited: 0.7, // 70% weight
+    Insufficient: 0.0, // No weight
+  };
+
+  // Enhanced scoring with data quality integration
+  private scoreRSI(rsi: RSIResult | null): {
+    score: number;
+    reason: string;
+    dataQuality: DataQuality | null;
+    qualityMultiplier: number;
+  } {
+    if (!rsi)
+      return {
+        score: 50,
+        reason: "No RSI data available",
+        dataQuality: null,
+        qualityMultiplier: 0,
+      };
+
+    const qualityMultiplier =
+      this.qualityMultipliers[rsi.dataQuality.level] || 0;
 
     let score = 50;
     let reason = "";
 
-    // RSI scoring logic based on overbought/oversold conditions
+    // RSI scoring logic based on overbought/oversold conditions - INDUSTRY STANDARD PRESERVED
     if (rsi.value <= 20) {
       score = 95;
       reason = `Extremely oversold (${rsi.value.toFixed(
@@ -150,20 +189,43 @@ export class ScoringEngine {
       reason += " (Strong momentum)";
     }
 
-    return { score: Math.max(0, Math.min(100, score)), reason };
+    // Add data quality context to reason
+    if (rsi.dataQuality.adaptive) {
+      reason += ` [Adaptive analysis: ${rsi.dataQuality.level} quality]`;
+    } else {
+      reason += ` [${rsi.dataQuality.level} data quality]`;
+    }
+
+    return {
+      score: Math.max(0, Math.min(100, score)),
+      reason,
+      dataQuality: rsi.dataQuality,
+      qualityMultiplier,
+    };
   }
 
-  // Score MACD indicator
+  // Enhanced MACD scoring with data quality integration
   private scoreMACD(macd: MACDResult | null): {
     score: number;
     reason: string;
+    dataQuality: DataQuality | null;
+    qualityMultiplier: number;
   } {
-    if (!macd) return { score: 50, reason: "No MACD data available" };
+    if (!macd)
+      return {
+        score: 50,
+        reason: "No MACD data available",
+        dataQuality: null,
+        qualityMultiplier: 0,
+      };
+
+    const qualityMultiplier =
+      this.qualityMultipliers[macd.dataQuality.level] || 0;
 
     let score = 50;
     let reason = "";
 
-    // MACD line vs Signal line
+    // MACD scoring logic - INDUSTRY STANDARD PRESERVED
     if (macd.macd > macd.signal) {
       score += 25;
       reason = "MACD above signal line (bullish)";
@@ -172,7 +234,6 @@ export class ScoringEngine {
       reason = "MACD below signal line (bearish)";
     }
 
-    // Histogram momentum
     if (macd.histogram > 0) {
       score += 15;
       reason += ", positive histogram (momentum up)";
@@ -181,7 +242,6 @@ export class ScoringEngine {
       reason += ", negative histogram (momentum down)";
     }
 
-    // Crossover signals (most important)
     if (macd.crossover === "bullish_crossover") {
       score += 20;
       reason += ", BULLISH CROSSOVER detected!";
@@ -190,7 +250,6 @@ export class ScoringEngine {
       reason += ", BEARISH CROSSOVER detected!";
     }
 
-    // Trend strength
     if (macd.trend === "bullish") {
       score += 10;
       reason += ", bullish trend confirmed";
@@ -199,17 +258,43 @@ export class ScoringEngine {
       reason += ", bearish trend confirmed";
     }
 
-    return { score: Math.max(0, Math.min(100, score)), reason };
+    // Add data quality context
+    if (macd.dataQuality.adaptive) {
+      reason += ` [Adaptive analysis: ${macd.dataQuality.level} quality]`;
+    } else {
+      reason += ` [${macd.dataQuality.level} data quality]`;
+    }
+
+    return {
+      score: Math.max(0, Math.min(100, score)),
+      reason,
+      dataQuality: macd.dataQuality,
+      qualityMultiplier,
+    };
   }
 
-  // Score EMA analysis
-  private scoreEMA(ema: EMAAnalysis | null): { score: number; reason: string } {
-    if (!ema) return { score: 50, reason: "No EMA data available" };
+  // Enhanced EMA scoring with data quality integration
+  private scoreEMA(ema: EMAAnalysis | null): {
+    score: number;
+    reason: string;
+    dataQuality: DataQuality | null;
+    qualityMultiplier: number;
+  } {
+    if (!ema)
+      return {
+        score: 50,
+        reason: "No EMA data available",
+        dataQuality: null,
+        qualityMultiplier: 0,
+      };
+
+    const qualityMultiplier =
+      this.qualityMultipliers[ema.dataQuality.level] || 0;
 
     let score = 50;
     let reason = "";
 
-    // Price position relative to EMAs
+    // EMA scoring logic - INDUSTRY STANDARD PRESERVED
     if (ema.pricePosition === "above_both") {
       score = 85;
       reason = `Price above both EMAs (${ema.ema20.toFixed(
@@ -225,7 +310,6 @@ export class ScoringEngine {
       reason = `Price between EMAs - Consolidation phase`;
     }
 
-    // EMA alignment bonus/penalty
     if (ema.emaAlignment === "bullish" && ema.pricePosition === "above_both") {
       score += 15;
       reason += ", EMAs aligned bullishly";
@@ -237,7 +321,6 @@ export class ScoringEngine {
       reason += ", EMAs aligned bearishly";
     }
 
-    // Crossover signals (major events)
     if (ema.crossover === "golden_cross") {
       score = Math.max(score, 90);
       reason += ", GOLDEN CROSS - Major bullish signal!";
@@ -246,7 +329,6 @@ export class ScoringEngine {
       reason += ", DEATH CROSS - Major bearish signal!";
     }
 
-    // Trend strength adjustment
     if (ema.trend === "strong_bullish") {
       score += 5;
       reason += ", very strong bullish trend";
@@ -255,21 +337,43 @@ export class ScoringEngine {
       reason += ", very strong bearish trend";
     }
 
-    return { score: Math.max(0, Math.min(100, score)), reason };
+    // Add data quality context
+    if (ema.dataQuality.adaptive) {
+      reason += ` [Adaptive EMAs: ${ema.dataQuality.level} quality]`;
+    } else {
+      reason += ` [${ema.dataQuality.level} data quality]`;
+    }
+
+    return {
+      score: Math.max(0, Math.min(100, score)),
+      reason,
+      dataQuality: ema.dataQuality,
+      qualityMultiplier,
+    };
   }
 
-  // Score Bollinger Bands
+  // Enhanced Bollinger Bands scoring with data quality integration
   private scoreBollinger(bollinger: BollingerBandsResult | null): {
     score: number;
     reason: string;
+    dataQuality: DataQuality | null;
+    qualityMultiplier: number;
   } {
     if (!bollinger)
-      return { score: 50, reason: "No Bollinger Bands data available" };
+      return {
+        score: 50,
+        reason: "No Bollinger Bands data available",
+        dataQuality: null,
+        qualityMultiplier: 0,
+      };
+
+    const qualityMultiplier =
+      this.qualityMultipliers[bollinger.dataQuality.level] || 0;
 
     let score = 50;
     let reason = "";
 
-    // Position within bands (%B analysis)
+    // Bollinger Bands scoring logic - INDUSTRY STANDARD PRESERVED
     if (bollinger.percentB <= 0.1) {
       score = 90;
       reason = `Near lower band (%B: ${(bollinger.percentB * 100).toFixed(
@@ -307,7 +411,6 @@ export class ScoringEngine {
       )}%) - Overbought decline expected`;
     }
 
-    // Breakout signals (override normal scoring)
     if (bollinger.breakout === "bullish_breakout") {
       score = 85;
       reason = "BULLISH BREAKOUT above upper band - Strong momentum play!";
@@ -316,33 +419,53 @@ export class ScoringEngine {
       reason = "BEARISH BREAKDOWN below lower band - Strong sell signal!";
     }
 
-    // Squeeze adjustment (potential for big moves)
     if (bollinger.squeeze) {
       score += 10;
       reason += ", low volatility squeeze detected (breakout pending)";
     }
 
-    // Expansion adjustment (confirming strong moves)
     if (bollinger.expansion && bollinger.breakout !== "none") {
       score += 5;
       reason += ", high volatility expansion confirms move";
     }
 
-    return { score: Math.max(0, Math.min(100, score)), reason };
+    // Add data quality context
+    if (bollinger.dataQuality.adaptive) {
+      reason += ` [Adaptive period: ${bollinger.dataQuality.level} quality]`;
+    } else {
+      reason += ` [${bollinger.dataQuality.level} data quality]`;
+    }
+
+    return {
+      score: Math.max(0, Math.min(100, score)),
+      reason,
+      dataQuality: bollinger.dataQuality,
+      qualityMultiplier,
+    };
   }
 
-  // Score Support/Resistance
+  // Enhanced Support/Resistance scoring with data quality integration
   private scoreSupportResistance(sr: SupportResistanceAnalysis | null): {
     score: number;
     reason: string;
+    dataQuality: DataQuality | null;
+    qualityMultiplier: number;
   } {
     if (!sr)
-      return { score: 50, reason: "No Support/Resistance data available" };
+      return {
+        score: 50,
+        reason: "No Support/Resistance data available",
+        dataQuality: null,
+        qualityMultiplier: 0,
+      };
+
+    const qualityMultiplier =
+      this.qualityMultipliers[sr.dataQuality.level] || 0;
 
     let score = 50;
     let reason = "";
 
-    // Signal-based scoring
+    // S/R scoring logic - INDUSTRY STANDARD PRESERVED
     if (sr.signal === "at_support") {
       score = 85;
       reason = `At strong support level (${sr.nearestSupport?.price.toFixed(
@@ -363,7 +486,6 @@ export class ScoringEngine {
       )}% from support) - No key level nearby`;
     }
 
-    // Level strength adjustment
     if (sr.nearestSupport && sr.signal === "at_support") {
       const strengthBonus = Math.min(sr.nearestSupport.strength * 2, 10);
       score += strengthBonus;
@@ -376,20 +498,43 @@ export class ScoringEngine {
       reason += `, tested ${sr.nearestResistance.tested} times`;
     }
 
-    return { score: Math.max(0, Math.min(100, score)), reason };
+    // Add data quality context
+    if (sr.dataQuality.adaptive) {
+      reason += ` [Adaptive S/R: ${sr.dataQuality.level} quality]`;
+    } else {
+      reason += ` [${sr.dataQuality.level} data quality]`;
+    }
+
+    return {
+      score: Math.max(0, Math.min(100, score)),
+      reason,
+      dataQuality: sr.dataQuality,
+      qualityMultiplier,
+    };
   }
 
-  // Score Volume
+  // Enhanced Volume scoring with data quality integration
   private scoreVolume(volume: VolumeAnalysis | null): {
     score: number;
     reason: string;
+    dataQuality: DataQuality | null;
+    qualityMultiplier: number;
   } {
-    if (!volume) return { score: 50, reason: "No volume data available" };
+    if (!volume)
+      return {
+        score: 50,
+        reason: "No volume data available",
+        dataQuality: null,
+        qualityMultiplier: 0,
+      };
+
+    const qualityMultiplier =
+      this.qualityMultipliers[volume.dataQuality.level] || 0;
 
     let score = 50;
     let reason = "";
 
-    // Volume ratio analysis
+    // Volume scoring logic - INDUSTRY STANDARD PRESERVED
     if (volume.volumeSpike) {
       score += 20;
       reason = `Volume spike (${volume.volumeRatio.toFixed(
@@ -409,7 +554,6 @@ export class ScoringEngine {
       reason = `Normal volume (${volume.volumeRatio.toFixed(1)}x average)`;
     }
 
-    // Volume trend
     if (volume.volumeTrend === "increasing") {
       score += 10;
       reason += ", increasing volume trend";
@@ -418,7 +562,6 @@ export class ScoringEngine {
       reason += ", decreasing volume trend";
     }
 
-    // Volume signal confirmation
     if (volume.signal === "bullish") {
       score += 15;
       reason += " - BULLISH volume confirmation";
@@ -427,22 +570,36 @@ export class ScoringEngine {
       reason += " - BEARISH volume confirmation";
     }
 
-    return { score: Math.max(0, Math.min(100, score)), reason };
+    // Add data quality context
+    if (volume.dataQuality.adaptive) {
+      reason += ` [Adaptive analysis: ${volume.dataQuality.level} quality]`;
+    } else {
+      reason += ` [${volume.dataQuality.level} data quality]`;
+    }
+
+    return {
+      score: Math.max(0, Math.min(100, score)),
+      reason,
+      dataQuality: volume.dataQuality,
+      qualityMultiplier,
+    };
   }
 
-  // Calculate composite score for a single timeframe
+  // Enhanced timeframe score calculation with data quality integration
   private calculateTimeframeScore(
     ticker: string,
     timeframe: string,
     priceData: PriceData[]
   ): TimeframeScore | null {
     try {
-      console.log(`📊 Calculating ${timeframe} score for ${ticker}...`);
+      console.log(
+        `📊 Enhanced scoring for ${ticker} ${timeframe} (${priceData.length} data points)...`
+      );
 
-      // Get technical analysis for this timeframe
+      // Get enhanced technical analysis with data quality
       const analysis = TechnicalIndicators.analyzeStock(priceData);
 
-      // Score each indicator
+      // Score each indicator with data quality integration
       const rsiResult = this.scoreRSI(analysis.rsi);
       const macdResult = this.scoreMACD(analysis.macd);
       const emaResult = this.scoreEMA(analysis.ema);
@@ -450,7 +607,7 @@ export class ScoringEngine {
       const srResult = this.scoreSupportResistance(analysis.supportResistance);
       const volumeResult = this.scoreVolume(analysis.volume);
 
-      // Calculate weighted contributions
+      // Calculate standard contributions - INDUSTRY STANDARD PRESERVED
       const rsiContribution = rsiResult.score * this.indicatorWeights.rsi;
       const macdContribution = macdResult.score * this.indicatorWeights.macd;
       const emaContribution = emaResult.score * this.indicatorWeights.ema;
@@ -461,17 +618,70 @@ export class ScoringEngine {
       const volumeContribution =
         volumeResult.score * this.indicatorWeights.volume;
 
-      // Calculate composite score
-      const compositeScore = Math.round(
-        rsiContribution +
-          macdContribution +
-          emaContribution +
-          bollingerContribution +
-          srContribution +
-          volumeContribution
-      );
+      // Calculate quality-adjusted contributions - NEW ENHANCEMENT
+      const rsiQualityContribution =
+        rsiContribution * rsiResult.qualityMultiplier;
+      const macdQualityContribution =
+        macdContribution * macdResult.qualityMultiplier;
+      const emaQualityContribution =
+        emaContribution * emaResult.qualityMultiplier;
+      const bollingerQualityContribution =
+        bollingerContribution * bollingerResult.qualityMultiplier;
+      const srQualityContribution = srContribution * srResult.qualityMultiplier;
+      const volumeQualityContribution =
+        volumeContribution * volumeResult.qualityMultiplier;
 
-      // Calculate confidence based on indicator agreement
+      // Calculate total weight available (sum of quality multipliers)
+      const totalQualityWeight =
+        rsiResult.qualityMultiplier * this.indicatorWeights.rsi +
+        macdResult.qualityMultiplier * this.indicatorWeights.macd +
+        emaResult.qualityMultiplier * this.indicatorWeights.ema +
+        bollingerResult.qualityMultiplier * this.indicatorWeights.bollinger +
+        srResult.qualityMultiplier * this.indicatorWeights.supportResistance +
+        volumeResult.qualityMultiplier * this.indicatorWeights.volume;
+
+      // Calculate quality-adjusted composite score
+      let compositeScore: number;
+      if (totalQualityWeight > 0) {
+        const qualityAdjustedTotal =
+          rsiQualityContribution +
+          macdQualityContribution +
+          emaQualityContribution +
+          bollingerQualityContribution +
+          srQualityContribution +
+          volumeQualityContribution;
+        // Normalize by available quality weight to maintain 0-100 scale
+        compositeScore = Math.round(qualityAdjustedTotal / totalQualityWeight);
+      } else {
+        compositeScore = 0; // No indicators available
+      }
+
+      // Calculate overall data quality for this timeframe
+      const dataQualities = [
+        rsiResult.dataQuality,
+        macdResult.dataQuality,
+        emaResult.dataQuality,
+        bollingerResult.dataQuality,
+        srResult.dataQuality,
+        volumeResult.dataQuality,
+      ].filter(Boolean) as DataQuality[];
+
+      let dataQualityScore = 0;
+      let dataQualityLevel = "Insufficient";
+
+      if (dataQualities.length > 0) {
+        dataQualityScore = Math.round(
+          dataQualities.reduce((sum, dq) => sum + dq.score, 0) /
+            dataQualities.length
+        );
+
+        if (dataQualityScore >= 95) dataQualityLevel = "Excellent";
+        else if (dataQualityScore >= 80) dataQualityLevel = "Good";
+        else if (dataQualityScore >= 50) dataQualityLevel = "Limited";
+        else dataQualityLevel = "Insufficient";
+      }
+
+      // Enhanced confidence calculation including data quality
       const scores = [
         rsiResult.score,
         macdResult.score,
@@ -484,7 +694,19 @@ export class ScoringEngine {
       const variance =
         scores.reduce((sum, score) => sum + Math.pow(score - avgScore, 2), 0) /
         scores.length;
-      const confidence = Math.max(0, Math.min(100, 100 - Math.sqrt(variance)));
+      const indicatorAgreement = Math.max(
+        0,
+        Math.min(100, 100 - Math.sqrt(variance))
+      );
+
+      // Combine indicator agreement with data quality for final confidence
+      const confidence = Math.round(
+        indicatorAgreement * 0.7 + dataQualityScore * 0.3
+      );
+
+      console.log(
+        `✅ ${ticker} ${timeframe}: Score ${compositeScore}/100, Quality ${dataQualityLevel} (${dataQualityScore}/100), Confidence ${confidence}%`
+      );
 
       return {
         timeframe,
@@ -495,66 +717,86 @@ export class ScoringEngine {
         supportResistanceScore: srResult.score,
         volumeScore: volumeResult.score,
         compositeScore,
-        confidence: Math.round(confidence),
+        confidence,
+        dataQualityScore,
+        dataQualityLevel,
         breakdown: {
           rsi: {
             score: rsiResult.score,
             weight: this.indicatorWeights.rsi,
             contribution: Math.round(rsiContribution * 100) / 100,
             reason: rsiResult.reason,
+            dataQuality: rsiResult.dataQuality,
+            qualityAdjustedContribution:
+              Math.round(rsiQualityContribution * 100) / 100,
           },
           macd: {
             score: macdResult.score,
             weight: this.indicatorWeights.macd,
             contribution: Math.round(macdContribution * 100) / 100,
             reason: macdResult.reason,
+            dataQuality: macdResult.dataQuality,
+            qualityAdjustedContribution:
+              Math.round(macdQualityContribution * 100) / 100,
           },
           ema: {
             score: emaResult.score,
             weight: this.indicatorWeights.ema,
             contribution: Math.round(emaContribution * 100) / 100,
             reason: emaResult.reason,
+            dataQuality: emaResult.dataQuality,
+            qualityAdjustedContribution:
+              Math.round(emaQualityContribution * 100) / 100,
           },
           bollinger: {
             score: bollingerResult.score,
             weight: this.indicatorWeights.bollinger,
             contribution: Math.round(bollingerContribution * 100) / 100,
             reason: bollingerResult.reason,
+            dataQuality: bollingerResult.dataQuality,
+            qualityAdjustedContribution:
+              Math.round(bollingerQualityContribution * 100) / 100,
           },
           supportResistance: {
             score: srResult.score,
             weight: this.indicatorWeights.supportResistance,
             contribution: Math.round(srContribution * 100) / 100,
             reason: srResult.reason,
+            dataQuality: srResult.dataQuality,
+            qualityAdjustedContribution:
+              Math.round(srQualityContribution * 100) / 100,
           },
           volume: {
             score: volumeResult.score,
             weight: this.indicatorWeights.volume,
             contribution: Math.round(volumeContribution * 100) / 100,
             reason: volumeResult.reason,
+            dataQuality: volumeResult.dataQuality,
+            qualityAdjustedContribution:
+              Math.round(volumeQualityContribution * 100) / 100,
           },
         },
       };
     } catch (error) {
       console.error(
-        `❌ Error calculating ${timeframe} score for ${ticker}:`,
+        `❌ Error calculating enhanced score for ${ticker} ${timeframe}:`,
         error
       );
       return null;
     }
   }
 
-  // Calculate final weighted score across all timeframes
+  // Enhanced final score calculation with data quality integration
   public calculateFinalScore(
     ticker: string,
     multiTimeframeData: Record<string, PriceData[]>
   ): FinalSignalScore | null {
     try {
-      console.log(`🎯 Calculating final score for ${ticker}...`);
+      console.log(`🎯 Enhanced final scoring for ${ticker}...`);
 
       const timeframeScores: Record<string, TimeframeScore> = {};
 
-      // Calculate score for each timeframe
+      // Calculate enhanced score for each timeframe
       for (const [timeframe, priceData] of Object.entries(multiTimeframeData)) {
         if (priceData && priceData.length > 0) {
           const score = this.calculateTimeframeScore(
@@ -569,28 +811,45 @@ export class ScoringEngine {
       }
 
       if (Object.keys(timeframeScores).length === 0) {
-        console.warn(`⚠️ No valid timeframe scores for ${ticker}`);
+        console.warn(`⚠️ No valid enhanced timeframe scores for ${ticker}`);
         return null;
       }
 
-      // Calculate weighted final score
-      let finalScore = 0;
-      let totalWeight = 0;
+      // Calculate quality-weighted final score - PRESERVES TIMEFRAME WEIGHTS
+      let qualityWeightedScore = 0;
+      let totalQualityWeight = 0;
 
       for (const [timeframe, score] of Object.entries(timeframeScores)) {
-        const weight = this.timeframeWeights[timeframe] || 0;
-        finalScore += score.compositeScore * weight;
-        totalWeight += weight;
+        const timeframeWeight = this.timeframeWeights[timeframe] || 0;
+        const qualityMultiplier = score.dataQualityScore / 100; // Convert to 0-1 multiplier
+        const effectiveWeight =
+          timeframeWeight * Math.max(0.3, qualityMultiplier); // Minimum 30% weight
+
+        qualityWeightedScore += score.compositeScore * effectiveWeight;
+        totalQualityWeight += effectiveWeight;
       }
 
-      // Normalize if not all timeframes available
-      if (totalWeight > 0) {
-        finalScore = finalScore / totalWeight;
-      }
+      // Normalize final score
+      const finalScore =
+        totalQualityWeight > 0
+          ? Math.round(qualityWeightedScore / totalQualityWeight)
+          : 0;
 
-      finalScore = Math.round(finalScore);
+      // Calculate overall data quality
+      const qualityScores = Object.values(timeframeScores).map(
+        (s) => s.dataQualityScore
+      );
+      const avgQualityScore = Math.round(
+        qualityScores.reduce((a, b) => a + b, 0) / qualityScores.length
+      );
 
-      // Determine signal strength
+      let dataQualityLevel: string;
+      if (avgQualityScore >= 95) dataQualityLevel = "Excellent";
+      else if (avgQualityScore >= 80) dataQualityLevel = "Good";
+      else if (avgQualityScore >= 50) dataQualityLevel = "Limited";
+      else dataQualityLevel = "Insufficient";
+
+      // Determine signal strength - INDUSTRY STANDARD PRESERVED
       let signalStrength: FinalSignalScore["signalStrength"];
       if (finalScore >= 90) signalStrength = "STRONG_BUY";
       else if (finalScore >= 80) signalStrength = "BUY";
@@ -600,30 +859,39 @@ export class ScoringEngine {
       else if (finalScore >= 10) signalStrength = "SELL";
       else signalStrength = "STRONG_SELL";
 
-      // Calculate overall confidence
+      // Enhanced confidence calculation
       const confidenceValues = Object.values(timeframeScores).map(
         (s) => s.confidence
       );
-      const avgConfidence =
-        confidenceValues.reduce((a, b) => a + b, 0) / confidenceValues.length;
-
-      // Generate recommendation text
-      const recommendation = this.generateRecommendation(
-        finalScore,
-        signalStrength,
-        timeframeScores
+      const avgConfidence = Math.round(
+        confidenceValues.reduce((a, b) => a + b, 0) / confidenceValues.length
       );
 
-      // Calculate risk management levels (simplified)
+      // Generate enhanced recommendation
+      const recommendation = this.generateEnhancedRecommendation(
+        finalScore,
+        signalStrength,
+        timeframeScores,
+        dataQualityLevel,
+        avgQualityScore
+      );
+
+      // Calculate risk management levels
       const currentPrice = this.getCurrentPrice(multiTimeframeData);
       const { stopLoss, takeProfit, riskRewardRatio } =
         this.calculateRiskLevels(currentPrice, finalScore, signalStrength);
 
-      // Generate analysis summary
-      const analysis = this.generateAnalysis(
+      // Generate enhanced analysis summary
+      const analysis = this.generateEnhancedAnalysis(
         ticker,
         finalScore,
-        timeframeScores
+        timeframeScores,
+        dataQualityLevel,
+        avgQualityScore
+      );
+
+      console.log(
+        `🎉 ${ticker} final result: ${finalScore}/100 (${signalStrength}), Quality: ${dataQualityLevel} (${avgQualityScore}/100)`
       );
 
       return {
@@ -631,7 +899,9 @@ export class ScoringEngine {
         finalScore,
         signalStrength,
         timeframeScores,
-        confidence: Math.round(avgConfidence),
+        confidence: avgConfidence,
+        dataQualityScore: avgQualityScore,
+        dataQualityLevel,
         recommendation,
         entryPrice: currentPrice,
         stopLoss,
@@ -641,16 +911,18 @@ export class ScoringEngine {
         analysis,
       };
     } catch (error) {
-      console.error(`❌ Error calculating final score for ${ticker}:`, error);
+      console.error(
+        `❌ Error calculating enhanced final score for ${ticker}:`,
+        error
+      );
       return null;
     }
   }
 
-  // Helper methods
+  // Helper methods - INDUSTRY STANDARD PRESERVED
   private getCurrentPrice(
     multiTimeframeData: Record<string, PriceData[]>
   ): number {
-    // Get current price from shortest timeframe data
     const timeframes = ["1H", "4H", "1D", "1W"];
     for (const tf of timeframes) {
       const data = multiTimeframeData[tf];
@@ -666,7 +938,7 @@ export class ScoringEngine {
     score: number,
     strength: string
   ) {
-    const riskPercent = strength.includes("STRONG") ? 0.02 : 0.015; // 2% or 1.5%
+    const riskPercent = strength.includes("STRONG") ? 0.02 : 0.015;
     const rewardMultiplier = score >= 80 ? 3 : score >= 60 ? 2.5 : 2;
 
     const stopLoss = currentPrice * (1 - riskPercent);
@@ -681,50 +953,81 @@ export class ScoringEngine {
     };
   }
 
-  private generateRecommendation(
+  // Enhanced recommendation generation
+  private generateEnhancedRecommendation(
     score: number,
     strength: string,
-    timeframes: Record<string, TimeframeScore>
+    timeframes: Record<string, TimeframeScore>,
+    qualityLevel: string,
+    qualityScore: number
   ): string {
-    const tf1H = timeframes["1H"]?.compositeScore || 0;
-    const tf4H = timeframes["4H"]?.compositeScore || 0;
-    const tf1D = timeframes["1D"]?.compositeScore || 0;
+    let recommendation = "";
 
+    // Base recommendation - INDUSTRY STANDARD PRESERVED
     if (score >= 85) {
-      return `Strong ${strength} signal with high timeframe alignment. Multiple indicators confirm strong momentum.`;
+      recommendation = `Strong ${strength} signal with high timeframe alignment`;
     } else if (score >= 70) {
-      return `Good ${strength} opportunity with solid indicator confluence across timeframes.`;
+      recommendation = `Good ${strength} opportunity with solid indicator confluence`;
     } else if (score >= 60) {
-      return `Moderate ${strength} signal. Consider position sizing and wait for better confirmation.`;
+      recommendation = `Moderate ${strength} signal. Consider position sizing`;
     } else if (score <= 15) {
-      return `Strong ${strength} signal with bearish momentum. Avoid long positions.`;
+      recommendation = `Strong ${strength} signal with bearish momentum`;
     } else if (score <= 30) {
-      return `${strength} bias with downward pressure across multiple timeframes.`;
+      recommendation = `${strength} bias with downward pressure`;
     } else {
-      return `Neutral signal with mixed timeframe readings. Wait for clearer direction.`;
+      recommendation = `Neutral signal with mixed timeframe readings`;
     }
+
+    // Add data quality context - NEW ENHANCEMENT
+    if (qualityLevel === "Excellent") {
+      recommendation += ". Excellent data quality provides high reliability";
+    } else if (qualityLevel === "Good") {
+      recommendation += ". Good data quality supports the analysis";
+    } else if (qualityLevel === "Limited") {
+      recommendation += `. Limited data quality (${qualityScore}/100) - use smaller position sizing`;
+    } else {
+      recommendation += `. Poor data quality (${qualityScore}/100) - exercise caution`;
+    }
+
+    return recommendation;
   }
 
-  private generateAnalysis(
+  // Enhanced analysis generation
+  private generateEnhancedAnalysis(
     ticker: string,
     score: number,
-    timeframes: Record<string, TimeframeScore>
+    timeframes: Record<string, TimeframeScore>,
+    qualityLevel: string,
+    qualityScore: number
   ): string {
-    let analysis = `${ticker} Technical Analysis Summary:\n\n`;
+    let analysis = `${ticker} Enhanced Technical Analysis:\n\n`;
 
-    // Add timeframe breakdown
+    // Timeframe breakdown with data quality
     for (const [tf, data] of Object.entries(timeframes)) {
-      analysis += `${tf}: ${data.compositeScore}/100 (${data.confidence}% confidence)\n`;
+      analysis += `${tf}: ${data.compositeScore}/100 (${data.confidence}% confidence, ${data.dataQualityLevel} quality)\n`;
     }
 
     analysis += `\nFinal Score: ${score}/100\n`;
-    analysis += `Confidence: High timeframe alignment indicates ${
-      score >= 70 ? "strong" : score >= 50 ? "moderate" : "weak"
-    } signal reliability.`;
+    analysis += `Data Quality: ${qualityLevel} (${qualityScore}/100)\n`;
+    analysis += `Reliability: ${
+      qualityScore >= 90
+        ? "Very High"
+        : qualityScore >= 70
+        ? "High"
+        : qualityScore >= 50
+        ? "Moderate"
+        : "Low"
+    } - ${
+      score >= 70 && qualityScore >= 80
+        ? "High confidence signal"
+        : score >= 60 || qualityScore >= 60
+        ? "Moderate confidence signal"
+        : "Low confidence signal"
+    }`;
 
     return analysis;
   }
 }
 
-// Export singleton instance
+// Export enhanced singleton instance
 export const scoringEngine = new ScoringEngine();
