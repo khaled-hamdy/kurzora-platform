@@ -6,6 +6,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { SignalsProvider } from "./contexts/SignalsContext";
 import { PositionsProvider } from "./contexts/PositionsContext";
+// ADMIN IMPORT FOR TESTING
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
 import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
@@ -24,10 +25,11 @@ import Contact from "./pages/Contact";
 import BrokerIntegration from "./pages/BrokerIntegration";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminUsers from "./pages/admin/AdminUsers";
-import AdminSignals from "./pages/admin/AdminSignals";
-import AdminSettings from "./pages/admin/AdminSettings";
+// TEMPORARILY COMMENTED OUT ADMIN PAGE IMPORTS
+// import AdminDashboard from "./pages/admin/AdminDashboard";
+// import AdminUsers from "./pages/admin/AdminUsers";
+// import AdminSignals from "./pages/admin/AdminSignals";
+// import AdminSettings from "./pages/admin/AdminSettings";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import TermsOfService from "./pages/legal/TermsOfService";
 import GermanTermsOfService from "./pages/legal/de/TermsOfService";
@@ -85,7 +87,39 @@ function App() {
                   {/* 🎯 SIGNAL GENERATION TEST PAGE - NEW! */}
                   <Route path="/signals-test" element={<SignalsTest />} />
 
-                  {/* Admin Routes - Protected */}
+                  {/* 🛡️ ADMIN TEST ROUTE - TEMPORARY */}
+                  <Route
+                    path="/admin-test"
+                    element={
+                      <AdminProtectedRoute>
+                        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 text-white p-8">
+                          <div className="max-w-4xl mx-auto">
+                            <h1 className="text-3xl font-bold mb-4">
+                              🎉 Admin Access Working!
+                            </h1>
+                            <p className="text-lg mb-4">
+                              If you see this page, admin authentication is
+                              working correctly.
+                            </p>
+                            <div className="bg-slate-800 p-4 rounded-lg">
+                              <h2 className="text-xl font-semibold mb-2">
+                                Next Steps:
+                              </h2>
+                              <ul className="list-disc list-inside space-y-1">
+                                <li>AdminProtectedRoute ✅ Working</li>
+                                <li>AdminLayout (Next)</li>
+                                <li>AdminDashboard (Next)</li>
+                                <li>User Management (Next)</li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      </AdminProtectedRoute>
+                    }
+                  />
+
+                  {/* TEMPORARILY COMMENTED OUT ADMIN ROUTES */}
+                  {/*
                   <Route
                     path="/admin"
                     element={
@@ -118,6 +152,7 @@ function App() {
                       </AdminProtectedRoute>
                     }
                   />
+                  */}
 
                   {/* Legal Pages */}
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
