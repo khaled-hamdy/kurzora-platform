@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Layout from "../components/Layout";
 import {
   Card,
@@ -110,6 +110,7 @@ const TradingViewChart: React.FC<{
 const Signals: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
   // Use shared context instead of individual database calls
@@ -132,6 +133,11 @@ const Signals: React.FC = () => {
   // ✅ Chart state management (preserved from working TradingView integration)
   const [showChartsFor, setShowChartsFor] = useState<Set<string>>(new Set());
 
+  // 🎯 NEW: Auto-scroll navigation state
+  const [targetStock, setTargetStock] = useState<string | null>(null);
+  const [highlightedStock, setHighlightedStock] = useState<string | null>(null);
+  const signalRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
   // Use real data from shared context
   const {
     signals: realSignals,
@@ -139,6 +145,76 @@ const Signals: React.FC = () => {
     error,
     refresh,
   } = useSignalsPageData();
+
+  // 🎯 STEP 1: Detect URL parameters on component mount
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const stockParam = searchParams.get("stock");
+
+    if (stockParam) {
+      console.log(`🎯 DEBUG - Detected stock parameter: ${stockParam}`);
+      setTargetStock(stockParam.toUpperCase());
+    }
+  }, [location.search]);
+
+  // 🎯 STEP 2: Auto-scroll to target stock when signals load
+  useEffect(() => {
+    if (targetStock && realSignals.length > 0 && !loading) {
+      console.log(`🎯 DEBUG - Auto-scrolling to ${targetStock}`);
+
+      // Use filtered signals for search
+      const filteredSignals = filterSignalsByFinalScore(
+        realSignals,
+        scoreThreshold,
+        sectorFilter,
+        marketFilter
+      );
+
+      // Find the target signal
+      const targetSignal = filteredSignals.find(
+        (signal) => signal.ticker.toUpperCase() === targetStock.toUpperCase()
+      );
+
+      if (targetSignal && signalRefs.current[targetSignal.ticker]) {
+        // Wait a bit for UI to render
+        setTimeout(() => {
+          const element = signalRefs.current[targetSignal.ticker];
+          if (element) {
+            // Scroll to the target signal with offset for better visibility
+            element.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+              inline: "nearest",
+            });
+
+            // 🎯 STEP 3: Add highlight animation
+            setHighlightedStock(targetSignal.ticker);
+
+            // Remove highlight after animation and clear URL parameter
+            setTimeout(() => {
+              setHighlightedStock(null);
+              navigate("/signals", { replace: true });
+            }, 3000);
+          }
+        }, 500);
+      } else {
+        console.log(`🎯 DEBUG - Stock ${targetStock} not found in signals`);
+        // Clear target if stock not found
+        setTimeout(() => {
+          setTargetStock(null);
+          navigate("/signals", { replace: true });
+        }, 2000);
+      }
+    }
+  }, [
+    targetStock,
+    realSignals,
+    loading,
+    navigate,
+    scoreThreshold,
+    sectorFilter,
+    marketFilter,
+  ]);
 
   if (!user) {
     navigate("/");
@@ -169,6 +245,7 @@ const Signals: React.FC = () => {
             </h1>
             <p className="text-slate-400">
               Loading real-time signals from database...
+              {targetStock && ` Looking for ${targetStock}...`}
             </p>
           </div>
           <div className="flex items-center justify-center py-12">
@@ -285,6 +362,11 @@ const Signals: React.FC = () => {
               <Badge className="bg-green-600 text-white">
                 {realSignals.length} Live Signals
               </Badge>
+              {targetStock && (
+                <Badge className="bg-emerald-600 text-white animate-pulse">
+                  Navigating to {targetStock}
+                </Badge>
+              )}
               <Button
                 onClick={refresh}
                 variant="outline"
@@ -366,14 +448,20 @@ const Signals: React.FC = () => {
             const finalScore = calculateFinalScore(signal.signals);
             const hasExistingPosition = hasPosition(signal.ticker);
             const buttonText = getButtonText(signal.ticker);
+            const isHighlighted = highlightedStock === signal.ticker;
 
             return (
               <div key={signal.ticker} className="space-y-4">
                 {/* Signal Card */}
                 <Card
-                  className={`bg-slate-800/50 backdrop-blur-sm border-slate-700 hover:bg-slate-800/70 transition-all duration-300 ${
+                  ref={(el) => (signalRefs.current[signal.ticker] = el)}
+                  className={`bg-slate-800/50 backdrop-blur-sm border-slate-700 hover:bg-slate-800/70 transition-all duration-500 ${
                     showChartsFor.has(signal.ticker)
                       ? "ring-2 ring-blue-500/50"
+                      : ""
+                  } ${
+                    isHighlighted
+                      ? "ring-4 ring-emerald-400 ring-opacity-75 bg-emerald-900/20 scale-[1.02]"
                       : ""
                   }`}
                 >
@@ -383,9 +471,16 @@ const Signals: React.FC = () => {
                       <div className="lg:col-span-8">
                         <div className="flex items-start justify-between mb-4">
                           <div>
-                            <h3 className="text-2xl font-bold text-white">
-                              {signal.ticker}
-                            </h3>
+                            <div className="flex items-center space-x-2">
+                              <h3 className="text-2xl font-bold text-white">
+                                {signal.ticker}
+                              </h3>
+                              {isHighlighted && (
+                                <Badge className="bg-emerald-600 text-white animate-pulse">
+                                  Found!
+                                </Badge>
+                              )}
+                            </div>
                             <p className="text-slate-400 text-lg">
                               {signal.name}
                             </p>

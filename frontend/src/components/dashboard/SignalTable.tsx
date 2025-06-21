@@ -2,6 +2,7 @@ import React from "react";
 import { Button } from "../ui/button";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { usePositions } from "../../contexts/PositionsContext";
+import { useNavigate } from "react-router-dom";
 
 interface Signal {
   ticker: string;
@@ -38,18 +39,15 @@ const SignalTable: React.FC<SignalTableProps> = ({
   onViewSignal,
 }) => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const {
     hasPosition,
-    getButtonText,
     isLoading: positionsLoading,
-    existingPositions, // ← ADDED THIS
+    existingPositions,
   } = usePositions();
 
-  // ← ADDED DEBUG CODE
+  // Debug logging
   console.log("🔍 DEBUG - Current existingPositions:", existingPositions);
-  console.log("🔍 DEBUG - AMZN hasPosition:", hasPosition("AMZN"));
-  console.log("🔍 DEBUG - 2222.SR hasPosition:", hasPosition("2222.SR"));
-  console.log("🔍 DEBUG - NVDA hasPosition:", hasPosition("NVDA"));
   console.log("🔍 DEBUG - positionsLoading:", positionsLoading);
 
   const timeframes = ["1H", "4H", "1D", "1W"];
@@ -75,7 +73,7 @@ const SignalTable: React.FC<SignalTableProps> = ({
     return "";
   };
 
-  // SIMPLIFIED: Status badge with context-based position detection
+  // Status badge with context-based position detection
   const getStatusBadge = (signal: Signal) => {
     const { status } = signal;
     const hasRealPosition = hasPosition(signal.ticker);
@@ -116,16 +114,13 @@ const SignalTable: React.FC<SignalTableProps> = ({
     }
   };
 
-  // SIMPLIFIED: Smart button logic using context
+  // 🎯 FINAL UX: Unified "View" button for ALL signals
   const getActionButton = (signal: Signal) => {
     const { status } = signal;
     const hasRealPosition = hasPosition(signal.ticker);
-    const buttonText = getButtonText(signal.ticker);
 
-    // ← ADDED DEBUG FOR EACH BUTTON
     console.log(`🔍 DEBUG - ${signal.ticker} button:`, {
       hasRealPosition,
-      buttonText,
       status,
     });
 
@@ -141,21 +136,27 @@ const SignalTable: React.FC<SignalTableProps> = ({
       );
     }
 
+    // 🎯 UNIFIED UX: ALL signals get "View" button that navigates to Signals page
     return (
       <Button
         size="sm"
-        className={`text-white text-xs px-3 py-1 ${
-          hasRealPosition
-            ? "bg-blue-600 hover:bg-blue-700"
-            : "bg-emerald-600 hover:bg-emerald-700"
-        }`}
+        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1"
         onClick={() => {
-          console.log(`🚀 DEBUG - Button clicked for ${signal.ticker}`);
-          onViewSignal(signal, "execute");
+          console.log(
+            `🎯 DEBUG - View button clicked for ${signal.ticker} - Navigating to Signals page`
+          );
+          console.log(
+            `🎯 ${
+              hasRealPosition ? "Existing position" : "Fresh signal"
+            } - User will see ${
+              hasRealPosition ? "Add to Position" : "Execute Trade"
+            } in Signals page`
+          );
+          navigate(`/signals?stock=${signal.ticker}`);
         }}
-        disabled={positionsLoading && buttonText === "Loading..."}
+        disabled={positionsLoading}
       >
-        {buttonText}
+        View
       </Button>
     );
   };
@@ -382,7 +383,7 @@ const SignalTable: React.FC<SignalTableProps> = ({
                   </div>
                 </div>
 
-                {/* Smart Action Button */}
+                {/* 🎯 UNIFIED: Single "View" Button for ALL Signals */}
                 <div className="flex justify-center">
                   {getActionButton(signal)}
                 </div>
