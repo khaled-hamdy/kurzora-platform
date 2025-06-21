@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
@@ -24,6 +24,7 @@ import {
   Activity,
   Filter,
   RefreshCw,
+  BarChart3,
 } from "lucide-react";
 import { useToast } from "../hooks/use-toast";
 import SignalModal from "../components/signals/SignalModal";
@@ -34,6 +35,77 @@ import {
   calculateFinalScore,
 } from "../utils/signalCalculations";
 import { Signal } from "../types/signal";
+
+// ✅ NEW: TradingView Chart Component (copied from SignalsTest.tsx)
+const TradingViewChart: React.FC<{
+  symbol: string;
+  theme?: string;
+  height?: number;
+}> = ({ symbol, theme = "dark", height = 400 }) => {
+  const containerId = `tradingview_${symbol}_${Date.now()}`;
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src =
+      "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+    script.type = "text/javascript";
+    script.async = true;
+    script.innerHTML = JSON.stringify({
+      autosize: false,
+      width: "100%",
+      height: height,
+      symbol: `NASDAQ:${symbol}`,
+      interval: "1H",
+      timezone: "Etc/UTC",
+      theme: theme,
+      style: "1",
+      locale: "en",
+      withdateranges: true,
+      hide_side_toolbar: false,
+      allow_symbol_change: false,
+      details: true,
+      hotlist: true,
+      calendar: false,
+      studies: [
+        "RSI@tv-basicstudies",
+        "MACD@tv-basicstudies",
+        "BB@tv-basicstudies",
+      ],
+      show_popup_button: true,
+      popup_width: "1000",
+      popup_height: "650",
+      no_referral_id: true,
+    });
+
+    const container = document.getElementById(containerId);
+    if (container) {
+      container.appendChild(script);
+    }
+
+    return () => {
+      const container = document.getElementById(containerId);
+      if (container) {
+        container.innerHTML = "";
+      }
+    };
+  }, [symbol, theme, height, containerId]);
+
+  return (
+    <div className="w-full">
+      <div id={containerId} className=""></div>
+      <div className="mt-2">
+        <a
+          href={`https://www.tradingview.com/symbols/NASDAQ-${symbol}/`}
+          rel="noopener nofollow"
+          target="_blank"
+          className="text-xs text-gray-500 hover:text-gray-400"
+        >
+          <span className="text-blue-400">{symbol} Chart</span> by TradingView
+        </a>
+      </div>
+    </div>
+  );
+};
 
 const Signals: React.FC = () => {
   const { user } = useAuth();
@@ -48,7 +120,6 @@ const Signals: React.FC = () => {
   const [scoreThreshold, setScoreThreshold] = useState([70]);
   const [sectorFilter, setSectorFilter] = useState("all");
   const [marketFilter, setMarketFilter] = useState("global");
-  // ← FIXED: Signal state to match SignalModal interface exactly
   const [selectedSignal, setSelectedSignal] = useState<{
     symbol: string;
     name: string;
@@ -57,6 +128,9 @@ const Signals: React.FC = () => {
     signalScore: number;
   } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // ✅ NEW: Chart state management (copied from SignalsTest.tsx)
+  const [showChartsFor, setShowChartsFor] = useState<Set<string>>(new Set());
 
   // Use real data from shared context
   const {
@@ -70,6 +144,19 @@ const Signals: React.FC = () => {
     navigate("/");
     return null;
   }
+
+  // ✅ NEW: Toggle chart function (copied from SignalsTest.tsx)
+  const toggleChart = (signalId: string) => {
+    setShowChartsFor((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(signalId)) {
+        newSet.delete(signalId);
+      } else {
+        newSet.add(signalId);
+      }
+      return newSet;
+    });
+  };
 
   // Show loading state
   if (loading) {
@@ -129,7 +216,6 @@ const Signals: React.FC = () => {
     marketFilter
   );
 
-  // ← FIXED: Create signal data that exactly matches SignalModal interface
   const handleViewSignal = (signal: Signal) => {
     console.log(
       "🚀 DEBUG - Signals.tsx handleViewSignal called for:",
@@ -138,11 +224,11 @@ const Signals: React.FC = () => {
 
     const finalScore = calculateFinalScore(signal.signals);
     const signalData = {
-      symbol: signal.ticker, // ← Correct field name for SignalModal
+      symbol: signal.ticker,
       name: signal.name,
       price: signal.price,
       change: signal.change,
-      signalScore: finalScore, // ← Correct field name for SignalModal
+      signalScore: finalScore,
     };
 
     console.log("🚀 DEBUG - Signal data being passed to modal:", signalData);
@@ -150,28 +236,24 @@ const Signals: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  // ← FIXED: Handle trade execution from SignalModal
   const handleExecuteTrade = (tradeData: any) => {
     console.log(
       "🎉 DEBUG - Trade executed successfully in Signals page:",
       tradeData
     );
 
-    // Navigate to open positions with the new trade data
     navigate("/open-positions", {
       state: {
         newTrade: tradeData,
       },
     });
 
-    // Close modal
     setIsModalOpen(false);
   };
 
   const handleModalClose = () => {
     console.log("🚪 DEBUG - Modal closing, refreshing positions");
     setIsModalOpen(false);
-    // Refresh positions context once instead of individual calls
     refreshPositions();
   };
 
@@ -295,107 +377,197 @@ const Signals: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Signals Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* ✅ ENHANCED: Signals List with Charts Below Each Signal */}
+        <div className="space-y-6">
           {filteredSignals.map((signal) => {
             const finalScore = calculateFinalScore(signal.signals);
             const hasExistingPosition = hasPosition(signal.ticker);
             const buttonText = getButtonText(signal.ticker);
 
             return (
-              <Card
-                key={signal.ticker}
-                className="bg-slate-800/50 backdrop-blur-sm border-slate-700 hover:bg-slate-800/70 transition-all duration-300"
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="text-lg font-bold text-white">
-                        {signal.ticker}
-                      </h3>
-                      <p className="text-slate-400 text-sm">{signal.name}</p>
-                      {hasExistingPosition && (
-                        <Badge className="bg-blue-600 text-white text-xs mt-1">
-                          📈 Position Open
-                        </Badge>
-                      )}
-                      <p className="text-xs text-slate-500 mt-1">
-                        {signal.timestamp}
-                      </p>
-                    </div>
-                    <Badge
-                      className={`${getScoreColor(finalScore)} text-white`}
-                    >
-                      {finalScore}
-                    </Badge>
-                  </div>
+              <div key={signal.ticker} className="space-y-4">
+                {/* Signal Card */}
+                <Card
+                  className={`bg-slate-800/50 backdrop-blur-sm border-slate-700 hover:bg-slate-800/70 transition-all duration-300 ${
+                    showChartsFor.has(signal.ticker)
+                      ? "ring-2 ring-blue-500/50"
+                      : ""
+                  }`}
+                >
+                  <CardContent className="p-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                      {/* Left: Signal Info */}
+                      <div className="lg:col-span-8">
+                        <div className="flex items-start justify-between mb-4">
+                          <div>
+                            <h3 className="text-2xl font-bold text-white">
+                              {signal.ticker}
+                            </h3>
+                            <p className="text-slate-400 text-lg">
+                              {signal.name}
+                            </p>
+                            <p className="text-slate-500 text-sm">
+                              {signal.sector}
+                            </p>
+                            {hasExistingPosition && (
+                              <Badge className="bg-blue-600 text-white text-xs mt-2">
+                                📈 Position Open
+                              </Badge>
+                            )}
+                            <p className="text-xs text-slate-500 mt-1">
+                              {signal.timestamp}
+                            </p>
+                          </div>
+                          <Badge
+                            className={`${getScoreColor(
+                              finalScore
+                            )} text-white text-lg px-3 py-1`}
+                          >
+                            {finalScore}
+                          </Badge>
+                        </div>
 
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-400">Price</span>
-                      <span className="text-white font-semibold">
-                        ${signal.price.toFixed(2)}
-                      </span>
-                    </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400">Price</span>
+                            <span className="text-white font-semibold text-lg">
+                              ${signal.price.toFixed(2)}
+                            </span>
+                          </div>
 
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-400">Change</span>
-                      <span
-                        className={`font-semibold flex items-center ${getChangeColor(
-                          signal.change
-                        )}`}
-                      >
-                        {signal.change >= 0 ? (
-                          <TrendingUp className="h-4 w-4 mr-1" />
-                        ) : (
-                          <TrendingDown className="h-4 w-4 mr-1" />
-                        )}
-                        {signal.change >= 0 ? "+" : ""}
-                        {signal.change.toFixed(2)}%
-                      </span>
-                    </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400">Change</span>
+                            <span
+                              className={`font-semibold flex items-center text-lg ${getChangeColor(
+                                signal.change
+                              )}`}
+                            >
+                              {signal.change >= 0 ? (
+                                <TrendingUp className="h-5 w-5 mr-1" />
+                              ) : (
+                                <TrendingDown className="h-5 w-5 mr-1" />
+                              )}
+                              {signal.change >= 0 ? "+" : ""}
+                              {signal.change.toFixed(2)}%
+                            </span>
+                          </div>
+                        </div>
 
-                    <div className="pt-3 border-t border-slate-700">
-                      <div className="flex justify-between text-sm text-slate-400 mb-2">
-                        <span>Signal Strength</span>
-                        <span>
-                          {finalScore >= 90
-                            ? "Very Strong"
-                            : finalScore >= 80
-                            ? "Strong"
-                            : "Moderate"}
-                        </span>
+                        <div className="pt-4 border-t border-slate-700 mt-4">
+                          <div className="flex justify-between text-sm text-slate-400 mb-2">
+                            <span>Signal Strength</span>
+                            <span>
+                              {finalScore >= 90
+                                ? "Very Strong"
+                                : finalScore >= 80
+                                ? "Strong"
+                                : "Moderate"}
+                            </span>
+                          </div>
+                          <div className="w-full bg-slate-700 rounded-full h-3">
+                            <div
+                              className={`h-3 rounded-full ${getScoreColor(
+                                finalScore
+                              )}`}
+                              style={{ width: `${finalScore}%` }}
+                            ></div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="w-full bg-slate-700 rounded-full h-2">
-                        <div
-                          className={`h-2 rounded-full ${getScoreColor(
-                            finalScore
-                          )}`}
-                          style={{ width: `${finalScore}%` }}
-                        ></div>
+
+                      {/* Right: Action Buttons */}
+                      <div className="lg:col-span-4 flex flex-col justify-center space-y-3">
+                        <Button
+                          onClick={() => {
+                            console.log(
+                              `🚀 DEBUG - Execute Trade button clicked for ${signal.ticker} in Signals.tsx`
+                            );
+                            handleViewSignal(signal);
+                          }}
+                          className={`w-full text-white text-lg py-3 ${
+                            hasExistingPosition
+                              ? "bg-blue-600 hover:bg-blue-700"
+                              : "bg-emerald-600 hover:bg-emerald-700"
+                          }`}
+                          disabled={buttonText === "Loading..."}
+                        >
+                          <Activity className="h-5 w-5 mr-2" />
+                          {buttonText}
+                        </Button>
+
+                        <Button
+                          onClick={() => toggleChart(signal.ticker)}
+                          variant="outline"
+                          className={`w-full text-lg py-3 transition-all duration-200 ${
+                            showChartsFor.has(signal.ticker)
+                              ? "border-blue-500 bg-blue-600/20 text-blue-300"
+                              : "border-blue-500 text-blue-400 hover:bg-blue-600/10"
+                          }`}
+                        >
+                          {showChartsFor.has(signal.ticker) ? (
+                            <>
+                              <BarChart3 className="h-5 w-5 mr-2" />
+                              Hide Chart
+                            </>
+                          ) : (
+                            <>
+                              <BarChart3 className="h-5 w-5 mr-2" />
+                              View Chart
+                            </>
+                          )}
+                        </Button>
                       </div>
                     </div>
+                  </CardContent>
+                </Card>
 
-                    <Button
-                      onClick={() => {
-                        console.log(
-                          `🚀 DEBUG - Button clicked for ${signal.ticker} in Signals.tsx`
-                        );
-                        handleViewSignal(signal);
-                      }}
-                      className={`w-full text-white ${
-                        hasExistingPosition
-                          ? "bg-blue-600 hover:bg-blue-700"
-                          : "bg-emerald-600 hover:bg-emerald-700"
-                      }`}
-                      disabled={buttonText === "Loading..."}
-                    >
-                      <Activity className="h-4 w-4 mr-2" />
-                      {buttonText}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                {/* Chart appears directly below this signal */}
+                {showChartsFor.has(signal.ticker) && (
+                  <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700 border-t-2 border-t-blue-500">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center space-x-4">
+                          <BarChart3 className="h-6 w-6 text-blue-400" />
+                          <div>
+                            <h3 className="text-xl font-bold text-white">
+                              Live Chart Analysis - {signal.ticker}
+                            </h3>
+                            <p className="text-slate-400">
+                              Algorithm score {finalScore}/100 • {signal.name} •
+                              TradingView verification
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                          <Badge
+                            className={`${getScoreColor(
+                              finalScore
+                            )} text-white`}
+                          >
+                            Score: {finalScore}
+                          </Badge>
+                          <Button
+                            onClick={() => toggleChart(signal.ticker)}
+                            variant="outline"
+                            size="sm"
+                            className="border-slate-600 text-slate-400 hover:bg-slate-700"
+                          >
+                            Hide Chart
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-900/50 rounded-lg p-4">
+                        <TradingViewChart
+                          symbol={signal.ticker}
+                          theme="dark"
+                          height={500}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
             );
           })}
         </div>
@@ -417,13 +589,12 @@ const Signals: React.FC = () => {
           </div>
         )}
 
-        {/* ← FIXED: SignalModal with correct props and existingPositions from context */}
         <SignalModal
           isOpen={isModalOpen}
           onClose={handleModalClose}
           signal={selectedSignal}
           onExecuteTrade={handleExecuteTrade}
-          existingPositions={existingPositions} // ← Pass real existing positions from context
+          existingPositions={existingPositions}
         />
 
         {/* Disclaimer */}
