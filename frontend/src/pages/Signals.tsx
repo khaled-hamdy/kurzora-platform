@@ -31,12 +31,12 @@ import SignalModal from "../components/signals/SignalModal";
 import { useSignalsPageData } from "../hooks/useSignalsPageData";
 import { usePositions } from "../contexts/PositionsContext";
 import {
-  filterSignals,
+  filterSignalsByFinalScore,
   calculateFinalScore,
 } from "../utils/signalCalculations";
 import { Signal } from "../types/signal";
 
-// ✅ NEW: TradingView Chart Component (copied from SignalsTest.tsx)
+// ✅ TradingView Chart Component (preserved from working implementation)
 const TradingViewChart: React.FC<{
   symbol: string;
   theme?: string;
@@ -116,7 +116,7 @@ const Signals: React.FC = () => {
   const { hasPosition, getButtonText, refreshPositions, existingPositions } =
     usePositions();
 
-  const [timeFilter, setTimeFilter] = useState("1D");
+  // ✅ REMOVED: timeFilter state (no longer needed)
   const [scoreThreshold, setScoreThreshold] = useState([70]);
   const [sectorFilter, setSectorFilter] = useState("all");
   const [marketFilter, setMarketFilter] = useState("global");
@@ -129,7 +129,7 @@ const Signals: React.FC = () => {
   } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // ✅ NEW: Chart state management (copied from SignalsTest.tsx)
+  // ✅ Chart state management (preserved from working TradingView integration)
   const [showChartsFor, setShowChartsFor] = useState<Set<string>>(new Set());
 
   // Use real data from shared context
@@ -145,7 +145,7 @@ const Signals: React.FC = () => {
     return null;
   }
 
-  // ✅ NEW: Toggle chart function (copied from SignalsTest.tsx)
+  // ✅ Toggle chart function (preserved from working implementation)
   const toggleChart = (signalId: string) => {
     setShowChartsFor((prev) => {
       const newSet = new Set(prev);
@@ -207,10 +207,9 @@ const Signals: React.FC = () => {
     );
   }
 
-  // Use real signals with optimized filtering
-  const filteredSignals = filterSignals(
+  // ✅ UPDATED: Use new function specifically for Signals page final score filtering
+  const filteredSignals = filterSignalsByFinalScore(
     realSignals,
-    timeFilter,
     scoreThreshold,
     sectorFilter,
     marketFilter
@@ -299,7 +298,7 @@ const Signals: React.FC = () => {
           </div>
         </div>
 
-        {/* Filters */}
+        {/* ✅ UPDATED: Filters - Removed Timeframe Filter, Now 3 Columns Instead of 4 */}
         <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700 mb-8">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -308,23 +307,7 @@ const Signals: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div>
-                <label className="text-slate-300 text-sm font-medium mb-2 block">
-                  Timeframe
-                </label>
-                <Select value={timeFilter} onValueChange={setTimeFilter}>
-                  <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-700 border-slate-600">
-                    <SelectItem value="1D">1 Day</SelectItem>
-                    <SelectItem value="1W">1 Week</SelectItem>
-                    <SelectItem value="1M">1 Month</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label className="text-slate-300 text-sm font-medium mb-2 block">
                   Min Score: {scoreThreshold[0]}
@@ -377,7 +360,7 @@ const Signals: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* ✅ ENHANCED: Signals List with Charts Below Each Signal */}
+        {/* ✅ Signals List with Charts Below Each Signal (TradingView integration preserved) */}
         <div className="space-y-6">
           {filteredSignals.map((signal) => {
             const finalScore = calculateFinalScore(signal.signals);
@@ -418,13 +401,19 @@ const Signals: React.FC = () => {
                               {signal.timestamp}
                             </p>
                           </div>
-                          <Badge
-                            className={`${getScoreColor(
-                              finalScore
-                            )} text-white text-lg px-3 py-1`}
-                          >
-                            {finalScore}
-                          </Badge>
+                          {/* ✅ ENHANCED: Final Score with Clear Labeling */}
+                          <div className="text-center">
+                            <p className="text-slate-400 text-sm mb-1">
+                              Final Score
+                            </p>
+                            <Badge
+                              className={`${getScoreColor(
+                                finalScore
+                              )} text-white text-2xl px-4 py-2 font-bold`}
+                            >
+                              {finalScore}
+                            </Badge>
+                          </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -521,7 +510,7 @@ const Signals: React.FC = () => {
                   </CardContent>
                 </Card>
 
-                {/* Chart appears directly below this signal */}
+                {/* ✅ TradingView Chart Integration (preserved from working implementation) */}
                 {showChartsFor.has(signal.ticker) && (
                   <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700 border-t-2 border-t-blue-500">
                     <CardContent className="p-6">
@@ -533,7 +522,7 @@ const Signals: React.FC = () => {
                               Live Chart Analysis - {signal.ticker}
                             </h3>
                             <p className="text-slate-400">
-                              Algorithm score {finalScore}/100 • {signal.name} •
+                              Final Score {finalScore}/100 • {signal.name} •
                               TradingView verification
                             </p>
                           </div>
@@ -544,7 +533,7 @@ const Signals: React.FC = () => {
                               finalScore
                             )} text-white`}
                           >
-                            Score: {finalScore}
+                            Final Score: {finalScore}
                           </Badge>
                           <Button
                             onClick={() => toggleChart(signal.ticker)}
