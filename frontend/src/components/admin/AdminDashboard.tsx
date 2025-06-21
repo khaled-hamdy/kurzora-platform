@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+// CORRECT: Using the same import path as your working components
+import { supabase } from "@/lib/supabase";
 import {
   Users,
   TrendingUp,
