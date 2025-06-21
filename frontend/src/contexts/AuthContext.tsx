@@ -455,9 +455,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  // 🚀 FIXED isAdmin FUNCTION - Now includes test@kurzora.com!
   const isAdmin = useCallback(() => {
+    if (!user) return false;
+
+    // Admin email list - including test@kurzora.com
+    const adminEmails = [
+      "admin@kurzora.com",
+      "khaled@kurzora.com",
+      "khaledhamdy@gmail.com",
+      "test@kurzora.com", // ← ADDED THIS!
+    ];
+
     return (
-      user?.email === "admin@kurzora.com" ||
+      adminEmails.includes(user.email || "") ||
+      user.user_metadata?.has_admin_access === true ||
+      user.user_metadata?.role === "admin" ||
       userProfile?.subscription_tier === "elite"
     );
   }, [user, userProfile]);

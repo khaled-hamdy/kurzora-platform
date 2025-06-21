@@ -48,9 +48,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const isActive = (path: string) => {
-    return location.pathname === path;
+    return location.pathname === path || location.pathname.startsWith(path);
   };
 
+  // 🚀 MAIN NAVIGATION ITEMS - ADMIN LINK ADDED HERE
   const navItems = [
     { path: "/dashboard", label: t("nav.dashboard"), icon: Home },
     { path: "/signals", label: t("nav.signals"), icon: Activity },
@@ -67,9 +68,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: "/settings", label: t("nav.settings"), icon: Settings },
   ];
 
-  // Add admin navigation if user is admin
+  // 🛡️ ADD ADMIN LINK TO NAVIGATION IF USER IS ADMIN
   if (isAdmin()) {
-    navItems.push({ path: "/admin", label: t("nav.adminPanel"), icon: Shield });
+    navItems.push({
+      path: "/admin",
+      label: "Admin Panel", // You can add t("nav.adminPanel") if you have translation
+      icon: Shield,
+    });
   }
 
   return (
@@ -90,7 +95,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </div>
               </Link>
 
-              {/* Desktop Navigation */}
+              {/* 🖥️ DESKTOP NAVIGATION - ADMIN LINK APPEARS HERE */}
               <div className="hidden md:flex ml-10 space-x-8">
                 {navItems.map(({ path, label, icon: Icon }) => (
                   <Link
@@ -99,13 +104,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                       isActive(path)
                         ? path === "/admin"
-                          ? "text-red-400 bg-red-400/10"
+                          ? "text-red-400 bg-red-400/10 border border-red-500/30" // Special styling for admin
                           : "text-emerald-400 bg-emerald-400/10"
                         : "text-slate-300 hover:text-white hover:bg-slate-700/50"
                     }`}
                   >
-                    <Icon className="h-4 w-4" />
+                    <Icon
+                      className={`h-4 w-4 ${
+                        path === "/admin" ? "text-red-400" : ""
+                      }`}
+                    />
                     <span>{label}</span>
+                    {/* 👑 ADMIN CROWN ICON */}
+                    {path === "/admin" && (
+                      <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+                    )}
                   </Link>
                 ))}
               </div>
@@ -116,7 +129,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
               {user && (
                 <div className="flex items-center space-x-4">
-                  {/* Show admin badge if user is admin */}
+                  {/* 🛡️ ADMIN BADGE - SHOWS ONLY FOR ADMIN USERS */}
                   {isAdmin() && (
                     <div className="flex items-center space-x-1 px-2 py-1 bg-red-600/20 border border-red-500/30 rounded-md">
                       <Shield className="h-3 w-3 text-red-400" />
@@ -155,18 +168,24 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                         <Settings className="h-4 w-4 mr-2" />
                         {t("nav.settings")}
                       </DropdownMenuItem>
+
+                      {/* 🛡️ ADMIN DROPDOWN LINK - SHOWS ONLY FOR ADMIN USERS */}
                       {isAdmin() && (
                         <>
                           <DropdownMenuSeparator className="bg-slate-700" />
                           <DropdownMenuItem
                             onClick={() => navigate("/admin")}
-                            className="text-red-400 hover:bg-slate-700 hover:text-red-300 cursor-pointer"
+                            className="text-red-400 hover:bg-red-900/20 hover:text-red-300 cursor-pointer border-l-2 border-red-500/50 pl-3"
                           >
                             <Shield className="h-4 w-4 mr-2" />
-                            {t("nav.adminPanel")}
+                            Admin Panel
+                            <div className="ml-auto flex items-center space-x-1">
+                              <div className="w-1.5 h-1.5 bg-red-400 rounded-full animate-pulse"></div>
+                            </div>
                           </DropdownMenuItem>
                         </>
                       )}
+
                       <DropdownMenuSeparator className="bg-slate-700" />
                       <DropdownMenuItem
                         onClick={handleLogout}
@@ -182,7 +201,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
           </div>
 
-          {/* Mobile Navigation */}
+          {/* 📱 MOBILE NAVIGATION - ADMIN LINK APPEARS HERE TOO */}
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
               {navItems.map(({ path, label, icon: Icon }) => (
@@ -192,13 +211,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium transition-colors ${
                     isActive(path)
                       ? path === "/admin"
-                        ? "text-red-400 bg-red-400/10"
+                        ? "text-red-400 bg-red-400/10 border border-red-500/30" // Special styling for admin
                         : "text-emerald-400 bg-emerald-400/10"
                       : "text-slate-300 hover:text-white hover:bg-slate-700/50"
                   }`}
                 >
-                  <Icon className="h-5 w-5" />
+                  <Icon
+                    className={`h-5 w-5 ${
+                      path === "/admin" ? "text-red-400" : ""
+                    }`}
+                  />
                   <span>{label}</span>
+                  {/* 👑 ADMIN INDICATOR ON MOBILE */}
+                  {path === "/admin" && (
+                    <div className="ml-auto flex items-center space-x-1">
+                      <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+                      <span className="text-xs text-red-300 font-medium">
+                        ADMIN
+                      </span>
+                    </div>
+                  )}
                 </Link>
               ))}
             </div>
