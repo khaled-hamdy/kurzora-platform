@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { useLanguage } from "../../contexts/LanguageContext";
+// ✅ NEW: Import subscription hooks
+import {
+  useSubscriptionTier,
+  useSignalLimits,
+  useTrialStatus,
+} from "../../hooks/useSubscriptionTier";
+import { Button } from "../ui/button";
+import { Crown, Zap } from "lucide-react";
 import SignalFilters from "./SignalFilters";
 import SignalLegend from "./SignalLegend";
 import SignalTable from "./SignalTable";
@@ -8,6 +16,7 @@ import SignalSummaryStats from "./SignalSummaryStats";
 import SignalHeatmapHeader from "./SignalHeatmapHeader";
 import { useSignals } from "../../hooks/useSignals";
 import { useAutoRefresh } from "../../hooks/useAutoRefresh";
+import { usePositions } from "../../contexts/PositionsContext";
 import {
   filterSignals,
   calculateFinalScore,
@@ -18,6 +27,82 @@ interface SignalHeatmapProps {
   onOpenSignalModal?: (signal: any) => void;
 }
 
+// ✅ NEW: Dashboard Upgrade Prompt Component
+const DashboardUpgradePrompt: React.FC<{ hiddenCount: number }> = ({
+  hiddenCount,
+}) => {
+  const signalLimits = useSignalLimits();
+
+  return (
+    <div className="mt-4 p-4 bg-gradient-to-r from-amber-900/30 to-orange-900/30 border border-amber-500/50 rounded-lg">
+      <div className="text-center">
+        <div className="flex justify-center mb-3">
+          <div className="bg-amber-600 rounded-full p-2">
+            <Crown className="h-6 w-6 text-white" />
+          </div>
+        </div>
+        <h3 className="text-lg font-bold text-white mb-2">
+          {hiddenCount} More Fresh Signals Available
+        </h3>
+        <p className="text-slate-300 text-sm mb-3">
+          You're viewing {signalLimits.maxSignalsPerDay} fresh signals. Your
+          existing positions are always shown. Upgrade to Professional to see
+          all new trading opportunities.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-2 justify-center">
+          <Button className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 text-sm">
+            <Crown className="h-4 w-4 mr-2" />
+            Upgrade to Professional
+          </Button>
+          <Button
+            variant="outline"
+            className="border-amber-500 text-amber-400 hover:bg-amber-600/10 px-6 py-2 text-sm"
+          >
+            View All Pricing
+          </Button>
+        </div>
+        <p className="text-xs text-slate-400 mt-2">
+          ✨ Unlimited signals • AI explanations • Premium Telegram group
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// ✅ NEW: Dashboard Subscription Status Indicator
+const DashboardSubscriptionIndicator: React.FC = () => {
+  const subscription = useSubscriptionTier();
+  const trialStatus = useTrialStatus();
+  const signalLimits = useSignalLimits();
+
+  if (!subscription) return null;
+
+  // Don't show banner in dashboard - just a subtle indicator
+  if (trialStatus?.isTrialActive) {
+    return (
+      <div className="text-center text-xs text-purple-400 mb-2">
+        ✨ Trial Active - {trialStatus.trialDaysLeft} days left of unlimited
+        access
+      </div>
+    );
+  }
+
+  if (signalLimits.canViewUnlimited) {
+    return (
+      <div className="text-center text-xs text-emerald-400 mb-2">
+        👑 Professional Plan - Unlimited signals access
+      </div>
+    );
+  }
+
+  return (
+    <div className="text-center text-xs text-amber-400 mb-2">
+      ⚡ Starter Plan - {signalLimits.maxSignalsPerDay} fresh signals per day +
+      all your positions
+    </div>
+  );
+};
+
 const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
   const { language } = useLanguage();
   const [timeFilter, setTimeFilter] = useState("1D");
@@ -27,6 +112,14 @@ const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
   const [highlightedCategory, setHighlightedCategory] = useState<string | null>(
     null
   );
+
+  // ✅ NEW: Import subscription data
+  const subscription = useSubscriptionTier();
+  const signalLimits = useSignalLimits();
+  const trialStatus = useTrialStatus();
+
+  // ✅ NEW: Import position detection
+  const { hasPosition } = usePositions();
 
   // ORIGINAL: Keep your existing autoRefresh state
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -108,13 +201,58 @@ const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
     }
   };
 
-  const filteredSignals = filterSignals(
+  // ✅ STEP 1: Apply existing filters first
+  const baseFilteredSignals = filterSignals(
     signals,
     timeFilter,
     scoreThreshold,
     sectorFilter,
     marketFilter
   );
+
+  // ✅ UPDATED STEP 2: Apply subscription limits ONLY to fresh signals (not positions)
+  const { filteredSignals, hiddenSignalsCount } = React.useMemo(() => {
+    if (!subscription || signalLimits.canViewUnlimited) {
+      // Professional users or trial users get all signals
+      return {
+        filteredSignals: baseFilteredSignals,
+        hiddenSignalsCount: 0,
+      };
+    }
+
+    // ✅ NEW BUSINESS LOGIC: Separate fresh vs. existing positions
+    const inPositionSignals = baseFilteredSignals.filter((signal) =>
+      hasPosition(signal.ticker)
+    );
+
+    const freshSignals = baseFilteredSignals.filter(
+      (signal) => !hasPosition(signal.ticker)
+    );
+
+    // Apply limits ONLY to fresh signals
+    const limit = signalLimits.maxSignalsPerDay;
+    const limitedFreshSignals = freshSignals.slice(0, limit);
+    const hiddenFreshSignals = Math.max(0, freshSignals.length - limit);
+
+    // Combine: ALL positions + LIMITED fresh signals
+    const combinedSignals = [...inPositionSignals, ...limitedFreshSignals];
+
+    console.log(`🎯 DEBUG - Dashboard Fresh vs Position filtering:`, {
+      tier: subscription.tier,
+      limit,
+      totalSignals: baseFilteredSignals.length,
+      inPositionSignals: inPositionSignals.length,
+      freshSignals: freshSignals.length,
+      limitedFreshSignals: limitedFreshSignals.length,
+      hiddenFreshSignals,
+      finalCombined: combinedSignals.length,
+    });
+
+    return {
+      filteredSignals: combinedSignals,
+      hiddenSignalsCount: hiddenFreshSignals,
+    };
+  }, [baseFilteredSignals, subscription, signalLimits, hasPosition]);
 
   return (
     <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700 hover:bg-slate-800/70 transition-all duration-300">
@@ -128,6 +266,9 @@ const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
             onForceRefresh={forceRefresh}
           />
         </CardTitle>
+
+        {/* ✅ NEW: Show subscription status in Dashboard */}
+        <DashboardSubscriptionIndicator />
 
         <SignalLegend />
       </CardHeader>
@@ -145,6 +286,27 @@ const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
           setMarketFilter={setMarketFilter}
           language={language}
         />
+
+        {/* ✅ UPDATED: Show subscription-aware signal count with fresh vs position breakdown */}
+        {subscription && (
+          <div className="text-center text-sm text-slate-400">
+            Showing {filteredSignals.length} signals
+            {baseFilteredSignals.length !== filteredSignals.length && (
+              <span className="text-amber-400">
+                {" "}
+                ({hiddenSignalsCount} fresh signals hidden by{" "}
+                {subscription.tier} plan limits)
+              </span>
+            )}
+            <div className="text-xs text-slate-500 mt-1">
+              All your positions +{" "}
+              {signalLimits.canViewUnlimited
+                ? "unlimited"
+                : signalLimits.maxSignalsPerDay}{" "}
+              fresh signals
+            </div>
+          </div>
+        )}
 
         {/* Loading indicator when auto-refreshing */}
         {loading && autoRefresh && (
@@ -169,6 +331,11 @@ const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
           highlightedCategory={highlightedCategory}
           setHighlightedCategory={setHighlightedCategory}
         />
+
+        {/* ✅ UPDATED: Show upgrade prompt for hidden FRESH signals */}
+        {hiddenSignalsCount > 0 && (
+          <DashboardUpgradePrompt hiddenCount={hiddenSignalsCount} />
+        )}
 
         {/* Auto-refresh status indicator */}
         <div className="text-center text-xs text-slate-500 border-t border-slate-700 pt-3">

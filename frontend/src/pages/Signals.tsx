@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
+import {
+  useSubscriptionTier,
+  useSignalLimits,
+  useTrialStatus,
+} from "../hooks/useSubscriptionTier";
 import Layout from "../components/Layout";
 import {
   Card,
@@ -25,6 +30,8 @@ import {
   Filter,
   RefreshCw,
   BarChart3,
+  Crown,
+  Zap,
 } from "lucide-react";
 import { useToast } from "../hooks/use-toast";
 import SignalModal from "../components/signals/SignalModal";
@@ -36,7 +43,7 @@ import {
 } from "../utils/signalCalculations";
 import { Signal } from "../types/signal";
 
-// ✅ TradingView Chart Component (preserved from working implementation)
+// TradingView Chart Component
 const TradingViewChart: React.FC<{
   symbol: string;
   theme?: string;
@@ -92,7 +99,7 @@ const TradingViewChart: React.FC<{
 
   return (
     <div className="w-full">
-      <div id={containerId} className=""></div>
+      <div id={containerId}></div>
       <div className="mt-2">
         <a
           href={`https://www.tradingview.com/symbols/NASDAQ-${symbol}/`}
@@ -107,17 +114,140 @@ const TradingViewChart: React.FC<{
   );
 };
 
+// Subscription Status Banner Component
+const SubscriptionStatusBanner: React.FC = () => {
+  const subscription = useSubscriptionTier();
+  const trialStatus = useTrialStatus();
+  const signalLimits = useSignalLimits();
+
+  if (!subscription) return null;
+
+  if (trialStatus?.isTrialActive) {
+    return (
+      <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4 mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Crown className="h-6 w-6 text-purple-400" />
+            <div>
+              <h3 className="text-purple-400 font-semibold">
+                🎉 Trial Active - Unlimited Access
+              </h3>
+              <p className="text-white text-sm">
+                You have {trialStatus.trialDaysLeft} days left of Professional
+                features
+              </p>
+            </div>
+          </div>
+          <Button className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-white text-sm">
+            Choose Plan
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (signalLimits.canViewUnlimited) {
+    return (
+      <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-lg p-4 mb-6">
+        <div className="flex items-center space-x-3">
+          <Crown className="h-6 w-6 text-emerald-400" />
+          <div>
+            <h3 className="text-emerald-400 font-semibold">
+              Professional Plan - Unlimited Signals
+            </h3>
+            <p className="text-white text-sm">
+              You have access to all premium features and unlimited signals
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-amber-900/20 border border-amber-500/30 rounded-lg p-4 mb-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <Zap className="h-6 w-6 text-amber-400" />
+          <div>
+            <h3 className="text-amber-400 font-semibold">
+              Starter Plan - {signalLimits.maxSignalsPerDay} Fresh Signals/Day +
+              All Your Positions
+            </h3>
+            <p className="text-white text-sm">
+              Upgrade to Professional for unlimited fresh signals and premium
+              features
+            </p>
+          </div>
+        </div>
+        <Button className="bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded-lg text-white text-sm">
+          Upgrade to Pro
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+// Upgrade Prompt Component
+const UpgradePrompt: React.FC<{ hiddenCount: number }> = ({ hiddenCount }) => {
+  const signalLimits = useSignalLimits();
+
+  return (
+    <Card className="bg-gradient-to-r from-amber-900/30 to-orange-900/30 border-amber-500/50 mt-6">
+      <CardContent className="p-6">
+        <div className="text-center">
+          <div className="flex justify-center mb-4">
+            <div className="bg-amber-600 rounded-full p-3">
+              <Crown className="h-8 w-8 text-white" />
+            </div>
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2">
+            {hiddenCount} More Fresh Signals Available
+          </h3>
+          <p className="text-slate-300 mb-4">
+            You're viewing {signalLimits.maxSignalsPerDay} fresh signals + all
+            your existing positions. Upgrade to Professional to see all new
+            trading opportunities.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3">
+              <Crown className="h-5 w-5 mr-2" />
+              Upgrade to Professional ($49/month)
+            </Button>
+            <Button
+              variant="outline"
+              className="border-amber-500 text-amber-400 hover:bg-amber-600/10 px-8 py-3"
+            >
+              View Pricing Plans
+            </Button>
+          </div>
+          <p className="text-xs text-slate-400 mt-3">
+            ✨ Unlimited signals • AI explanations • Telegram premium group •
+            Priority support
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Main Signals Component
 const Signals: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
 
-  // Use shared context instead of individual database calls
+  // Subscription data
+  const subscription = useSubscriptionTier();
+  const signalLimits = useSignalLimits();
+  const trialStatus = useTrialStatus();
+
+  // Position context
   const { hasPosition, getButtonText, refreshPositions, existingPositions } =
     usePositions();
 
-  // ✅ REMOVED: timeFilter state (no longer needed)
+  // State
   const [scoreThreshold, setScoreThreshold] = useState([70]);
   const [sectorFilter, setSectorFilter] = useState("all");
   const [marketFilter, setMarketFilter] = useState("global");
@@ -129,16 +259,12 @@ const Signals: React.FC = () => {
     signalScore: number;
   } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // ✅ Chart state management (preserved from working TradingView integration)
   const [showChartsFor, setShowChartsFor] = useState<Set<string>>(new Set());
-
-  // 🎯 NEW: Auto-scroll navigation state
   const [targetStock, setTargetStock] = useState<string | null>(null);
   const [highlightedStock, setHighlightedStock] = useState<string | null>(null);
   const signalRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
-  // Use real data from shared context
+  // Data
   const {
     signals: realSignals,
     loading,
@@ -146,51 +272,39 @@ const Signals: React.FC = () => {
     refresh,
   } = useSignalsPageData();
 
-  // 🎯 STEP 1: Detect URL parameters on component mount
+  // URL parameter detection
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const stockParam = searchParams.get("stock");
-
     if (stockParam) {
-      console.log(`🎯 DEBUG - Detected stock parameter: ${stockParam}`);
       setTargetStock(stockParam.toUpperCase());
     }
   }, [location.search]);
 
-  // 🎯 STEP 2: Auto-scroll to target stock when signals load
+  // Auto-scroll functionality
   useEffect(() => {
     if (targetStock && realSignals.length > 0 && !loading) {
-      console.log(`🎯 DEBUG - Auto-scrolling to ${targetStock}`);
-
-      // Use filtered signals for search
-      const filteredSignals = filterSignalsByFinalScore(
+      const baseFilteredSignals = filterSignalsByFinalScore(
         realSignals,
         scoreThreshold,
         sectorFilter,
         marketFilter
       );
 
-      // Find the target signal
-      const targetSignal = filteredSignals.find(
+      const targetSignal = baseFilteredSignals.find(
         (signal) => signal.ticker.toUpperCase() === targetStock.toUpperCase()
       );
 
       if (targetSignal && signalRefs.current[targetSignal.ticker]) {
-        // Wait a bit for UI to render
         setTimeout(() => {
           const element = signalRefs.current[targetSignal.ticker];
           if (element) {
-            // Scroll to the target signal with offset for better visibility
             element.scrollIntoView({
               behavior: "smooth",
               block: "center",
               inline: "nearest",
             });
-
-            // 🎯 STEP 3: Add highlight animation
             setHighlightedStock(targetSignal.ticker);
-
-            // Remove highlight after animation and clear URL parameter
             setTimeout(() => {
               setHighlightedStock(null);
               navigate("/signals", { replace: true });
@@ -198,8 +312,6 @@ const Signals: React.FC = () => {
           }
         }, 500);
       } else {
-        console.log(`🎯 DEBUG - Stock ${targetStock} not found in signals`);
-        // Clear target if stock not found
         setTimeout(() => {
           setTargetStock(null);
           navigate("/signals", { replace: true });
@@ -216,12 +328,13 @@ const Signals: React.FC = () => {
     marketFilter,
   ]);
 
+  // Redirect if not authenticated
   if (!user) {
     navigate("/");
     return null;
   }
 
-  // ✅ Toggle chart function (preserved from working implementation)
+  // Helper functions
   const toggleChart = (signalId: string) => {
     setShowChartsFor((prev) => {
       const newSet = new Set(prev);
@@ -234,7 +347,18 @@ const Signals: React.FC = () => {
     });
   };
 
-  // Show loading state
+  const getScoreColor = (score: number) => {
+    if (score >= 90) return "bg-emerald-600";
+    if (score >= 80) return "bg-blue-600";
+    if (score >= 70) return "bg-amber-600";
+    return "bg-red-600";
+  };
+
+  const getChangeColor = (change: number) => {
+    return change >= 0 ? "text-emerald-400" : "text-red-400";
+  };
+
+  // Loading state
   if (loading) {
     return (
       <Layout>
@@ -257,7 +381,7 @@ const Signals: React.FC = () => {
     );
   }
 
-  // Show error state
+  // Error state
   if (error) {
     return (
       <Layout>
@@ -284,20 +408,59 @@ const Signals: React.FC = () => {
     );
   }
 
-  // ✅ UPDATED: Use new function specifically for Signals page final score filtering
-  const filteredSignals = filterSignalsByFinalScore(
+  // Apply filters
+  const baseFilteredSignals = filterSignalsByFinalScore(
     realSignals,
     scoreThreshold,
     sectorFilter,
     marketFilter
   );
 
-  const handleViewSignal = (signal: Signal) => {
-    console.log(
-      "🚀 DEBUG - Signals.tsx handleViewSignal called for:",
-      signal.ticker
+  // Apply subscription limits - FRESH vs POSITION filtering
+  const { filteredSignals, hiddenSignalsCount } = React.useMemo(() => {
+    if (!subscription || signalLimits.canViewUnlimited) {
+      return {
+        filteredSignals: baseFilteredSignals,
+        hiddenSignalsCount: 0,
+      };
+    }
+
+    // Separate fresh vs existing positions
+    const inPositionSignals = baseFilteredSignals.filter((signal) =>
+      hasPosition(signal.ticker)
     );
 
+    const freshSignals = baseFilteredSignals.filter(
+      (signal) => !hasPosition(signal.ticker)
+    );
+
+    // Apply limits ONLY to fresh signals
+    const limit = signalLimits.maxSignalsPerDay;
+    const limitedFreshSignals = freshSignals.slice(0, limit);
+    const hiddenFreshSignals = Math.max(0, freshSignals.length - limit);
+
+    // Combine: ALL positions + LIMITED fresh signals
+    const combinedSignals = [...inPositionSignals, ...limitedFreshSignals];
+
+    console.log(`🎯 DEBUG - Signals page Fresh vs Position filtering:`, {
+      tier: subscription.tier,
+      limit,
+      totalSignals: baseFilteredSignals.length,
+      inPositionSignals: inPositionSignals.length,
+      freshSignals: freshSignals.length,
+      limitedFreshSignals: limitedFreshSignals.length,
+      hiddenFreshSignals,
+      finalCombined: combinedSignals.length,
+    });
+
+    return {
+      filteredSignals: combinedSignals,
+      hiddenSignalsCount: hiddenFreshSignals,
+    };
+  }, [baseFilteredSignals, subscription, signalLimits, hasPosition]);
+
+  // Event handlers
+  const handleViewSignal = (signal: Signal) => {
     const finalScore = calculateFinalScore(signal.signals);
     const signalData = {
       symbol: signal.ticker,
@@ -306,42 +469,20 @@ const Signals: React.FC = () => {
       change: signal.change,
       signalScore: finalScore,
     };
-
-    console.log("🚀 DEBUG - Signal data being passed to modal:", signalData);
     setSelectedSignal(signalData);
     setIsModalOpen(true);
   };
 
   const handleExecuteTrade = (tradeData: any) => {
-    console.log(
-      "🎉 DEBUG - Trade executed successfully in Signals page:",
-      tradeData
-    );
-
     navigate("/open-positions", {
-      state: {
-        newTrade: tradeData,
-      },
+      state: { newTrade: tradeData },
     });
-
     setIsModalOpen(false);
   };
 
   const handleModalClose = () => {
-    console.log("🚪 DEBUG - Modal closing, refreshing positions");
     setIsModalOpen(false);
     refreshPositions();
-  };
-
-  const getScoreColor = (score: number) => {
-    if (score >= 90) return "bg-emerald-600";
-    if (score >= 80) return "bg-blue-600";
-    if (score >= 70) return "bg-amber-600";
-    return "bg-red-600";
-  };
-
-  const getChangeColor = (change: number) => {
-    return change >= 0 ? "text-emerald-400" : "text-red-400";
   };
 
   return (
@@ -380,12 +521,20 @@ const Signals: React.FC = () => {
           </div>
         </div>
 
-        {/* ✅ UPDATED: Filters - Removed Timeframe Filter, Now 3 Columns Instead of 4 */}
+        {/* Subscription Status Banner */}
+        <SubscriptionStatusBanner />
+
+        {/* Filters */}
         <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700 mb-8">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Filter className="h-5 w-5 text-blue-400" />
               <span>Filters</span>
+              <Badge variant="outline" className="ml-auto">
+                Showing {filteredSignals.length} signals
+                {hiddenSignalsCount > 0 &&
+                  ` (${hiddenSignalsCount} fresh signals hidden by subscription limit)`}
+              </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -403,7 +552,6 @@ const Signals: React.FC = () => {
                   className="w-full"
                 />
               </div>
-
               <div>
                 <label className="text-slate-300 text-sm font-medium mb-2 block">
                   Sector
@@ -421,7 +569,6 @@ const Signals: React.FC = () => {
                   </SelectContent>
                 </Select>
               </div>
-
               <div>
                 <label className="text-slate-300 text-sm font-medium mb-2 block">
                   Market
@@ -442,7 +589,7 @@ const Signals: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* ✅ Signals List with Charts Below Each Signal (TradingView integration preserved) */}
+        {/* Signals List */}
         <div className="space-y-6">
           {filteredSignals.map((signal) => {
             const finalScore = calculateFinalScore(signal.signals);
@@ -452,7 +599,6 @@ const Signals: React.FC = () => {
 
             return (
               <div key={signal.ticker} className="space-y-4">
-                {/* Signal Card */}
                 <Card
                   ref={(el) => (signalRefs.current[signal.ticker] = el)}
                   className={`bg-slate-800/50 backdrop-blur-sm border-slate-700 hover:bg-slate-800/70 transition-all duration-500 ${
@@ -467,7 +613,6 @@ const Signals: React.FC = () => {
                 >
                   <CardContent className="p-6">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                      {/* Left: Signal Info */}
                       <div className="lg:col-span-8">
                         <div className="flex items-start justify-between mb-4">
                           <div>
@@ -496,7 +641,6 @@ const Signals: React.FC = () => {
                               {signal.timestamp}
                             </p>
                           </div>
-                          {/* ✅ ENHANCED: Final Score with Clear Labeling */}
                           <div className="text-center">
                             <p className="text-slate-400 text-sm mb-1">
                               Final Score
@@ -518,7 +662,6 @@ const Signals: React.FC = () => {
                               ${signal.price.toFixed(2)}
                             </span>
                           </div>
-
                           <div className="flex justify-between items-center">
                             <span className="text-slate-400">Change</span>
                             <span
@@ -559,15 +702,9 @@ const Signals: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Right: Action Buttons */}
                       <div className="lg:col-span-4 flex flex-col justify-center space-y-3">
                         <Button
-                          onClick={() => {
-                            console.log(
-                              `🚀 DEBUG - Execute Trade button clicked for ${signal.ticker} in Signals.tsx`
-                            );
-                            handleViewSignal(signal);
-                          }}
+                          onClick={() => handleViewSignal(signal)}
                           className={`w-full text-white text-lg py-3 ${
                             hasExistingPosition
                               ? "bg-blue-600 hover:bg-blue-700"
@@ -605,7 +742,7 @@ const Signals: React.FC = () => {
                   </CardContent>
                 </Card>
 
-                {/* ✅ TradingView Chart Integration (preserved from working implementation) */}
+                {/* TradingView Chart */}
                 {showChartsFor.has(signal.ticker) && (
                   <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700 border-t-2 border-t-blue-500">
                     <CardContent className="p-6">
@@ -640,7 +777,6 @@ const Signals: React.FC = () => {
                           </Button>
                         </div>
                       </div>
-
                       <div className="bg-slate-900/50 rounded-lg p-4">
                         <TradingViewChart
                           symbol={signal.ticker}
@@ -656,6 +792,12 @@ const Signals: React.FC = () => {
           })}
         </div>
 
+        {/* Upgrade prompt for hidden fresh signals */}
+        {hiddenSignalsCount > 0 && (
+          <UpgradePrompt hiddenCount={hiddenSignalsCount} />
+        )}
+
+        {/* No signals found */}
         {filteredSignals.length === 0 && !loading && (
           <div className="text-center py-12">
             <Activity className="h-12 w-12 text-slate-500 mx-auto mb-4" />
@@ -673,6 +815,7 @@ const Signals: React.FC = () => {
           </div>
         )}
 
+        {/* Signal Modal */}
         <SignalModal
           isOpen={isModalOpen}
           onClose={handleModalClose}

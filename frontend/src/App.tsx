@@ -12,6 +12,8 @@ import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./components/admin/AdminDashboard";
 import AdminUsers from "./components/admin/AdminUsers";
 import AdminSettings from "./components/admin/AdminSettings";
+// TEST COMPONENTS
+import SubscriptionTierTest from "./components/test/SubscriptionTierTest";
 import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
 import Signals from "./pages/Signals";
@@ -85,6 +87,12 @@ function App() {
 
                   {/* 🎯 SIGNAL GENERATION TEST PAGE */}
                   <Route path="/signals-test" element={<SignalsTest />} />
+
+                  {/* 🧪 SUBSCRIPTION TIER TEST PAGE */}
+                  <Route
+                    path="/test-subscription"
+                    element={<SubscriptionTierTest />}
+                  />
 
                   {/* 🛡️ ADMIN ROUTES - COMPLETE PROFESSIONAL ADMIN PANEL */}
                   <Route
