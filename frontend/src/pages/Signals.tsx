@@ -11,6 +11,7 @@ import {
   useSignalLimits,
   useTrialStatus,
 } from "../hooks/useSubscriptionTier";
+import { useUserAlertSettings } from "../hooks/useUserAlertSettings"; // ✅ NEW: Added alert settings import
 import Layout from "../components/Layout";
 import {
   Card,
@@ -47,6 +48,21 @@ import {
   calculateFinalScore,
 } from "../utils/signalCalculations";
 import { Signal } from "../types/signal";
+
+// ✅ NEW: Test component to verify alert settings hook
+const TestAlertSettings = () => {
+  const { alertSettings, telegramStatus, loading, error } =
+    useUserAlertSettings();
+
+  console.log("🔍 ALERT SETTINGS TEST:", {
+    loading,
+    error,
+    alertSettings,
+    telegramStatus,
+  });
+
+  return null; // This component is invisible, just for testing
+};
 
 // TradingView Chart Component
 const TradingViewChart: React.FC<{
@@ -515,6 +531,9 @@ const Signals: React.FC = () => {
     refresh,
   } = useSignalsPageData();
 
+  // ✅ NEW: Alert settings hook for Telegram integration
+  const { getEffectiveChatId } = useUserAlertSettings();
+
   // URL parameter detection
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -622,7 +641,7 @@ const Signals: React.FC = () => {
     };
   }, [baseFilteredSignals, subscription, signalLimits, hasPosition]);
 
-  // ✅ NEW: Auto-trigger Telegram alerts for high-score signals
+  // ✅ UPDATED: Auto-trigger Telegram alerts for high-score signals with dynamic chat ID
   useEffect(() => {
     if (filteredSignals && filteredSignals.length > 0) {
       console.log(
@@ -638,6 +657,9 @@ const Signals: React.FC = () => {
             `🚨 Signal ${signal.ticker} qualifies (${finalScore}%) - sending alert...`
           );
 
+          // Get the effective chat ID (user's or admin fallback)
+          const effectiveChatId = getEffectiveChatId();
+
           await autoTriggerTelegramAlert({
             ticker: signal.ticker,
             finalScore: finalScore,
@@ -649,7 +671,7 @@ const Signals: React.FC = () => {
         }
       });
     }
-  }, [filteredSignals]); // Trigger when filtered signals change
+  }, [filteredSignals, getEffectiveChatId]); // ✅ Added getEffectiveChatId dependency
 
   // ✅ FIXED: Early returns AFTER all hooks are called
   // Redirect if not authenticated
@@ -683,6 +705,9 @@ const Signals: React.FC = () => {
     return (
       <Layout>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* ✅ NEW: Test component for alert settings */}
+          <TestAlertSettings />
+
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white mb-2">
               Trading Signals
@@ -706,6 +731,9 @@ const Signals: React.FC = () => {
     return (
       <Layout>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* ✅ NEW: Test component for alert settings */}
+          <TestAlertSettings />
+
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white mb-2">
               Trading Signals
@@ -757,6 +785,9 @@ const Signals: React.FC = () => {
   return (
     <Layout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* ✅ NEW: Test component for alert settings */}
+        <TestAlertSettings />
+
         {/* ✅ IMPROVED: Header Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
