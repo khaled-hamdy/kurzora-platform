@@ -1,3 +1,8 @@
+import {
+  TelegramAlertBanner,
+  SignalTelegramIndicator,
+  autoTriggerTelegramAlert, // ✅ NEW: Added auto-trigger import
+} from "../components/telegram";
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -295,7 +300,7 @@ const UpgradePrompt: React.FC<{ hiddenCount: number }> = ({ hiddenCount }) => {
   );
 };
 
-// ✅ IMPROVED: Signal Card Component
+// ✅ IMPROVED: Signal Card Component with Telegram Integration
 const SignalCard: React.FC<{
   signal: Signal;
   isHighlighted: boolean;
@@ -358,6 +363,13 @@ const SignalCard: React.FC<{
                     📈 Position Open
                   </Badge>
                 )}
+
+                {/* ✅ NEW: Telegram Alert Indicator */}
+                <SignalTelegramIndicator
+                  signalScore={finalScore}
+                  ticker={signal.ticker}
+                />
+
                 <p className="text-xs text-slate-500 mt-1">
                   {signal.timestamp}
                 </p>
@@ -610,6 +622,35 @@ const Signals: React.FC = () => {
     };
   }, [baseFilteredSignals, subscription, signalLimits, hasPosition]);
 
+  // ✅ NEW: Auto-trigger Telegram alerts for high-score signals
+  useEffect(() => {
+    if (filteredSignals && filteredSignals.length > 0) {
+      console.log(
+        `📊 Checking ${filteredSignals.length} signals for Telegram alerts...`
+      );
+
+      // Auto-trigger alerts for qualifying signals
+      filteredSignals.forEach(async (signal) => {
+        const finalScore = calculateFinalScore(signal.signals);
+
+        if (finalScore >= 70) {
+          console.log(
+            `🚨 Signal ${signal.ticker} qualifies (${finalScore}%) - sending alert...`
+          );
+
+          await autoTriggerTelegramAlert({
+            ticker: signal.ticker,
+            finalScore: finalScore,
+          });
+        } else {
+          console.log(
+            `🔕 Signal ${signal.ticker} below threshold (${finalScore}%)`
+          );
+        }
+      });
+    }
+  }, [filteredSignals]); // Trigger when filtered signals change
+
   // ✅ FIXED: Early returns AFTER all hooks are called
   // Redirect if not authenticated
   if (!user) {
@@ -756,6 +797,9 @@ const Signals: React.FC = () => {
 
         {/* Subscription Status Banner */}
         <SubscriptionStatusBanner />
+
+        {/* ✅ NEW: Telegram Alerts Banner */}
+        <TelegramAlertBanner />
 
         {/* ✅ IMPROVED: Filters Section with Better Styling */}
         <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700 mb-8">
