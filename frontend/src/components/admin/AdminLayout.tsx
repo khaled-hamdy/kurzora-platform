@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useLocation, Outlet } from "react-router-dom";
+import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -16,6 +16,7 @@ import {
 const AdminLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navigation = [
     {
@@ -37,6 +38,11 @@ const AdminLayout: React.FC = () => {
       current: location.pathname.startsWith("/admin/settings"),
     },
   ];
+
+  // ✅ FIXED: Navigation function for "Back to Platform"
+  const handleBackToPlatform = () => {
+    navigate("/dashboard");
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -67,7 +73,7 @@ const AdminLayout: React.FC = () => {
           </button>
         </div>
 
-        {/* Navigation */}
+        {/* ✅ FIXED: Navigation - Removed auto-collapse behavior */}
         <nav className="px-4 py-6 space-y-2">
           {navigation.map((item) => {
             const Icon = item.icon;
@@ -88,9 +94,12 @@ const AdminLayout: React.FC = () => {
           })}
         </nav>
 
-        {/* Sidebar Footer */}
+        {/* ✅ FIXED: Sidebar Footer with working navigation */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-800">
-          <button className="flex items-center w-full px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors">
+          <button
+            onClick={handleBackToPlatform}
+            className="flex items-center w-full px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors"
+          >
             <LogOut className="h-5 w-5 mr-3" />
             Back to Platform
           </button>
@@ -105,32 +114,27 @@ const AdminLayout: React.FC = () => {
         />
       )}
 
-      {/* Main Content */}
+      {/* Main Content - ORIGINAL LAYOUT RESTORED */}
       <div
         className={`transition-all duration-300 ${
           sidebarOpen ? "lg:ml-64" : "lg:ml-0"
         }`}
       >
-        {/* Top Header */}
+        {/* Top Header - ORIGINAL DESIGN */}
         <header className="bg-slate-900 border-b border-slate-800 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              {/* Sidebar toggle */}
+              {/* ✅ REMOVED: Confusing sidebar toggle - only show on mobile */}
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-2 rounded-md hover:bg-slate-800 transition-colors"
+                className="p-2 rounded-md hover:bg-slate-800 transition-colors lg:hidden"
               >
-                {sidebarOpen ? (
-                  <ChevronLeft className="h-5 w-5" />
-                ) : (
-                  <Menu className="h-5 w-5" />
-                )}
+                <Menu className="h-5 w-5" />
               </button>
 
               <div>
                 <h2 className="text-xl font-semibold text-white">
-                  {navigation.find((item) => item.current)?.name ||
-                    "Admin Panel"}
+                  Admin Panel
                 </h2>
                 <p className="text-sm text-slate-400">
                   Manage your Kurzora platform
@@ -169,7 +173,7 @@ const AdminLayout: React.FC = () => {
           </div>
         </header>
 
-        {/* Page Content */}
+        {/* Page Content - ORIGINAL SPACING */}
         <main className="p-6">
           <Outlet />
         </main>
