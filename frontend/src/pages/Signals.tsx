@@ -188,6 +188,70 @@ const SubscriptionStatusBanner: React.FC = () => {
   );
 };
 
+// ✅ IMPROVED: Professional Filter Header Component
+const FilterHeader: React.FC<{
+  filteredSignals: Signal[];
+  hiddenSignalsCount: number;
+  subscription: any;
+  signalLimits: any;
+}> = ({ filteredSignals, hiddenSignalsCount, subscription, signalLimits }) => {
+  return (
+    <CardHeader>
+      <CardTitle className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Filter className="h-5 w-5 text-blue-400" />
+          <span className="text-white">Trading Filters</span>
+        </div>
+
+        {/* ✅ IMPROVED: Professional-looking signal counter with proper contrast */}
+        <div className="flex items-center space-x-2">
+          <div className="bg-emerald-600/20 border border-emerald-500/30 rounded-lg px-3 py-1.5">
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+              <span className="text-emerald-400 font-medium text-sm">
+                {filteredSignals.length} Live Signals
+              </span>
+            </div>
+          </div>
+
+          {/* ✅ IMPROVED: Clear subscription limitation indicator */}
+          {hiddenSignalsCount > 0 && (
+            <div className="bg-amber-600/20 border border-amber-500/30 rounded-lg px-3 py-1.5">
+              <div className="flex items-center space-x-1">
+                <Crown className="h-3 w-3 text-amber-400" />
+                <span className="text-amber-400 font-medium text-xs">
+                  +{hiddenSignalsCount} Pro Only
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      </CardTitle>
+
+      {/* ✅ NEW: Filter summary indicator */}
+      <div className="text-xs text-slate-400 mt-2">
+        {subscription && (
+          <div className="flex items-center justify-between">
+            <span>Real-time market scanning active</span>
+            <span>
+              {signalLimits.canViewUnlimited ? (
+                <span className="text-emerald-400">
+                  👑 Professional - Unlimited Access
+                </span>
+              ) : (
+                <span className="text-amber-400">
+                  ⚡ Starter - {signalLimits.maxSignalsPerDay} fresh/day +
+                  positions
+                </span>
+              )}
+            </span>
+          </div>
+        )}
+      </div>
+    </CardHeader>
+  );
+};
+
 // Upgrade Prompt Component
 const UpgradePrompt: React.FC<{ hiddenCount: number }> = ({ hiddenCount }) => {
   const signalLimits = useSignalLimits();
@@ -231,6 +295,172 @@ const UpgradePrompt: React.FC<{ hiddenCount: number }> = ({ hiddenCount }) => {
   );
 };
 
+// ✅ IMPROVED: Signal Card Component
+const SignalCard: React.FC<{
+  signal: Signal;
+  isHighlighted: boolean;
+  hasExistingPosition: boolean;
+  buttonText: string;
+  onViewSignal: (signal: Signal) => void;
+  onToggleChart: (ticker: string) => void;
+  showChart: boolean;
+}> = ({
+  signal,
+  isHighlighted,
+  hasExistingPosition,
+  buttonText,
+  onViewSignal,
+  onToggleChart,
+  showChart,
+}) => {
+  const finalScore = calculateFinalScore(signal.signals);
+
+  const getScoreColor = (score: number) => {
+    if (score >= 90) return "bg-emerald-600";
+    if (score >= 80) return "bg-blue-600";
+    if (score >= 70) return "bg-amber-600";
+    return "bg-red-600";
+  };
+
+  const getChangeColor = (change: number) => {
+    return change >= 0 ? "text-emerald-400" : "text-red-400";
+  };
+
+  return (
+    <Card
+      className={`bg-slate-800/50 backdrop-blur-sm border-slate-700 hover:bg-slate-800/70 transition-all duration-500 ${
+        showChart ? "ring-2 ring-blue-500/50" : ""
+      } ${
+        isHighlighted
+          ? "ring-4 ring-emerald-400 ring-opacity-75 bg-emerald-900/20 scale-[1.02]"
+          : ""
+      }`}
+    >
+      <CardContent className="p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-8">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <div className="flex items-center space-x-2">
+                  <h3 className="text-2xl font-bold text-white">
+                    {signal.ticker}
+                  </h3>
+                  {isHighlighted && (
+                    <Badge className="bg-emerald-600 text-white animate-pulse">
+                      Found!
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-slate-400 text-lg">{signal.name}</p>
+                <p className="text-slate-500 text-sm">{signal.sector}</p>
+                {hasExistingPosition && (
+                  <Badge className="bg-blue-600 text-white text-xs mt-2">
+                    📈 Position Open
+                  </Badge>
+                )}
+                <p className="text-xs text-slate-500 mt-1">
+                  {signal.timestamp}
+                </p>
+              </div>
+              <div className="text-center">
+                <p className="text-slate-400 text-sm mb-1">Final Score</p>
+                <Badge
+                  className={`${getScoreColor(
+                    finalScore
+                  )} text-white text-2xl px-4 py-2 font-bold`}
+                >
+                  {finalScore}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Price</span>
+                <span className="text-white font-semibold text-lg">
+                  ${signal.price.toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Change</span>
+                <span
+                  className={`font-semibold flex items-center text-lg ${getChangeColor(
+                    signal.change
+                  )}`}
+                >
+                  {signal.change >= 0 ? (
+                    <TrendingUp className="h-5 w-5 mr-1" />
+                  ) : (
+                    <TrendingDown className="h-5 w-5 mr-1" />
+                  )}
+                  {signal.change >= 0 ? "+" : ""}
+                  {signal.change.toFixed(2)}%
+                </span>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-slate-700 mt-4">
+              <div className="flex justify-between text-sm text-slate-400 mb-2">
+                <span>Signal Strength</span>
+                <span>
+                  {finalScore >= 90
+                    ? "Very Strong"
+                    : finalScore >= 80
+                    ? "Strong"
+                    : "Moderate"}
+                </span>
+              </div>
+              <div className="w-full bg-slate-700 rounded-full h-3">
+                <div
+                  className={`h-3 rounded-full ${getScoreColor(finalScore)}`}
+                  style={{ width: `${finalScore}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:col-span-4 flex flex-col justify-center space-y-3">
+            <Button
+              onClick={() => onViewSignal(signal)}
+              className={`w-full text-white text-lg py-3 ${
+                hasExistingPosition
+                  ? "bg-blue-600 hover:bg-blue-700"
+                  : "bg-emerald-600 hover:bg-emerald-700"
+              }`}
+              disabled={buttonText === "Loading..."}
+            >
+              <Activity className="h-5 w-5 mr-2" />
+              {buttonText}
+            </Button>
+
+            <Button
+              onClick={() => onToggleChart(signal.ticker)}
+              variant="outline"
+              className={`w-full text-lg py-3 transition-all duration-200 ${
+                showChart
+                  ? "border-blue-500 bg-blue-600/20 text-blue-300"
+                  : "border-blue-500 text-blue-400 hover:bg-blue-600/10"
+              }`}
+            >
+              {showChart ? (
+                <>
+                  <BarChart3 className="h-5 w-5 mr-2" />
+                  Hide Chart
+                </>
+              ) : (
+                <>
+                  <BarChart3 className="h-5 w-5 mr-2" />
+                  View Chart
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 // Main Signals Component
 const Signals: React.FC = () => {
   const { user } = useAuth();
@@ -238,6 +468,7 @@ const Signals: React.FC = () => {
   const location = useLocation();
   const { toast } = useToast();
 
+  // ✅ FIXED: All hooks MUST be called before any early returns
   // Subscription data
   const subscription = useSubscriptionTier();
   const signalLimits = useSignalLimits();
@@ -264,7 +495,7 @@ const Signals: React.FC = () => {
   const [highlightedStock, setHighlightedStock] = useState<string | null>(null);
   const signalRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
-  // Data
+  // Data - ALL HOOKS MUST BE CALLED BEFORE EARLY RETURNS
   const {
     signals: realSignals,
     loading,
@@ -328,6 +559,58 @@ const Signals: React.FC = () => {
     marketFilter,
   ]);
 
+  // Apply filters - MOVED BEFORE EARLY RETURNS
+  const baseFilteredSignals = filterSignalsByFinalScore(
+    realSignals,
+    scoreThreshold,
+    sectorFilter,
+    marketFilter
+  );
+
+  // Apply subscription limits - FRESH vs POSITION filtering
+  const { filteredSignals, hiddenSignalsCount } = React.useMemo(() => {
+    if (!subscription || signalLimits.canViewUnlimited) {
+      return {
+        filteredSignals: baseFilteredSignals,
+        hiddenSignalsCount: 0,
+      };
+    }
+
+    // Separate fresh vs existing positions
+    const inPositionSignals = baseFilteredSignals.filter((signal) =>
+      hasPosition(signal.ticker)
+    );
+
+    const freshSignals = baseFilteredSignals.filter(
+      (signal) => !hasPosition(signal.ticker)
+    );
+
+    // Apply limits ONLY to fresh signals
+    const limit = signalLimits.maxSignalsPerDay;
+    const limitedFreshSignals = freshSignals.slice(0, limit);
+    const hiddenFreshSignals = Math.max(0, freshSignals.length - limit);
+
+    // Combine: ALL positions + LIMITED fresh signals
+    const combinedSignals = [...inPositionSignals, ...limitedFreshSignals];
+
+    console.log(`🎯 DEBUG - Signals page Fresh vs Position filtering:`, {
+      tier: subscription.tier,
+      limit,
+      totalSignals: baseFilteredSignals.length,
+      inPositionSignals: inPositionSignals.length,
+      freshSignals: freshSignals.length,
+      limitedFreshSignals: limitedFreshSignals.length,
+      hiddenFreshSignals,
+      finalCombined: combinedSignals.length,
+    });
+
+    return {
+      filteredSignals: combinedSignals,
+      hiddenSignalsCount: hiddenFreshSignals,
+    };
+  }, [baseFilteredSignals, subscription, signalLimits, hasPosition]);
+
+  // ✅ FIXED: Early returns AFTER all hooks are called
   // Redirect if not authenticated
   if (!user) {
     navigate("/");
@@ -352,10 +635,6 @@ const Signals: React.FC = () => {
     if (score >= 80) return "bg-blue-600";
     if (score >= 70) return "bg-amber-600";
     return "bg-red-600";
-  };
-
-  const getChangeColor = (change: number) => {
-    return change >= 0 ? "text-emerald-400" : "text-red-400";
   };
 
   // Loading state
@@ -408,57 +687,6 @@ const Signals: React.FC = () => {
     );
   }
 
-  // Apply filters
-  const baseFilteredSignals = filterSignalsByFinalScore(
-    realSignals,
-    scoreThreshold,
-    sectorFilter,
-    marketFilter
-  );
-
-  // Apply subscription limits - FRESH vs POSITION filtering
-  const { filteredSignals, hiddenSignalsCount } = React.useMemo(() => {
-    if (!subscription || signalLimits.canViewUnlimited) {
-      return {
-        filteredSignals: baseFilteredSignals,
-        hiddenSignalsCount: 0,
-      };
-    }
-
-    // Separate fresh vs existing positions
-    const inPositionSignals = baseFilteredSignals.filter((signal) =>
-      hasPosition(signal.ticker)
-    );
-
-    const freshSignals = baseFilteredSignals.filter(
-      (signal) => !hasPosition(signal.ticker)
-    );
-
-    // Apply limits ONLY to fresh signals
-    const limit = signalLimits.maxSignalsPerDay;
-    const limitedFreshSignals = freshSignals.slice(0, limit);
-    const hiddenFreshSignals = Math.max(0, freshSignals.length - limit);
-
-    // Combine: ALL positions + LIMITED fresh signals
-    const combinedSignals = [...inPositionSignals, ...limitedFreshSignals];
-
-    console.log(`🎯 DEBUG - Signals page Fresh vs Position filtering:`, {
-      tier: subscription.tier,
-      limit,
-      totalSignals: baseFilteredSignals.length,
-      inPositionSignals: inPositionSignals.length,
-      freshSignals: freshSignals.length,
-      limitedFreshSignals: limitedFreshSignals.length,
-      hiddenFreshSignals,
-      finalCombined: combinedSignals.length,
-    });
-
-    return {
-      filteredSignals: combinedSignals,
-      hiddenSignalsCount: hiddenFreshSignals,
-    };
-  }, [baseFilteredSignals, subscription, signalLimits, hasPosition]);
-
   // Event handlers
   const handleViewSignal = (signal: Signal) => {
     const finalScore = calculateFinalScore(signal.signals);
@@ -488,7 +716,7 @@ const Signals: React.FC = () => {
   return (
     <Layout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
+        {/* ✅ IMPROVED: Header Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
@@ -500,9 +728,14 @@ const Signals: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center space-x-3">
-              <Badge className="bg-green-600 text-white">
-                {realSignals.length} Live Signals
-              </Badge>
+              <div className="bg-emerald-600/20 border border-emerald-500/30 rounded-lg px-3 py-2">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                  <span className="text-emerald-400 font-medium text-sm">
+                    {realSignals.length} Total Signals
+                  </span>
+                </div>
+              </div>
               {targetStock && (
                 <Badge className="bg-emerald-600 text-white animate-pulse">
                   Navigating to {targetStock}
@@ -512,7 +745,7 @@ const Signals: React.FC = () => {
                 onClick={refresh}
                 variant="outline"
                 size="sm"
-                className="flex items-center space-x-2"
+                className="flex items-center space-x-2 border-slate-600 text-slate-300 hover:bg-slate-700"
               >
                 <RefreshCw className="h-4 w-4" />
                 <span>Refresh</span>
@@ -524,24 +757,19 @@ const Signals: React.FC = () => {
         {/* Subscription Status Banner */}
         <SubscriptionStatusBanner />
 
-        {/* Filters */}
+        {/* ✅ IMPROVED: Filters Section with Better Styling */}
         <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700 mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Filter className="h-5 w-5 text-blue-400" />
-              <span>Filters</span>
-              <Badge variant="outline" className="ml-auto">
-                Showing {filteredSignals.length} signals
-                {hiddenSignalsCount > 0 &&
-                  ` (${hiddenSignalsCount} fresh signals hidden by subscription limit)`}
-              </Badge>
-            </CardTitle>
-          </CardHeader>
+          <FilterHeader
+            filteredSignals={filteredSignals}
+            hiddenSignalsCount={hiddenSignalsCount}
+            subscription={subscription}
+            signalLimits={signalLimits}
+          />
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label className="text-slate-300 text-sm font-medium mb-2 block">
-                  Min Score: {scoreThreshold[0]}
+                  Min Score: {scoreThreshold[0]}%
                 </label>
                 <Slider
                   value={scoreThreshold}
@@ -551,13 +779,17 @@ const Signals: React.FC = () => {
                   step={5}
                   className="w-full"
                 />
+                <div className="flex justify-between text-xs text-slate-400 mt-1">
+                  <span>50%</span>
+                  <span>100%</span>
+                </div>
               </div>
               <div>
                 <label className="text-slate-300 text-sm font-medium mb-2 block">
                   Sector
                 </label>
                 <Select value={sectorFilter} onValueChange={setSectorFilter}>
-                  <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                  <SelectTrigger className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-700 border-slate-600">
@@ -574,7 +806,7 @@ const Signals: React.FC = () => {
                   Market
                 </label>
                 <Select value={marketFilter} onValueChange={setMarketFilter}>
-                  <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                  <SelectTrigger className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-700 border-slate-600">
@@ -586,161 +818,48 @@ const Signals: React.FC = () => {
                 </Select>
               </div>
             </div>
+
+            {/* ✅ NEW: Active filters summary */}
+            <div className="mt-4 pt-4 border-t border-slate-700/50">
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center space-x-4 text-slate-400">
+                  <span>📊 Score: {scoreThreshold[0]}%+</span>
+                  <span>
+                    🏢 {sectorFilter === "all" ? "All Sectors" : sectorFilter}
+                  </span>
+                  <span>
+                    🌍{" "}
+                    {marketFilter === "global"
+                      ? "Global Markets"
+                      : marketFilter}
+                  </span>
+                </div>
+                <span className="text-emerald-400">Filters Active</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Signals List */}
+        {/* ✅ IMPROVED: Signals List */}
         <div className="space-y-6">
           {filteredSignals.map((signal) => {
-            const finalScore = calculateFinalScore(signal.signals);
             const hasExistingPosition = hasPosition(signal.ticker);
             const buttonText = getButtonText(signal.ticker);
             const isHighlighted = highlightedStock === signal.ticker;
 
             return (
               <div key={signal.ticker} className="space-y-4">
-                <Card
-                  ref={(el) => (signalRefs.current[signal.ticker] = el)}
-                  className={`bg-slate-800/50 backdrop-blur-sm border-slate-700 hover:bg-slate-800/70 transition-all duration-500 ${
-                    showChartsFor.has(signal.ticker)
-                      ? "ring-2 ring-blue-500/50"
-                      : ""
-                  } ${
-                    isHighlighted
-                      ? "ring-4 ring-emerald-400 ring-opacity-75 bg-emerald-900/20 scale-[1.02]"
-                      : ""
-                  }`}
-                >
-                  <CardContent className="p-6">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                      <div className="lg:col-span-8">
-                        <div className="flex items-start justify-between mb-4">
-                          <div>
-                            <div className="flex items-center space-x-2">
-                              <h3 className="text-2xl font-bold text-white">
-                                {signal.ticker}
-                              </h3>
-                              {isHighlighted && (
-                                <Badge className="bg-emerald-600 text-white animate-pulse">
-                                  Found!
-                                </Badge>
-                              )}
-                            </div>
-                            <p className="text-slate-400 text-lg">
-                              {signal.name}
-                            </p>
-                            <p className="text-slate-500 text-sm">
-                              {signal.sector}
-                            </p>
-                            {hasExistingPosition && (
-                              <Badge className="bg-blue-600 text-white text-xs mt-2">
-                                📈 Position Open
-                              </Badge>
-                            )}
-                            <p className="text-xs text-slate-500 mt-1">
-                              {signal.timestamp}
-                            </p>
-                          </div>
-                          <div className="text-center">
-                            <p className="text-slate-400 text-sm mb-1">
-                              Final Score
-                            </p>
-                            <Badge
-                              className={`${getScoreColor(
-                                finalScore
-                              )} text-white text-2xl px-4 py-2 font-bold`}
-                            >
-                              {finalScore}
-                            </Badge>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="flex justify-between items-center">
-                            <span className="text-slate-400">Price</span>
-                            <span className="text-white font-semibold text-lg">
-                              ${signal.price.toFixed(2)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-slate-400">Change</span>
-                            <span
-                              className={`font-semibold flex items-center text-lg ${getChangeColor(
-                                signal.change
-                              )}`}
-                            >
-                              {signal.change >= 0 ? (
-                                <TrendingUp className="h-5 w-5 mr-1" />
-                              ) : (
-                                <TrendingDown className="h-5 w-5 mr-1" />
-                              )}
-                              {signal.change >= 0 ? "+" : ""}
-                              {signal.change.toFixed(2)}%
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="pt-4 border-t border-slate-700 mt-4">
-                          <div className="flex justify-between text-sm text-slate-400 mb-2">
-                            <span>Signal Strength</span>
-                            <span>
-                              {finalScore >= 90
-                                ? "Very Strong"
-                                : finalScore >= 80
-                                ? "Strong"
-                                : "Moderate"}
-                            </span>
-                          </div>
-                          <div className="w-full bg-slate-700 rounded-full h-3">
-                            <div
-                              className={`h-3 rounded-full ${getScoreColor(
-                                finalScore
-                              )}`}
-                              style={{ width: `${finalScore}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="lg:col-span-4 flex flex-col justify-center space-y-3">
-                        <Button
-                          onClick={() => handleViewSignal(signal)}
-                          className={`w-full text-white text-lg py-3 ${
-                            hasExistingPosition
-                              ? "bg-blue-600 hover:bg-blue-700"
-                              : "bg-emerald-600 hover:bg-emerald-700"
-                          }`}
-                          disabled={buttonText === "Loading..."}
-                        >
-                          <Activity className="h-5 w-5 mr-2" />
-                          {buttonText}
-                        </Button>
-
-                        <Button
-                          onClick={() => toggleChart(signal.ticker)}
-                          variant="outline"
-                          className={`w-full text-lg py-3 transition-all duration-200 ${
-                            showChartsFor.has(signal.ticker)
-                              ? "border-blue-500 bg-blue-600/20 text-blue-300"
-                              : "border-blue-500 text-blue-400 hover:bg-blue-600/10"
-                          }`}
-                        >
-                          {showChartsFor.has(signal.ticker) ? (
-                            <>
-                              <BarChart3 className="h-5 w-5 mr-2" />
-                              Hide Chart
-                            </>
-                          ) : (
-                            <>
-                              <BarChart3 className="h-5 w-5 mr-2" />
-                              View Chart
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div ref={(el) => (signalRefs.current[signal.ticker] = el)}>
+                  <SignalCard
+                    signal={signal}
+                    isHighlighted={isHighlighted}
+                    hasExistingPosition={hasExistingPosition}
+                    buttonText={buttonText}
+                    onViewSignal={handleViewSignal}
+                    onToggleChart={toggleChart}
+                    showChart={showChartsFor.has(signal.ticker)}
+                  />
+                </div>
 
                 {/* TradingView Chart */}
                 {showChartsFor.has(signal.ticker) && (
@@ -754,18 +873,18 @@ const Signals: React.FC = () => {
                               Live Chart Analysis - {signal.ticker}
                             </h3>
                             <p className="text-slate-400">
-                              Final Score {finalScore}/100 • {signal.name} •
-                              TradingView verification
+                              Final Score {calculateFinalScore(signal.signals)}
+                              /100 • {signal.name} • TradingView verification
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-3">
                           <Badge
                             className={`${getScoreColor(
-                              finalScore
+                              calculateFinalScore(signal.signals)
                             )} text-white`}
                           >
-                            Final Score: {finalScore}
+                            Final Score: {calculateFinalScore(signal.signals)}
                           </Badge>
                           <Button
                             onClick={() => toggleChart(signal.ticker)}

@@ -149,7 +149,7 @@ const SignalFilters: React.FC<SignalFiltersProps> = ({
           </Select>
         </div>
 
-        {/* Sector Filter - Enhanced with config */}
+        {/* Sector Filter - Enhanced with config - OPEN FOR EVERYONE */}
         <div className="space-y-3">
           <div className="flex items-center space-x-2">
             <Filter className="h-4 w-4 text-slate-400" />
