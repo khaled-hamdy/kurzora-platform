@@ -1,1 +1,1 @@
-export { useSupabaseSignals as useSignals } from "./useSupabaseSignals";
+export { useSignals } from "../contexts/SignalsContext";

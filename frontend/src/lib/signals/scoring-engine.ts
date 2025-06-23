@@ -120,6 +120,11 @@ export class ScoringEngine {
     "1W": 0.1, // 10% - Long-term trend
   };
 
+  // 🚀 PUBLIC: Export timeframe weights for platform-wide consistency
+  public getTimeframeWeights() {
+    return { ...this.timeframeWeights };
+  }
+
   // NEW: Data Quality Weight Multipliers
   private qualityMultipliers = {
     Excellent: 1.0, // Full weight
@@ -820,7 +825,10 @@ export class ScoringEngine {
       let totalQualityWeight = 0;
 
       for (const [timeframe, score] of Object.entries(timeframeScores)) {
-        const timeframeWeight = this.timeframeWeights[timeframe] || 0;
+        const timeframeWeight =
+          this.timeframeWeights[
+            timeframe as keyof typeof this.timeframeWeights
+          ] || 0;
         const qualityMultiplier = score.dataQualityScore / 100; // Convert to 0-1 multiplier
         const effectiveWeight =
           timeframeWeight * Math.max(0.3, qualityMultiplier); // Minimum 30% weight

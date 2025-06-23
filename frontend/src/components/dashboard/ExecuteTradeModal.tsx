@@ -27,6 +27,8 @@ import {
   ExecuteTradeData,
 } from "@/hooks/useExecutePaperTrade";
 import { usePositions } from "@/contexts/PositionsContext";
+// ✅ FIXED: Import centralized scoring function
+import { calculateFinalScore } from "../../utils/signalCalculations";
 
 interface Signal {
   id: string;
@@ -35,6 +37,13 @@ interface Signal {
   current_price: number;
   entry_price?: number;
   confidence_score: number;
+  // ✅ FIXED: Add signals field for timeframe data
+  signals?: {
+    "1H": number;
+    "4H": number;
+    "1D": number;
+    "1W": number;
+  };
   sector?: string;
   market?: string;
   status?: string;
@@ -61,9 +70,19 @@ export const ExecuteTradeModal: React.FC<ExecuteTradeModalProps> = ({
 
   if (!signal) return null;
 
+  // ✅ FIXED: Calculate final score using centralized function if timeframe data available
+  const finalScore = signal.signals
+    ? calculateFinalScore(signal.signals)
+    : calculateFinalScore({
+        "1H": signal.confidence_score,
+        "4H": signal.confidence_score,
+        "1D": signal.confidence_score,
+        "1W": signal.confidence_score,
+      }); // ✅ FIXED: Use calculated score instead of raw DB value
+
   const entryPrice = signal.entry_price || signal.current_price;
   const totalInvestment = entryPrice * quantity;
-  const isHighConfidence = signal.confidence_score >= 85;
+  const isHighConfidence = finalScore >= 85;
 
   const handleExecute = async () => {
     console.log(`🚀 DEBUG - Button clicked for ${signal.ticker}`);
@@ -203,10 +222,10 @@ export const ExecuteTradeModal: React.FC<ExecuteTradeModalProps> = ({
                   </div>
                   <Badge
                     className={`${getScoreColor(
-                      signal.confidence_score
+                      finalScore
                     )} text-white px-3 py-1`}
                   >
-                    {signal.confidence_score}/100
+                    {finalScore}/100
                   </Badge>
                 </div>
 
@@ -226,7 +245,7 @@ export const ExecuteTradeModal: React.FC<ExecuteTradeModalProps> = ({
                   <div>
                     <Label className="text-slate-400">Signal Strength</Label>
                     <p className="text-white font-semibold">
-                      {getScoreLabel(signal.confidence_score)}
+                      {getScoreLabel(finalScore)}
                     </p>
                   </div>
                   <div>
@@ -236,6 +255,22 @@ export const ExecuteTradeModal: React.FC<ExecuteTradeModalProps> = ({
                     </p>
                   </div>
                 </div>
+
+                {/* ✅ FIXED: Show calculation source for debugging */}
+                {signal.signals && (
+                  <div className="mt-3 pt-3 border-t border-slate-700">
+                    <Label className="text-slate-400 text-xs">
+                      Score Breakdown
+                    </Label>
+                    <div className="flex gap-2 text-xs text-slate-500 mt-1">
+                      <span>1H: {signal.signals["1H"]}</span>
+                      <span>4H: {signal.signals["4H"]}</span>
+                      <span>1D: {signal.signals["1D"]}</span>
+                      <span>1W: {signal.signals["1W"]}</span>
+                      <span>→ Final: {finalScore}</span>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -294,9 +329,8 @@ export const ExecuteTradeModal: React.FC<ExecuteTradeModalProps> = ({
               <Alert className="bg-yellow-500/10 border-yellow-500/30">
                 <AlertTriangle className="h-4 w-4 text-yellow-500" />
                 <AlertDescription className="text-yellow-200">
-                  This signal has a moderate confidence score (
-                  {signal.confidence_score}/100). Consider the risk before
-                  executing.
+                  This signal has a moderate confidence score ({finalScore}
+                  /100). Consider the risk before executing.
                 </AlertDescription>
               </Alert>
             )}

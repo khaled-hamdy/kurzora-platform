@@ -3,16 +3,54 @@
 
 // ✅ PRESERVE: Existing Signal type import (keep working)
 import { Signal } from "../types/signal";
+// 🚀 SINGLE SOURCE OF TRUTH: Import scoring-engine for all calculations
+import { scoringEngine } from "../lib/signals/scoring-engine";
 
-// ✅ PRESERVE: Original calculateFinalScore function (working perfectly)
+// 🚀 SINGLE SOURCE OF TRUTH: Get timeframe weights directly from scoring-engine
+const getTimeframeWeights = () => scoringEngine.getTimeframeWeights();
+
+// 🚀 UNIFIED: Single calculation function using scoring-engine weights
 export const calculateFinalScore = (signals: Signal["signals"]): number => {
+  // Use the EXACT timeframe weights from scoring-engine.ts
+  const weights = getTimeframeWeights();
   const weighted =
-    signals["1H"] * 0.4 +
-    signals["4H"] * 0.3 +
-    signals["1D"] * 0.2 +
-    signals["1W"] * 0.1;
+    signals["1H"] * weights["1H"] +
+    signals["4H"] * weights["4H"] +
+    signals["1D"] * weights["1D"] +
+    signals["1W"] * weights["1W"];
   return Math.round(weighted);
 };
+
+// 🚀 ENHANCED: Use full scoring-engine when complete price data is available
+export const calculateFinalScoreEnhanced = (
+  ticker: string,
+  signals: Signal["signals"],
+  priceData?: Record<string, any[]>
+): number => {
+  // If we have full price data, use the advanced scoring engine
+  if (priceData && Object.keys(priceData).length > 0) {
+    try {
+      const result = scoringEngine.calculateFinalScore(ticker, priceData);
+      if (result && result.finalScore) {
+        console.log(
+          `🎯 Enhanced scoring for ${ticker}: ${result.finalScore}/100`
+        );
+        return result.finalScore;
+      }
+    } catch (error) {
+      console.warn(
+        `⚠️ Enhanced scoring failed for ${ticker}, falling back to weighted calculation:`,
+        error
+      );
+    }
+  }
+
+  // Fallback to weighted calculation using SAME weights as scoring-engine
+  return calculateFinalScore(signals);
+};
+
+// 🚀 EXPORT: Timeframe weights for platform-wide consistency
+export const TIMEFRAME_WEIGHTS = getTimeframeWeights();
 
 // ✅ PRESERVE: Original dashboard heatmap function (unchanged)
 export const filterSignals = (

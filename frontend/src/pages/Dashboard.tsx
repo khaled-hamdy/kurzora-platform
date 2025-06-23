@@ -28,9 +28,11 @@ import {
   ArrowRight,
   BookOpen,
 } from "lucide-react";
+import { Badge } from "../components/ui/badge";
+import { calculateFinalScore } from "../utils/signalCalculations";
 
-// ✅ REAL DATA INTEGRATION - Import the working hook
-import { useSignals } from "../hooks/useSignals";
+// ✅ REAL DATA INTEGRATION - Import the working context (same as Signals page)
+import { useSignals } from "../contexts/SignalsContext";
 // ✅ NEW: Import portfolio summary hook
 import { usePortfolioSummary } from "../hooks/usePortfolioSummary";
 
@@ -103,12 +105,8 @@ const Dashboard: React.FC = () => {
     signals.length > 0
       ? Math.round(
           signals.reduce((sum, signal) => {
-            // Use weighted score: 1H(40%) + 4H(30%) + 1D(20%) + 1W(10%)
-            const weighted =
-              signal.signals["1H"] * 0.4 +
-              signal.signals["4H"] * 0.3 +
-              signal.signals["1D"] * 0.2 +
-              signal.signals["1W"] * 0.1;
+            // 🚀 UNIFIED: Use standardized calculateFinalScore from single source of truth
+            const weighted = calculateFinalScore(signal.signals);
             return sum + weighted;
           }, 0) / signals.length
         )
@@ -121,16 +119,9 @@ const Dashboard: React.FC = () => {
   const bestSignal =
     signals.length > 0
       ? signals.reduce((best, current) => {
-          const bestWeighted =
-            best.signals["1H"] * 0.4 +
-            best.signals["4H"] * 0.3 +
-            best.signals["1D"] * 0.2 +
-            best.signals["1W"] * 0.1;
-          const currentWeighted =
-            current.signals["1H"] * 0.4 +
-            current.signals["4H"] * 0.3 +
-            current.signals["1D"] * 0.2 +
-            current.signals["1W"] * 0.1;
+          // 🚀 UNIFIED: Use standardized calculateFinalScore from single source of truth
+          const bestWeighted = calculateFinalScore(best.signals);
+          const currentWeighted = calculateFinalScore(current.signals);
           return currentWeighted > bestWeighted ? current : best;
         })
       : null;

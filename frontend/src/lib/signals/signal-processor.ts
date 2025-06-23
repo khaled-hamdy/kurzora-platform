@@ -5,6 +5,8 @@ import { stockScanner, StockData } from "./stock-scanner";
 import { TechnicalIndicators, PriceData } from "./technical-indicators";
 import { scoringEngine, FinalSignalScore } from "./scoring-engine";
 import { supabase } from "../supabase";
+import { calculateFinalScore } from "../../utils/signalCalculations";
+import { Signal } from "../../types/signal";
 
 export interface ProcessedSignal {
   id: string;
@@ -481,6 +483,7 @@ export class SignalProcessor {
         sector: processedSignal.sector,
         market: processedSignal.market,
         confidence_score: processedSignal.confidenceScore,
+        final_score: processedSignal.confidenceScore, // ✅ ADD THIS LINE
         entry_price: processedSignal.entryPrice,
         current_price: processedSignal.currentPrice,
         price_change_percent: processedSignal.priceChangePercent,
@@ -590,6 +593,19 @@ export class SignalProcessor {
           Object.values(tf.breakdown).some((ind) => ind.dataQuality?.adaptive)
       );
 
+      // Create simple timeframe scores for calculateFinalScore
+      const simpleTimeframeScores = Object.fromEntries(
+        Object.entries(signalScore.timeframeScores).map(([tf, data]) => [
+          tf,
+          Math.round(data.compositeScore), // ✅ Simple number only
+        ])
+      );
+
+      // Calculate final score using calculateFinalScore with simple timeframe scores
+      const finalScore = calculateFinalScore(
+        simpleTimeframeScores as Signal["signals"]
+      );
+
       // Convert to enhanced database format
       const processedSignal: ProcessedSignal = {
         // Basic signal data
@@ -598,7 +614,7 @@ export class SignalProcessor {
         companyName: stockData.companyName,
         sector: stockData.sector,
         market: stockData.market,
-        confidenceScore: signalScore.finalScore,
+        confidenceScore: finalScore,
         signalStrength: signalScore.signalStrength,
         entryPrice: signalScore.entryPrice,
         currentPrice: stockData.price,
@@ -606,12 +622,7 @@ export class SignalProcessor {
         stopLoss: signalScore.stopLoss,
         takeProfit: signalScore.takeProfit,
         riskRewardRatio: signalScore.riskRewardRatio,
-        timeframeScores: Object.fromEntries(
-          Object.entries(signalScore.timeframeScores).map(([tf, data]) => [
-            tf,
-            data.compositeScore,
-          ])
-        ),
+        timeframeScores: simpleTimeframeScores,
         explanation: this.generateSignalExplanation(signalScore, stockData),
         status: "active",
         expiresAt: signalScore.expiresAt.toISOString(),
@@ -620,7 +631,7 @@ export class SignalProcessor {
         // NEW DATA QUALITY FIELDS
         dataQualityScore: signalScore.dataQualityScore,
         dataQualityLevel: signalScore.dataQualityLevel,
-        qualityAdjustedScore: signalScore.finalScore, // Could be different if further quality adjustments needed
+        qualityAdjustedScore: finalScore, // Use the calculated final score
         adaptiveAnalysis,
 
         // COMPREHENSIVE FIELDS
@@ -649,7 +660,11 @@ export class SignalProcessor {
       };
 
       console.log(
-        `🎯 Enhanced signal: ${stockData.ticker} = ${signalScore.finalScore}/100 (${signalScore.signalStrength}, ${signalScore.dataQualityLevel} quality)`
+        `🎯 Enhanced signal: ${stockData.ticker} = ${finalScore}/100 (${
+          signalScore.signalStrength
+        }, ${
+          signalScore.dataQualityLevel
+        } quality) [calculated from ${JSON.stringify(simpleTimeframeScores)}]`
       );
 
       return processedSignal;

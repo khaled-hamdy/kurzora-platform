@@ -6,6 +6,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { SignalsProvider } from "./contexts/SignalsContext";
 import { PositionsProvider } from "./contexts/PositionsContext";
+// TELEGRAM ALERTS INTEGRATION
+import { useSignalAlerts } from "./hooks/useSignalAlerts";
 // ADMIN IMPORTS - COMPLETE ADMIN PANEL
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
 import AdminLayout from "./components/admin/AdminLayout";
@@ -52,6 +54,27 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  // 🚨 TELEGRAM ALERTS INTEGRATION - Monitor signals and send alerts automatically
+  const { sendTestAlert } = useSignalAlerts();
+
+  // Test alert handler for development
+  const handleTestAlert = async () => {
+    console.log("🧪 Testing Telegram alert...");
+    try {
+      const success = await sendTestAlert();
+      if (success) {
+        alert(
+          "✅ Test alert sent successfully! Check your Telegram (Chat ID: 1390805707)"
+        );
+      } else {
+        alert("❌ Test alert failed - check browser console for details");
+      }
+    } catch (error) {
+      console.error("Error sending test alert:", error);
+      alert("❌ Test alert error - check browser console");
+    }
+  };
+
   return (
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
@@ -220,6 +243,39 @@ function App() {
                   {/* Catch-all route */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+
+                {/* 🧪 TELEGRAM ALERTS TEST BUTTON - Development Only */}
+                {process.env.NODE_ENV === "development" && (
+                  <button
+                    onClick={handleTestAlert}
+                    style={{
+                      position: "fixed",
+                      bottom: "20px",
+                      right: "20px",
+                      background: "#0088cc",
+                      color: "white",
+                      border: "none",
+                      padding: "12px 16px",
+                      borderRadius: "8px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      boxShadow: "0 4px 12px rgba(0, 136, 204, 0.3)",
+                      zIndex: 1000,
+                      transition: "all 0.2s ease",
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.background = "#006699";
+                      e.currentTarget.style.transform = "translateY(-1px)";
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.background = "#0088cc";
+                      e.currentTarget.style.transform = "translateY(0)";
+                    }}
+                  >
+                    🧪 Test Telegram Alert
+                  </button>
+                )}
               </SignalsProvider>
             </PositionsProvider>
           </AuthProvider>

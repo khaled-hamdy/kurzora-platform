@@ -19,6 +19,7 @@ import { useAutoRefresh } from "../../hooks/useAutoRefresh";
 import { usePositions } from "../../contexts/PositionsContext";
 import {
   filterSignals,
+  filterSignalsByFinalScore,
   calculateFinalScore,
 } from "../../utils/signalCalculations";
 import { Signal } from "../../types/signal";
@@ -176,7 +177,7 @@ const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
         currentPrice: signal.price,
         sector: signal.sector,
         market: signal.market,
-        status: signal.status,
+        status: (signal as any).status || "active",
         // Indicate this is for execution
         action: "execute",
       };
@@ -201,14 +202,20 @@ const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
     }
   };
 
-  // ✅ STEP 1: Apply existing filters first
-  const baseFilteredSignals = filterSignals(
-    signals,
-    timeFilter,
-    scoreThreshold,
-    sectorFilter,
-    marketFilter
-  );
+  // ✅ STEP 1: Apply consistent final score filtering (unified with Signals page)
+  const baseFilteredSignals = React.useMemo(() => {
+    return signals.filter((signal) => {
+      // 🚀 NEW: Use final calculated score instead of individual timeframe scores
+      const finalScore = calculateFinalScore(signal.signals);
+      const meetsThreshold = finalScore >= scoreThreshold[0];
+      const meetsSector =
+        sectorFilter === "all" || signal.sector === sectorFilter;
+      const meetsMarket =
+        marketFilter === "global" || signal.market === marketFilter;
+
+      return meetsThreshold && meetsSector && meetsMarket;
+    });
+  }, [signals, scoreThreshold, sectorFilter, marketFilter]);
 
   // ✅ UPDATED STEP 2: Apply subscription limits ONLY to fresh signals (not positions)
   const { filteredSignals, hiddenSignalsCount } = React.useMemo(() => {

@@ -1,4 +1,4 @@
-// src/contexts/SignalsContext.tsx
+// src/contexts/SignalsContext.tsx - TEMPORARY VERSION
 import React, {
   createContext,
   useContext,
@@ -7,6 +7,7 @@ import React, {
   ReactNode,
 } from "react";
 import { supabase } from "../lib/supabase";
+import { calculateFinalScore } from "../utils/signalCalculations";
 
 export interface Signal {
   ticker: string;
@@ -47,9 +48,8 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
   const [lastFetched, setLastFetched] = useState<number | null>(null);
 
   const fetchSignals = async (forceRefresh: boolean = false) => {
-    // Extended cache: 10 minutes for trading signals (more appropriate)
     const now = Date.now();
-    const tenMinutes = 10 * 60 * 1000; // Changed from 2 minutes to 10 minutes
+    const tenMinutes = 10 * 60 * 1000;
 
     if (
       !forceRefresh &&
@@ -67,8 +67,9 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
     try {
       setLoading(true);
       setError(null);
-      console.log("🔄 Fetching fresh signals from database...");
+      console.log("🔄 Fetching signals from database...");
 
+      // ✅ TEMPORARY: Get all active signals (not just ones with timeframe data)
       const { data, error: queryError } = await supabase
         .from("trading_signals")
         .select("*")
@@ -88,30 +89,64 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
         return;
       }
 
-      // Transform Supabase data to match SignalTable interface
+      // ✅ TEMPORARY: Handle both signals with real timeframe data AND signals without
       const transformedSignals: Signal[] = data.map((record) => {
+        const realSignals = record.signals;
+
+        // If we have real timeframe data, use it
+        if (
+          realSignals &&
+          typeof realSignals === "object" &&
+          realSignals["1H"] &&
+          realSignals["4H"] &&
+          realSignals["1D"] &&
+          realSignals["1W"]
+        ) {
+          console.log(`✅ ${record.ticker}: Using real timeframe data`);
+          return {
+            ticker: record.ticker,
+            name: record.company_name || `${record.ticker} Corporation`,
+            price: record.entry_price || record.current_price || 100,
+            change: record.price_change_percent || 0,
+            signals: {
+              "1H": realSignals["1H"],
+              "4H": realSignals["4H"],
+              "1D": realSignals["1D"],
+              "1W": realSignals["1W"],
+            },
+            sector: record.sector || "Technology",
+            market: record.market || "usa",
+            timestamp: record.created_at,
+          };
+        }
+
+        // ✅ TEMPORARY: If no timeframe data, create consistent fake data based on confidence_score
+        console.log(
+          `⚠️ ${record.ticker}: No timeframe data, creating consistent synthetic data from confidence_score`
+        );
         const baseScore = record.confidence_score || 80;
+        // 🚀 UNIFIED: Use industry-standard distribution that matches scoring-engine weights
+        const syntheticSignals = {
+          "1H": Math.round(baseScore * 0.95), // Slightly lower for 1H volatility
+          "4H": baseScore, // Base score for 4H (most weighted)
+          "1D": Math.round(baseScore * 1.02), // Slightly higher for 1D stability
+          "1W": Math.round(baseScore * 0.97), // Slightly lower for 1W lag
+        };
+
+        // 🚀 UNIFIED: Calculate final score using platform's single source of truth
+        const calculatedScore = calculateFinalScore(syntheticSignals);
+
+        console.log(
+          `🔍 ${record.ticker}: DB=${baseScore}, Calculated=${calculatedScore}, Synthetic=`,
+          syntheticSignals
+        );
 
         return {
           ticker: record.ticker,
           name: record.company_name || `${record.ticker} Corporation`,
           price: record.entry_price || record.current_price || 100,
-          change: record.price_change_percent || Math.random() * 4 - 2,
-          signals: {
-            "1H": Math.min(
-              100,
-              Math.floor(baseScore * 0.85 + Math.random() * 5)
-            ),
-            "4H": Math.min(
-              100,
-              Math.floor(baseScore * 0.92 + Math.random() * 5)
-            ),
-            "1D": baseScore,
-            "1W": Math.min(
-              100,
-              Math.floor(baseScore * 1.05 + Math.random() * 5)
-            ),
-          },
+          change: record.price_change_percent || 0,
+          signals: syntheticSignals,
           sector: record.sector || "Technology",
           market: record.market || "usa",
           timestamp: record.created_at,
@@ -121,7 +156,9 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
       setSignals(transformedSignals);
       setLastFetched(now);
       console.log(
-        `✅ Successfully loaded ${transformedSignals.length} signals and cached for 10 minutes`
+        `✅ Successfully loaded ${transformedSignals.length} signals (${
+          data.filter((d) => d.signals && d.signals["1H"]).length
+        } with real timeframe data)`
       );
     } catch (err) {
       const errorMessage =
@@ -138,7 +175,6 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
     fetchSignals();
   }, []);
 
-  // Smart refetch: Only force refresh if data is older than 5 minutes
   const refetch = async () => {
     const now = Date.now();
     const fiveMinutes = 5 * 60 * 1000;
@@ -153,7 +189,7 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
     console.log(
       "🔄 Refetch: Data is older than 5 minutes, fetching fresh data..."
     );
-    await fetchSignals(true); // Force refresh
+    await fetchSignals(true);
   };
 
   return (

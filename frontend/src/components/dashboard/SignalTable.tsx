@@ -3,6 +3,8 @@ import { Button } from "../ui/button";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { usePositions } from "../../contexts/PositionsContext";
 import { useNavigate } from "react-router-dom";
+// ✅ FIXED: Import centralized scoring function
+import { calculateFinalScore } from "../../utils/signalCalculations";
 
 interface Signal {
   ticker: string;
@@ -203,14 +205,7 @@ const SignalTable: React.FC<SignalTableProps> = ({
     }
   };
 
-  const calculateFinalScore = (signals: Signal["signals"]) => {
-    const weighted =
-      signals["1H"] * 0.4 +
-      signals["4H"] * 0.3 +
-      signals["1D"] * 0.2 +
-      signals["1W"] * 0.1;
-    return Math.round(weighted);
-  };
+  // ✅ REMOVED: Duplicate calculateFinalScore function - now using centralized one
 
   const getTooltipText = (signal: Signal, timeframe: string, score: number) => {
     return `${signal.ticker} ${timeframe}: ${score}% confidence\nRSI: 28, MACD > 0, Volume: 2.1x`;
