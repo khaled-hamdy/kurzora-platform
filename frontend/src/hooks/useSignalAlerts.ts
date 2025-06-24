@@ -1,20 +1,33 @@
 // src/hooks/useSignalAlerts.ts
-// Hook to monitor new signals and send Telegram alerts
-// 🎯 FIXED: Now uses calculateFinalScore for consistent scoring
+// Production Hook to monitor new signals and send Telegram alerts
+// 🚀 PRODUCTION: Subscription-based alerts with database integration
 
 import { useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
-import {
-  telegramAlertService,
-  TradingSignal,
-  TelegramUser,
-} from "@/services/telegramAlerts";
-// 🎯 CRITICAL FIX: Import the working calculation function
+import { telegramAlertService } from "@/services/telegramAlerts";
 import { calculateFinalScore } from "../utils/signalCalculations";
-// Telegram functionality is handled by triggerTelegramAlert function
 
 interface SignalAlertHookProps {
   enabled?: boolean;
+}
+
+interface TradingSignalData {
+  id: string;
+  ticker: string;
+  symbol?: string;
+  signals: {
+    "1H": number;
+    "4H": number;
+    "1D": number;
+    "1W": number;
+  };
+  entry_price: number;
+  stop_loss?: number;
+  take_profit?: number;
+  signal_type?: string;
+  strength?: string;
+  status?: string;
+  created_at: string;
 }
 
 export function useSignalAlerts({ enabled = true }: SignalAlertHookProps = {}) {
@@ -23,9 +36,11 @@ export function useSignalAlerts({ enabled = true }: SignalAlertHookProps = {}) {
   useEffect(() => {
     if (!enabled) return;
 
+    console.log("🚀 Starting production signal alert monitoring...");
+
     // Monitor for new signals in real-time
     const subscription = supabase
-      .channel("signal-alerts")
+      .channel("production-signal-alerts")
       .on(
         "postgres_changes",
         {
@@ -34,222 +49,298 @@ export function useSignalAlerts({ enabled = true }: SignalAlertHookProps = {}) {
           table: "trading_signals",
         },
         async (payload) => {
-          console.log("🔔 New signal detected:", payload.new);
-          await handleNewSignal(payload.new as any);
+          console.log("🔔 New signal detected for production processing:", {
+            id: payload.new.id,
+            ticker: payload.new.ticker,
+            created_at: payload.new.created_at,
+          });
+          await handleNewSignal(payload.new as TradingSignalData);
         }
       )
       .subscribe();
 
-    // Also check for existing high-score signals on mount
-    checkExistingSignals();
+    // Check for recent high-score signals on mount
+    checkRecentHighScoreSignals();
 
     return () => {
+      console.log("🛑 Stopping signal alert monitoring");
       subscription.unsubscribe();
     };
   }, [enabled]);
 
-  const handleNewSignal = async (signalData: any) => {
+  const handleNewSignal = async (signalData: TradingSignalData) => {
     const signalId = signalData.id;
 
     // Avoid processing the same signal multiple times
     if (processedSignals.current.has(signalId)) {
+      console.log(`⏭️ Signal ${signalData.ticker} already processed, skipping`);
       return;
     }
 
-    // 🎯 FIXED: Calculate score from signals JSONB
-    const calculatedScore = calculateScoreFromSignalData(signalData);
-
-    // Check if signal meets alert criteria
-    if (!shouldSendAlert(signalData, calculatedScore)) {
-      return;
-    }
-
-    console.log(
-      `📢 Processing alert for ${signalData.ticker} (${calculatedScore}/100) - CALCULATED score`
-    );
-
     try {
-      // Get users who want Telegram alerts
-      const users = await getTelegramUsers();
-
-      // 🎯 FIXED: Format signal using calculated score
-      const signal: TradingSignal = {
-        symbol: signalData.ticker || signalData.symbol,
-        final_score: calculatedScore, // ✅ Now uses calculated score
-        strength: getStrengthFromScore(calculatedScore),
-        entry_price: signalData.entry_price || 0,
-        stop_loss: signalData.stop_loss,
-        take_profit: signalData.take_profit,
-        signal_type: signalData.signal_type,
-      };
-
-      // Send alerts to all enabled users
-      await telegramAlertService.sendAlertToAllUsers(users, signal);
-
-      // Mark signal as processed
-      processedSignals.current.add(signalId);
-    } catch (error) {
-      console.error("❌ Error processing signal alert:", error);
-    }
-  };
-
-  const checkExistingSignals = async () => {
-    try {
-      // 🎯 FIXED: Get all recent signals, then filter by calculated score
-      const { data: recentSignals, error } = await supabase
-        .from("trading_signals")
-        .select("*")
-        .gte("created_at", new Date(Date.now() - 5 * 60 * 1000).toISOString()) // Last 5 minutes
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Error fetching recent signals:", error);
+      // Validate signal has required data structure
+      if (!isValidSignalData(signalData)) {
+        console.log(
+          `⚠️ Signal ${signalData.ticker} missing required data structure`
+        );
         return;
       }
 
-      console.log(
-        `🔍 Found ${recentSignals?.length || 0} recent signals to check`
-      );
-
-      // 🎯 FIXED: Filter by calculated score instead of database field
-      const highScoreSignals =
-        recentSignals?.filter((signal) => {
-          const calculatedScore = calculateScoreFromSignalData(signal);
-          return calculatedScore >= 80;
-        }) || [];
+      // Calculate final score using unified calculation
+      const finalScore = calculateFinalScore(signalData.signals);
 
       console.log(
-        `🎯 ${highScoreSignals.length} signals meet the 80+ calculated score threshold`
+        `📊 Processing signal ${signalData.ticker} with calculated score: ${finalScore}`
       );
 
-      // Process each recent signal
+      // Check if signal meets alert criteria
+      if (!shouldSendAlert(signalData, finalScore)) {
+        console.log(
+          `📭 Signal ${signalData.ticker} does not meet alert criteria`
+        );
+        return;
+      }
+
+      // 🚀 PRODUCTION: Use new production service method
+      const success = await telegramAlertService.processSignalForAlerts(
+        signalData
+      );
+
+      if (success) {
+        console.log(
+          `✅ Production alerts processed for ${signalData.ticker} (score: ${finalScore})`
+        );
+        // Mark signal as processed
+        processedSignals.current.add(signalId);
+      } else {
+        console.log(`❌ Failed to process alerts for ${signalData.ticker}`);
+      }
+    } catch (error) {
+      console.error(
+        `❌ Error processing signal alert for ${signalData.ticker}:`,
+        error
+      );
+    }
+  };
+
+  const checkRecentHighScoreSignals = async () => {
+    try {
+      console.log("🔍 Checking recent signals for alert processing...");
+
+      // Get signals from the last 10 minutes
+      const recentTimeThreshold = new Date(
+        Date.now() - 10 * 60 * 1000
+      ).toISOString();
+
+      const { data: recentSignals, error } = await supabase
+        .from("trading_signals")
+        .select("*")
+        .gte("created_at", recentTimeThreshold)
+        .order("created_at", { ascending: false })
+        .limit(50); // Limit to prevent overwhelming on startup
+
+      if (error) {
+        console.error("❌ Error fetching recent signals:", error);
+        return;
+      }
+
+      const validSignals = recentSignals?.filter(isValidSignalData) || [];
+      console.log(
+        `📊 Found ${validSignals.length} valid recent signals to check`
+      );
+
+      // Filter by calculated score threshold
+      const highScoreSignals = validSignals.filter((signal) => {
+        const calculatedScore = calculateFinalScore(signal.signals);
+        return calculatedScore >= 80;
+      });
+
+      console.log(
+        `🎯 ${highScoreSignals.length} recent signals meet the alert threshold (≥80)`
+      );
+
+      // Process each qualifying signal
       for (const signal of highScoreSignals) {
         await handleNewSignal(signal);
       }
     } catch (error) {
-      console.error("Error checking existing signals:", error);
+      console.error("❌ Error checking recent signals:", error);
     }
   };
 
-  // 🎯 FIXED: Use calculated score parameter
+  const isValidSignalData = (
+    signalData: any
+  ): signalData is TradingSignalData => {
+    return (
+      signalData &&
+      signalData.id &&
+      (signalData.ticker || signalData.symbol) &&
+      signalData.signals &&
+      typeof signalData.signals === "object" &&
+      signalData.signals["1H"] !== undefined &&
+      signalData.signals["4H"] !== undefined &&
+      signalData.signals["1D"] !== undefined &&
+      signalData.signals["1W"] !== undefined &&
+      signalData.entry_price !== undefined
+    );
+  };
+
   const shouldSendAlert = (
-    signalData: any,
+    signalData: TradingSignalData,
     calculatedScore: number
   ): boolean => {
     // Only send alerts for signals with calculated score >= 80
     if (calculatedScore < 80) {
-      console.log(
-        `Signal ${signalData.ticker} calculated score ${calculatedScore} below threshold (80)`
-      );
       return false;
     }
 
-    // Only send for active signals
+    // Only send for active signals (if status field exists)
     if (signalData.status && signalData.status !== "active") {
+      return false;
+    }
+
+    // Skip if signal is too old (older than 1 hour)
+    const signalAge = Date.now() - new Date(signalData.created_at).getTime();
+    const oneHourMs = 60 * 60 * 1000;
+    if (signalAge > oneHourMs) {
+      console.log(
+        `⏰ Signal ${signalData.ticker} is too old (${Math.round(
+          signalAge / 60000
+        )} minutes), skipping alert`
+      );
       return false;
     }
 
     return true;
   };
 
-  // 🎯 UNIFIED HELPER: Calculate score from signal data using platform's single source of truth
-  const calculateScoreFromSignalData = (signalData: any): number => {
+  // 🧪 TEST FUNCTION: Send test alert to verify Telegram integration
+  const sendTestAlert = async (): Promise<boolean> => {
     try {
-      // Parse signals JSONB field
-      const signals = signalData.signals || {};
+      console.log("🧪 Creating test signal for Telegram alert verification...");
 
-      // Verify we have the required timeframe data
-      if (signals["1H"] && signals["4H"] && signals["1D"] && signals["1W"]) {
-        // 🚀 UNIFIED: Use the platform's single source of truth from scoring-engine
-        const calculatedScore = calculateFinalScore(signals);
-
-        console.log("🎯 Timeframe Data:", signals);
-        console.log("✅ Calculated Score:", calculatedScore);
-
-        // Log any discrepancy with database values (for debugging)
-        if (calculatedScore !== signalData.final_score) {
-          console.log(
-            "🎯 UNIFIED! Telegram now uses calculated score from scoring-engine instead of database field!"
-          );
-          console.log(
-            `📊 DB final_score: ${signalData.final_score} → Calculated: ${calculatedScore}`
-          );
-        }
-
-        return calculatedScore;
-      } else {
-        // 🚀 IMPROVED: Create synthetic timeframe data for consistency
-        console.log("⚠️ Missing timeframe data, creating synthetic signals");
-        const baseScore =
-          signalData.final_score || signalData.confidence_score || 75;
-        const syntheticSignals = {
-          "1H": Math.round(baseScore * 0.95),
-          "4H": baseScore,
-          "1D": Math.round(baseScore * 1.02),
-          "1W": Math.round(baseScore * 0.97),
-        };
-        return calculateFinalScore(syntheticSignals);
-      }
-    } catch (error) {
-      console.error("❌ Error calculating score from signal data:", error);
-      // Final fallback - but still use synthetic approach for consistency
-      const baseScore =
-        signalData.final_score || signalData.confidence_score || 75;
-      const syntheticSignals = {
-        "1H": Math.round(baseScore * 0.95),
-        "4H": baseScore,
-        "1D": Math.round(baseScore * 1.02),
-        "1W": Math.round(baseScore * 0.97),
+      // Create a realistic test signal with high score
+      const testSignal: TradingSignalData = {
+        id: `test-${Date.now()}`,
+        ticker: "AAPL",
+        symbol: "AAPL",
+        signals: {
+          "1H": 85,
+          "4H": 88,
+          "1D": 82,
+          "1W": 90,
+        },
+        entry_price: 190.5,
+        stop_loss: 185.0,
+        take_profit: 200.0,
+        signal_type: "BUY",
+        strength: "Strong",
+        status: "active",
+        created_at: new Date().toISOString(),
       };
-      return calculateFinalScore(syntheticSignals);
-    }
-  };
 
-  const getTelegramUsers = async (): Promise<TelegramUser[]> => {
-    try {
-      const { data: alertSettings, error } = await supabase
-        .from("user_alert_settings")
-        .select("telegram_chat_id, telegram_enabled")
-        .eq("telegram_enabled", true)
-        .not("telegram_chat_id", "is", null);
+      const finalScore = calculateFinalScore(testSignal.signals);
+      console.log(`🎯 Test signal created with score: ${finalScore}`);
 
-      if (error) {
-        console.error("Error fetching telegram users:", error);
-        return [];
+      // Validate the test signal
+      if (!isValidSignalData(testSignal)) {
+        console.error("❌ Test signal validation failed");
+        return false;
       }
 
-      return (
-        alertSettings?.map((setting) => ({
-          telegram_chat_id: setting.telegram_chat_id,
-          telegram_enabled: setting.telegram_enabled,
-        })) || []
+      // Send test signal through production webhook system
+      const success = await telegramAlertService.processSignalForAlerts(
+        testSignal
       );
-    } catch (error) {
-      console.error("Error getting Telegram users:", error);
-      return [];
-    }
-  };
 
-  const getStrengthFromScore = (score: number): string => {
-    if (score >= 90) return "very strong";
-    if (score >= 85) return "strong";
-    if (score >= 80) return "moderate";
-    return "weak";
-  };
-
-  // Manual test function
-  const sendTestAlert = async () => {
-    try {
-      const success = await telegramAlertService.sendTestAlert("1390805707");
-      console.log(success ? "✅ Test alert sent!" : "❌ Test alert failed");
-      return success;
+      if (success) {
+        console.log(
+          "✅ Test alert sent successfully through production system"
+        );
+        return true;
+      } else {
+        console.error("❌ Test alert failed to send");
+        return false;
+      }
     } catch (error) {
       console.error("❌ Error sending test alert:", error);
       return false;
     }
   };
 
+  // 🚀 PRODUCTION: Health check method for monitoring
+  const getAlertSystemStatus = async () => {
+    try {
+      const healthCheck = await telegramAlertService.healthCheck();
+      const processedCount = processedSignals.current.size;
+
+      return {
+        status: healthCheck.status,
+        processed_signals_count: processedCount,
+        service_health: healthCheck.details,
+        monitoring_enabled: enabled,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      console.error("❌ Error checking alert system status:", error);
+      return {
+        status: "error",
+        error: error instanceof Error ? error.message : "Unknown error",
+        timestamp: new Date().toISOString(),
+      };
+    }
+  };
+
+  // 🚀 PRODUCTION: Get alert statistics for admin dashboard
+  const getAlertStats = async (dateRange?: { start: string; end: string }) => {
+    try {
+      const defaultRange = dateRange || {
+        start: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // Last 24 hours
+        end: new Date().toISOString(),
+      };
+
+      return await telegramAlertService.getAlertStats(defaultRange);
+    } catch (error) {
+      console.error("❌ Error fetching alert stats:", error);
+      return null;
+    }
+  };
+
+  // 🚀 PRODUCTION: Manual signal reprocessing for admin use
+  const reprocessSignal = async (signalId: string) => {
+    try {
+      // Remove from processed set to allow reprocessing
+      processedSignals.current.delete(signalId);
+
+      // Fetch the signal data
+      const { data: signalData, error } = await supabase
+        .from("trading_signals")
+        .select("*")
+        .eq("id", signalId)
+        .single();
+
+      if (error || !signalData) {
+        console.error("❌ Error fetching signal for reprocessing:", error);
+        return false;
+      }
+
+      // Process the signal
+      await handleNewSignal(signalData);
+      return true;
+    } catch (error) {
+      console.error("❌ Error reprocessing signal:", error);
+      return false;
+    }
+  };
+
   return {
+    // 🧪 TEST FUNCTION: For development testing
     sendTestAlert,
+
+    // 🚀 PRODUCTION: Admin/monitoring methods
+    getAlertSystemStatus,
+    getAlertStats,
+    reprocessSignal,
+    processedSignalsCount: processedSignals.current.size,
   };
 }

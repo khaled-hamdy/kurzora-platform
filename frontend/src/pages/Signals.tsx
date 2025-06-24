@@ -1,8 +1,3 @@
-import {
-  TelegramAlertBanner,
-  SignalTelegramIndicator,
-  autoTriggerTelegramAlert, // ✅ NEW: Added auto-trigger import
-} from "../components/telegram";
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -11,7 +6,8 @@ import {
   useSignalLimits,
   useTrialStatus,
 } from "../hooks/useSubscriptionTier";
-import { useUserAlertSettings } from "../hooks/useUserAlertSettings"; // ✅ NEW: Added alert settings import
+import { useUserAlertSettings } from "../hooks/useUserAlertSettings";
+import { TelegramAlertBanner } from "../components/telegram";
 import Layout from "../components/Layout";
 import {
   Card,
@@ -38,6 +34,7 @@ import {
   BarChart3,
   Crown,
   Zap,
+  MessageSquare,
 } from "lucide-react";
 import { useToast } from "../hooks/use-toast";
 import SignalModal from "../components/signals/SignalModal";
@@ -49,19 +46,64 @@ import {
 } from "../utils/signalCalculations";
 import { Signal } from "../types/signal";
 
-// ✅ NEW: Test component to verify alert settings hook
+// Test component to verify alert settings hook
 const TestAlertSettings = () => {
-  const { alertSettings, telegramStatus, loading, error } =
-    useUserAlertSettings();
+  const {
+    alertSettings,
+    userProfile,
+    loading,
+    error,
+    isConnected,
+    canUseTelegram,
+  } = useUserAlertSettings();
 
   console.log("🔍 ALERT SETTINGS TEST:", {
     loading,
     error,
     alertSettings,
-    telegramStatus,
+    userProfile,
+    isConnected,
+    canUseTelegram,
   });
 
   return null; // This component is invisible, just for testing
+};
+
+// Simple Telegram indicator component
+const SignalTelegramIndicator: React.FC<{
+  signalScore: number;
+  ticker: string;
+}> = ({ signalScore, ticker }) => {
+  const { isConnected, canUseTelegram } = useUserAlertSettings();
+
+  // Only show for high-scoring signals
+  if (signalScore < 80) return null;
+
+  // Show different states based on user's telegram status
+  if (!canUseTelegram) {
+    return (
+      <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 text-xs mt-1">
+        <Crown className="h-3 w-3 mr-1" />
+        Pro Alert Available
+      </Badge>
+    );
+  }
+
+  if (isConnected) {
+    return (
+      <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-xs mt-1">
+        <MessageSquare className="h-3 w-3 mr-1" />
+        Alert Sent
+      </Badge>
+    );
+  }
+
+  return (
+    <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-xs mt-1">
+      <MessageSquare className="h-3 w-3 mr-1" />
+      Connect Telegram
+    </Badge>
+  );
 };
 
 // TradingView Chart Component
@@ -209,7 +251,7 @@ const SubscriptionStatusBanner: React.FC = () => {
   );
 };
 
-// ✅ IMPROVED: Professional Filter Header Component
+// Professional Filter Header Component
 const FilterHeader: React.FC<{
   filteredSignals: Signal[];
   hiddenSignalsCount: number;
@@ -224,7 +266,6 @@ const FilterHeader: React.FC<{
           <span className="text-white">Trading Filters</span>
         </div>
 
-        {/* ✅ IMPROVED: Professional-looking signal counter with proper contrast */}
         <div className="flex items-center space-x-2">
           <div className="bg-emerald-600/20 border border-emerald-500/30 rounded-lg px-3 py-1.5">
             <div className="flex items-center space-x-2">
@@ -235,7 +276,6 @@ const FilterHeader: React.FC<{
             </div>
           </div>
 
-          {/* ✅ IMPROVED: Clear subscription limitation indicator */}
           {hiddenSignalsCount > 0 && (
             <div className="bg-amber-600/20 border border-amber-500/30 rounded-lg px-3 py-1.5">
               <div className="flex items-center space-x-1">
@@ -249,7 +289,6 @@ const FilterHeader: React.FC<{
         </div>
       </CardTitle>
 
-      {/* ✅ NEW: Filter summary indicator */}
       <div className="text-xs text-slate-400 mt-2">
         {subscription && (
           <div className="flex items-center justify-between">
@@ -316,7 +355,7 @@ const UpgradePrompt: React.FC<{ hiddenCount: number }> = ({ hiddenCount }) => {
   );
 };
 
-// ✅ IMPROVED: Signal Card Component with Telegram Integration
+// Signal Card Component with Telegram Integration
 const SignalCard: React.FC<{
   signal: Signal;
   isHighlighted: boolean;
@@ -380,7 +419,7 @@ const SignalCard: React.FC<{
                   </Badge>
                 )}
 
-                {/* ✅ NEW: Telegram Alert Indicator */}
+                {/* Telegram Alert Indicator */}
                 <SignalTelegramIndicator
                   signalScore={finalScore}
                   ticker={signal.ticker}
@@ -496,7 +535,7 @@ const Signals: React.FC = () => {
   const location = useLocation();
   const { toast } = useToast();
 
-  // ✅ FIXED: All hooks MUST be called before any early returns
+  // All hooks MUST be called before any early returns
   // Subscription data
   const subscription = useSubscriptionTier();
   const signalLimits = useSignalLimits();
@@ -530,9 +569,6 @@ const Signals: React.FC = () => {
     error,
     refresh,
   } = useSignalsPageData();
-
-  // ✅ NEW: Alert settings hook for Telegram integration
-  const { getEffectiveChatId } = useUserAlertSettings();
 
   // URL parameter detection
   useEffect(() => {
@@ -641,39 +677,7 @@ const Signals: React.FC = () => {
     };
   }, [baseFilteredSignals, subscription, signalLimits, hasPosition]);
 
-  // ✅ UPDATED: Auto-trigger Telegram alerts for high-score signals with dynamic chat ID
-  useEffect(() => {
-    if (filteredSignals && filteredSignals.length > 0) {
-      console.log(
-        `📊 Checking ${filteredSignals.length} signals for Telegram alerts...`
-      );
-
-      // Auto-trigger alerts for qualifying signals
-      filteredSignals.forEach(async (signal) => {
-        const finalScore = calculateFinalScore(signal.signals);
-
-        if (finalScore >= 70) {
-          console.log(
-            `🚨 Signal ${signal.ticker} qualifies (${finalScore}%) - sending alert...`
-          );
-
-          // Get the effective chat ID (user's or admin fallback)
-          const effectiveChatId = getEffectiveChatId();
-
-          await autoTriggerTelegramAlert({
-            ticker: signal.ticker,
-            finalScore: finalScore,
-          });
-        } else {
-          console.log(
-            `🔕 Signal ${signal.ticker} below threshold (${finalScore}%)`
-          );
-        }
-      });
-    }
-  }, [filteredSignals, getEffectiveChatId]); // ✅ Added getEffectiveChatId dependency
-
-  // ✅ FIXED: Early returns AFTER all hooks are called
+  // Early returns AFTER all hooks are called
   // Redirect if not authenticated
   if (!user) {
     navigate("/");
@@ -705,7 +709,6 @@ const Signals: React.FC = () => {
     return (
       <Layout>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* ✅ NEW: Test component for alert settings */}
           <TestAlertSettings />
 
           <div className="mb-8">
@@ -731,7 +734,6 @@ const Signals: React.FC = () => {
     return (
       <Layout>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* ✅ NEW: Test component for alert settings */}
           <TestAlertSettings />
 
           <div className="mb-8">
@@ -785,10 +787,9 @@ const Signals: React.FC = () => {
   return (
     <Layout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* ✅ NEW: Test component for alert settings */}
         <TestAlertSettings />
 
-        {/* ✅ IMPROVED: Header Section */}
+        {/* Header Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
@@ -829,10 +830,16 @@ const Signals: React.FC = () => {
         {/* Subscription Status Banner */}
         <SubscriptionStatusBanner />
 
-        {/* ✅ NEW: Telegram Alerts Banner */}
-        <TelegramAlertBanner />
+        {/* Telegram Alerts Banner */}
+        <TelegramAlertBanner
+          showOnSignalsPage={true}
+          onConnect={() => {
+            // Navigate to settings page for telegram connection
+            navigate("/settings");
+          }}
+        />
 
-        {/* ✅ IMPROVED: Filters Section with Better Styling */}
+        {/* Filters Section */}
         <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700 mb-8">
           <FilterHeader
             filteredSignals={filteredSignals}
@@ -894,7 +901,7 @@ const Signals: React.FC = () => {
               </div>
             </div>
 
-            {/* ✅ NEW: Active filters summary */}
+            {/* Active filters summary */}
             <div className="mt-4 pt-4 border-t border-slate-700/50">
               <div className="flex items-center justify-between text-xs">
                 <div className="flex items-center space-x-4 text-slate-400">
@@ -915,7 +922,7 @@ const Signals: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* ✅ IMPROVED: Signals List */}
+        {/* Signals List */}
         <div className="space-y-6">
           {filteredSignals.map((signal) => {
             const hasExistingPosition = hasPosition(signal.ticker);

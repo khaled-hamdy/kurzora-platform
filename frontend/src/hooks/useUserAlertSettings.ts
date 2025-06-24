@@ -1,8 +1,10 @@
 // src/hooks/useUserAlertSettings.ts
+// Production hook for managing user alert settings and Telegram connection
+// 🚀 PRODUCTION: Complete CRUD operations with subscription validation
 
-import { useState, useEffect, useMemo } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 
 export interface UserAlertSettings {
   id: string;
@@ -21,38 +23,108 @@ export interface UserAlertSettings {
   updated_at: string;
 }
 
-export interface TelegramConnectionStatus {
-  isConnected: boolean;
-  chatId: string | null;
-  alertsEnabled: boolean;
-  canReceiveAlerts: boolean; // connected AND enabled AND professional tier
+export interface UserProfile {
+  id: string;
+  email: string;
+  name: string;
+  subscription_tier: "starter" | "professional" | "elite";
+  subscription_status: "trial" | "active" | "cancelled";
 }
 
-export const useUserAlertSettings = () => {
-  const { userProfile, loading: authLoading } = useAuth();
+interface UseUserAlertSettingsReturn {
+  // Data state
+  alertSettings: UserAlertSettings | null;
+  userProfile: UserProfile | null;
+
+  // Loading states
+  loading: boolean;
+  saving: boolean;
+
+  // Error states
+  error: string | null;
+
+  // Computed states
+  canUseTelegram: boolean;
+  isConnected: boolean;
+  canReceiveAlerts: boolean;
+
+  // Actions
+  updateSettings: (updates: Partial<UserAlertSettings>) => Promise<boolean>;
+  enableTelegramAlerts: () => Promise<boolean>;
+  disableTelegramAlerts: () => Promise<boolean>;
+  updateTelegramChatId: (chatId: string) => Promise<boolean>;
+  refreshSettings: () => Promise<void>;
+
+  // Stats
+  getAlertStats: () => Promise<any>;
+}
+
+export function useUserAlertSettings(): UseUserAlertSettingsReturn {
+  const { user } = useAuth();
   const [alertSettings, setAlertSettings] = useState<UserAlertSettings | null>(
     null
   );
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch alert settings from database
-  const fetchAlertSettings = async (userId: string) => {
+  // Fetch user alert settings and profile
+  const fetchData = async () => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+
     try {
-      setLoading(true);
       setError(null);
 
-      const { data, error: fetchError } = await supabase
-        .from("user_alert_settings")
+      // Fetch user profile
+      const { data: profile, error: profileError } = await supabase
+        .from("users")
         .select("*")
-        .eq("user_id", userId)
+        .eq("id", user.id)
         .single();
 
-      if (fetchError) {
-        if (fetchError.code === "PGRST116") {
-          // No settings found, create default settings
-          const defaultSettings = {
-            user_id: userId,
+      if (profileError) {
+        console.error("Error fetching user profile:", profileError);
+        // Create user profile if it doesn't exist
+        const { data: newProfile, error: createError } = await supabase
+          .from("users")
+          .insert({
+            id: user.id,
+            email: user.email || "",
+            name: user.user_metadata?.name || "User",
+            subscription_tier: "starter",
+            subscription_status: "trial",
+          })
+          .select()
+          .single();
+
+        if (createError) {
+          throw new Error(
+            `Failed to create user profile: ${createError.message}`
+          );
+        }
+        setUserProfile(newProfile);
+      } else {
+        setUserProfile(profile);
+      }
+
+      // Fetch alert settings
+      let { data: settings, error: settingsError } = await supabase
+        .from("user_alert_settings")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+
+      if (settingsError && settingsError.code === "PGRST116") {
+        // Settings don't exist, create default ones
+        console.log("Creating default alert settings for user");
+        const { data: newSettings, error: createError } = await supabase
+          .from("user_alert_settings")
+          .insert({
+            user_id: user.id,
             min_signal_score: 80,
             max_alerts_per_day: 10,
             trading_hours_only: true,
@@ -60,179 +132,197 @@ export const useUserAlertSettings = () => {
             telegram_enabled: false,
             telegram_chat_id: null,
             push_enabled: true,
-            quiet_hours_start: null,
-            quiet_hours_end: null,
             timezone: "UTC",
-          };
+          })
+          .select()
+          .single();
 
-          const { data: newData, error: createError } = await supabase
-            .from("user_alert_settings")
-            .insert(defaultSettings)
-            .select()
-            .single();
-
-          if (createError) throw createError;
-          setAlertSettings(newData);
-        } else {
-          throw fetchError;
+        if (createError) {
+          throw new Error(
+            `Failed to create alert settings: ${createError.message}`
+          );
         }
-      } else {
-        setAlertSettings(data);
+        settings = newSettings;
+      } else if (settingsError) {
+        throw new Error(
+          `Failed to fetch alert settings: ${settingsError.message}`
+        );
       }
+
+      setAlertSettings(settings);
+      console.log("✅ Alert settings loaded:", {
+        telegram_enabled: settings?.telegram_enabled,
+        telegram_chat_id: settings?.telegram_chat_id,
+        user_subscription: profile?.subscription_tier,
+      });
     } catch (err) {
-      console.error("Error fetching alert settings:", err);
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch alert settings"
-      );
+      console.error("Error loading user data:", err);
+      setError(err instanceof Error ? err.message : "Failed to load user data");
     } finally {
       setLoading(false);
     }
   };
 
-  // Update alert settings in database
-  const updateAlertSettings = async (updates: Partial<UserAlertSettings>) => {
-    if (!alertSettings || !userProfile)
-      return { error: "No user or settings found" };
+  // Update alert settings
+  const updateSettings = async (
+    updates: Partial<UserAlertSettings>
+  ): Promise<boolean> => {
+    if (!user?.id || !alertSettings) {
+      setError("User not authenticated or settings not loaded");
+      return false;
+    }
 
     try {
-      const { data, error: updateError } = await supabase
+      setSaving(true);
+      setError(null);
+
+      const { data, error } = await supabase
         .from("user_alert_settings")
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", userProfile.id)
+        .update(updates)
+        .eq("user_id", user.id)
         .select()
         .single();
 
-      if (updateError) throw updateError;
+      if (error) {
+        throw new Error(`Failed to update settings: ${error.message}`);
+      }
 
       setAlertSettings(data);
-      return { data, error: null };
+      console.log("✅ Settings updated successfully");
+      return true;
     } catch (err) {
-      console.error("Error updating alert settings:", err);
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to update settings";
-      setError(errorMessage);
-      return { error: errorMessage, data: null };
+      console.error("Error updating settings:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to update settings"
+      );
+      return false;
+    } finally {
+      setSaving(false);
     }
   };
 
-  // Connect Telegram account
-  const connectTelegram = async (chatId: string) => {
-    return await updateAlertSettings({
+  // Enable Telegram alerts
+  const enableTelegramAlerts = async (): Promise<boolean> => {
+    return await updateSettings({ telegram_enabled: true });
+  };
+
+  // Disable Telegram alerts
+  const disableTelegramAlerts = async (): Promise<boolean> => {
+    return await updateSettings({
+      telegram_enabled: false,
+      telegram_chat_id: null,
+    });
+  };
+
+  // Update Telegram chat ID
+  const updateTelegramChatId = async (chatId: string): Promise<boolean> => {
+    const success = await updateSettings({
       telegram_chat_id: chatId,
       telegram_enabled: true,
     });
+
+    if (success) {
+      console.log(`✅ Telegram chat ID updated: ${chatId}`);
+    }
+
+    return success;
   };
 
-  // Disconnect Telegram account
-  const disconnectTelegram = async () => {
-    return await updateAlertSettings({
-      telegram_chat_id: null,
-      telegram_enabled: false,
-    });
+  // Refresh data
+  const refreshSettings = async (): Promise<void> => {
+    setLoading(true);
+    await fetchData();
   };
 
-  // Toggle telegram alerts
-  const toggleTelegramAlerts = async (enabled: boolean) => {
-    return await updateAlertSettings({
-      telegram_enabled: enabled,
-    });
+  // Get alert statistics
+  const getAlertStats = async () => {
+    if (!user?.id) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from("alert_delivery_log")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("delivery_channel", "telegram")
+        .gte(
+          "created_at",
+          new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+        );
+
+      if (error) {
+        console.error("Error fetching alert stats:", error);
+        return null;
+      }
+
+      const totalAlerts = data.length;
+      const successfulAlerts = data.filter(
+        (log) => log.delivery_status === "delivered"
+      ).length;
+      const failedAlerts = data.filter(
+        (log) => log.delivery_status === "failed"
+      ).length;
+
+      return {
+        total_alerts_7_days: totalAlerts,
+        successful_alerts: successfulAlerts,
+        failed_alerts: failedAlerts,
+        success_rate:
+          totalAlerts > 0 ? (successfulAlerts / totalAlerts) * 100 : 0,
+      };
+    } catch (error) {
+      console.error("Error calculating alert stats:", error);
+      return null;
+    }
   };
 
-  // Update signal score threshold
-  const updateSignalThreshold = async (minScore: number) => {
-    return await updateAlertSettings({
-      min_signal_score: minScore,
-    });
-  };
+  // Computed properties
+  const canUseTelegram =
+    userProfile?.subscription_tier === "professional" ||
+    userProfile?.subscription_tier === "elite";
+  const isConnected = Boolean(
+    alertSettings?.telegram_enabled && alertSettings?.telegram_chat_id
+  );
+  const canReceiveAlerts =
+    canUseTelegram &&
+    isConnected &&
+    userProfile?.subscription_status === "active";
 
-  // Update daily alert limit
-  const updateDailyLimit = async (maxAlerts: number) => {
-    return await updateAlertSettings({
-      max_alerts_per_day: maxAlerts,
-    });
-  };
-
-  // Fetch settings when user changes
+  // Load data on mount and user change
   useEffect(() => {
-    if (userProfile?.id && !authLoading) {
-      fetchAlertSettings(userProfile.id);
+    if (user?.id) {
+      fetchData();
+    } else {
+      setLoading(false);
+      setAlertSettings(null);
+      setUserProfile(null);
     }
-  }, [userProfile?.id, authLoading]);
-
-  // Calculate telegram connection status
-  const telegramStatus: TelegramConnectionStatus = useMemo(() => {
-    const isConnected = !!(
-      alertSettings?.telegram_enabled && alertSettings?.telegram_chat_id
-    );
-    const chatId = alertSettings?.telegram_chat_id || null;
-    const alertsEnabled = alertSettings?.telegram_enabled || false;
-
-    // Check if user can receive alerts (must be professional tier)
-    const canReceiveAlerts =
-      isConnected &&
-      alertsEnabled &&
-      (userProfile?.subscription_tier === "professional" ||
-        userProfile?.subscription_status === "trial");
-
-    return {
-      isConnected,
-      chatId,
-      alertsEnabled,
-      canReceiveAlerts,
-    };
-  }, [alertSettings, userProfile]);
-
-  // Get effective chat ID for alerts (user's or fallback)
-  const getEffectiveChatId = (): string => {
-    if (telegramStatus.canReceiveAlerts && telegramStatus.chatId) {
-      return telegramStatus.chatId;
-    }
-    // Fallback to admin chat ID
-    return "1390805707";
-  };
+  }, [user?.id]);
 
   return {
-    // Data
+    // Data state
     alertSettings,
-    telegramStatus,
-    loading: loading || authLoading,
+    userProfile,
+
+    // Loading states
+    loading,
+    saving,
+
+    // Error states
     error,
 
-    // Telegram functions
-    connectTelegram,
-    disconnectTelegram,
-    toggleTelegramAlerts,
-    getEffectiveChatId,
+    // Computed states
+    canUseTelegram,
+    isConnected,
+    canReceiveAlerts,
 
-    // General settings functions
-    updateAlertSettings,
-    updateSignalThreshold,
-    updateDailyLimit,
+    // Actions
+    updateSettings,
+    enableTelegramAlerts,
+    disableTelegramAlerts,
+    updateTelegramChatId,
+    refreshSettings,
 
-    // Convenience getters
-    minSignalScore: alertSettings?.min_signal_score || 80,
-    maxAlertsPerDay: alertSettings?.max_alerts_per_day || 10,
-    emailEnabled: alertSettings?.email_enabled || true,
-    telegramEnabled: alertSettings?.telegram_enabled || false,
-    telegramChatId: alertSettings?.telegram_chat_id || null,
-    tradingHoursOnly: alertSettings?.trading_hours_only || true,
-
-    // Refresh function
-    refresh: () => userProfile?.id && fetchAlertSettings(userProfile.id),
+    // Stats
+    getAlertStats,
   };
-};
-
-// Convenience hook for checking if user can receive telegram alerts
-export const useCanReceiveTelegramAlerts = (): boolean => {
-  const { telegramStatus } = useUserAlertSettings();
-  return telegramStatus.canReceiveAlerts;
-};
-
-// Convenience hook for getting the effective chat ID for alerts
-export const useEffectiveTelegramChatId = (): string => {
-  const { getEffectiveChatId } = useUserAlertSettings();
-  return getEffectiveChatId();
-};
+}

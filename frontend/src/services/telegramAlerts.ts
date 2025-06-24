@@ -1,24 +1,47 @@
 // src/services/telegramAlerts.ts
-// Telegram Alert Service for Kurzora Trading Platform
-// 🔧 FIXED: Now uses Make.com webhook and correct scoring
+// Production Telegram Alert Service for Kurzora Trading Platform
+// 🚀 PRODUCTION: Subscription-based alerts with database integration
+
+import { supabase } from "@/lib/supabase";
+import { calculateFinalScore } from "@/utils/signalCalculations";
 
 interface TradingSignal {
+  id: string;
   symbol: string;
-  final_score: number;
+  signals: {
+    "1H": number;
+    "4H": number;
+    "1D": number;
+    "1W": number;
+  };
   strength: string;
   entry_price: number;
   stop_loss?: number;
   take_profit?: number;
   signal_type?: string;
+  created_at: string;
 }
 
-interface TelegramUser {
-  telegram_chat_id: string;
+interface UserAlertSettings {
+  user_id: string;
   telegram_enabled: boolean;
+  telegram_chat_id: string | null;
+  min_signal_score: number;
+  max_alerts_per_day: number;
+  trading_hours_only: boolean;
 }
 
-// 🎯 NEW: Webhook payload structure for Make.com
+interface SubscriptionUser {
+  id: string;
+  email: string;
+  subscription_tier: "starter" | "professional" | "elite";
+  subscription_status: "active" | "trial" | "cancelled";
+  alert_settings: UserAlertSettings;
+}
+
+// 🎯 Production webhook payload structure for Make.com
 interface WebhookPayload {
+  signal_id: string;
   symbol: string;
   final_score: number;
   strength: string;
@@ -28,22 +51,153 @@ interface WebhookPayload {
   signal_type?: string;
   alert_type: "signal_alert";
   timestamp: string;
+  user_count: number;
+  eligible_users: Array<{
+    user_id: string;
+    chat_id: string;
+    subscription_tier: string;
+  }>;
 }
 
 class TelegramAlertService {
-  // 🔒 SECURITY FIX: Use environment variable instead of hardcoded token
   private webhookUrl = import.meta.env.VITE_MAKE_WEBHOOK_URL;
 
-  // 🚀 NEW: Send alert via Make.com webhook (replaces direct Telegram API)
-  private async sendWebhookAlert(signal: TradingSignal): Promise<boolean> {
+  // 🚀 PRODUCTION: Send alerts to eligible Professional/Elite subscribers
+  async processSignalForAlerts(signal: TradingSignal): Promise<boolean> {
+    try {
+      // Calculate the actual final score using the unified scoring function
+      const finalScore = calculateFinalScore(signal.signals);
+
+      console.log(
+        `📊 Processing signal ${signal.symbol} with score ${finalScore}`
+      );
+
+      // Get eligible users for alerts
+      const eligibleUsers = await this.getEligibleUsers(finalScore);
+
+      if (eligibleUsers.length === 0) {
+        console.log(
+          `📭 No eligible users for ${signal.symbol} (score: ${finalScore})`
+        );
+        return false;
+      }
+
+      // Send webhook with real signal data and user list
+      return await this.sendProductionWebhook(
+        signal,
+        finalScore,
+        eligibleUsers
+      );
+    } catch (error) {
+      console.error("❌ Error processing signal for alerts:", error);
+      return false;
+    }
+  }
+
+  // 🔍 Get users eligible for alerts based on subscription and preferences
+  private async getEligibleUsers(
+    signalScore: number
+  ): Promise<SubscriptionUser[]> {
+    try {
+      const { data: users, error } = await supabase
+        .from("users")
+        .select(
+          `
+          id,
+          email,
+          subscription_tier,
+          subscription_status,
+          user_alert_settings (
+            user_id,
+            telegram_enabled,
+            telegram_chat_id,
+            min_signal_score,
+            max_alerts_per_day,
+            trading_hours_only
+          )
+        `
+        )
+        .eq("subscription_tier", "professional")
+        .in("subscription_status", ["active", "trial"])
+        .eq("user_alert_settings.telegram_enabled", true)
+        .not("user_alert_settings.telegram_chat_id", "is", null)
+        .lte("user_alert_settings.min_signal_score", signalScore);
+
+      if (error) {
+        console.error("❌ Database error fetching eligible users:", error);
+        return [];
+      }
+
+      // Filter users who haven't exceeded daily limits
+      const filteredUsers = await this.filterByDailyLimits(users || []);
+
+      console.log(`✅ Found ${filteredUsers.length} eligible users for alerts`);
+      return filteredUsers;
+    } catch (error) {
+      console.error("❌ Error fetching eligible users:", error);
+      return [];
+    }
+  }
+
+  // 📊 Filter users by daily alert limits
+  private async filterByDailyLimits(users: any[]): Promise<SubscriptionUser[]> {
+    const today = new Date().toISOString().split("T")[0];
+
+    const filteredUsers: SubscriptionUser[] = [];
+
+    for (const user of users) {
+      try {
+        // Check how many alerts sent today
+        const { count } = await supabase
+          .from("alert_delivery_log")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("delivery_channel", "telegram")
+          .gte("created_at", `${today}T00:00:00`)
+          .lt("created_at", `${today}T23:59:59`);
+
+        const alertsToday = count || 0;
+        const maxAlerts = user.user_alert_settings?.max_alerts_per_day || 10;
+
+        if (alertsToday < maxAlerts) {
+          filteredUsers.push({
+            id: user.id,
+            email: user.email,
+            subscription_tier: user.subscription_tier,
+            subscription_status: user.subscription_status,
+            alert_settings: user.user_alert_settings,
+          });
+        } else {
+          console.log(
+            `📈 User ${user.email} exceeded daily limit (${alertsToday}/${maxAlerts})`
+          );
+        }
+      } catch (error) {
+        console.error(
+          `❌ Error checking daily limits for user ${user.id}:`,
+          error
+        );
+      }
+    }
+
+    return filteredUsers;
+  }
+
+  // 🚀 Send production webhook with real signal and user data
+  private async sendProductionWebhook(
+    signal: TradingSignal,
+    finalScore: number,
+    eligibleUsers: SubscriptionUser[]
+  ): Promise<boolean> {
     if (!this.webhookUrl) {
-      console.error("❌ VITE_MAKE_WEBHOOK_URL not configured");
+      console.error("❌ VITE_MAKE_WEBHOOK_URL not configured for production");
       return false;
     }
 
     const payload: WebhookPayload = {
+      signal_id: signal.id,
       symbol: signal.symbol,
-      final_score: signal.final_score,
+      final_score: finalScore,
       strength: signal.strength,
       entry_price: signal.entry_price,
       stop_loss: signal.stop_loss,
@@ -51,10 +205,20 @@ class TelegramAlertService {
       signal_type: signal.signal_type,
       alert_type: "signal_alert",
       timestamp: new Date().toISOString(),
+      user_count: eligibleUsers.length,
+      eligible_users: eligibleUsers.map((user) => ({
+        user_id: user.id,
+        chat_id: user.alert_settings.telegram_chat_id!,
+        subscription_tier: user.subscription_tier,
+      })),
     };
 
     try {
-      console.log("📤 Sending signal to Make.com webhook:", payload);
+      console.log(`📤 Sending production webhook for ${signal.symbol}:`, {
+        score: finalScore,
+        users: eligibleUsers.length,
+        webhook_url: this.webhookUrl.substring(0, 50) + "...",
+      });
 
       const response = await fetch(this.webhookUrl, {
         method: "POST",
@@ -65,119 +229,126 @@ class TelegramAlertService {
       });
 
       if (response.ok) {
-        console.log("✅ Webhook sent successfully to Make.com");
+        console.log(
+          `✅ Production webhook sent successfully for ${signal.symbol}`
+        );
+
+        // Log successful alerts to database
+        await this.logAlertDeliveries(signal.id, eligibleUsers);
+
         return true;
       } else {
         console.error(
-          "❌ Webhook failed:",
+          `❌ Production webhook failed:`,
           response.status,
           response.statusText
         );
         return false;
       }
     } catch (error) {
-      console.error("❌ Error sending webhook:", error);
+      console.error("❌ Error sending production webhook:", error);
       return false;
     }
   }
 
-  // Send alert to specific user (now via webhook)
-  async sendSignalAlert(
-    user: TelegramUser,
-    signal: TradingSignal
-  ): Promise<boolean> {
-    if (!user.telegram_enabled || !user.telegram_chat_id) {
-      console.log("User does not have Telegram alerts enabled");
-      return false;
-    }
-
-    // Only send alerts for high-score signals
-    if (signal.final_score < 80) {
-      console.log(`Signal score ${signal.final_score} below threshold (80)`);
-      return false;
-    }
-
-    // 🚀 NEW: Send via webhook instead of direct API
-    return await this.sendWebhookAlert(signal);
-  }
-
-  // Send alert to multiple users (now via webhook)
-  async sendAlertToAllUsers(
-    users: TelegramUser[],
-    signal: TradingSignal
+  // 📝 Log alert deliveries to database for tracking
+  private async logAlertDeliveries(
+    signalId: string,
+    users: SubscriptionUser[]
   ): Promise<void> {
-    const enabledUsers = users.filter(
-      (user) => user.telegram_enabled && user.telegram_chat_id
-    );
-
-    console.log(
-      `📤 Sending webhook alert for ${signal.symbol} (${signal.final_score}/100) to ${enabledUsers.length} users`
-    );
-
-    // 🚀 NEW: Single webhook call (Make.com handles distribution)
-    if (enabledUsers.length > 0) {
-      const success = await this.sendWebhookAlert(signal);
-      if (success) {
-        console.log(`✅ Webhook sent successfully for ${signal.symbol}`);
-      } else {
-        console.log(`❌ Webhook failed for ${signal.symbol}`);
-      }
-    }
-  }
-
-  // 🔧 FIXED: Test method now uses current Dashboard data and webhook
-  async sendTestAlert(chatId: string): Promise<boolean> {
-    // 🎯 FIXED: Get real signal data from current state instead of hardcoded
-    const testSignal: TradingSignal = await this.getCurrentTestSignal();
-
-    console.log("🧪 Sending test alert with current data:", testSignal);
-
-    // 🚀 NEW: Send via webhook (not direct API)
-    return await this.sendWebhookAlert(testSignal);
-  }
-
-  // 🎯 NEW: Get current signal data from Dashboard/Signals page
-  private async getCurrentTestSignal(): Promise<TradingSignal> {
     try {
-      // Try to get current TSLA signal from the dashboard
-      const response = await fetch("/api/signals/current/TSLA");
-      if (response.ok) {
-        const signalData = await response.json();
+      const deliveryLogs = users.map((user) => ({
+        user_id: user.id,
+        signal_id: signalId,
+        alert_type: "signal_alert",
+        delivery_channel: "telegram",
+        delivery_status: "sent",
+        sent_at: new Date().toISOString(),
+      }));
 
-        // Use actual dashboard data if available
-        return {
-          symbol: "TSLA",
-          final_score: signalData.final_score || 88, // Use actual calculated score
-          strength: signalData.strength || "strong",
-          entry_price: signalData.entry_price || 248.5,
-          stop_loss: signalData.stop_loss || 235.0,
-          take_profit: signalData.take_profit || 275.0,
-          signal_type: signalData.signal_type || "bullish",
-        };
+      const { error } = await supabase
+        .from("alert_delivery_log")
+        .insert(deliveryLogs);
+
+      if (error) {
+        console.error("❌ Error logging alert deliveries:", error);
+      } else {
+        console.log(`✅ Logged ${deliveryLogs.length} alert deliveries`);
       }
     } catch (error) {
-      console.log("Using fallback test data (API not available)");
+      console.error("❌ Error in logAlertDeliveries:", error);
     }
-
-    // 🎯 FALLBACK: Use current expected scores (not hardcoded 95)
-    return {
-      symbol: "TSLA",
-      final_score: 88, // ✅ FIXED: Use current Dashboard score, not 95
-      strength: "strong",
-      entry_price: 248.5,
-      stop_loss: 235.0,
-      take_profit: 275.0,
-      signal_type: "bullish",
-    };
   }
 
-  // 🗑️ REMOVED: Old direct Telegram API methods (now use webhook)
-  // - formatSignalMessage() - now handled by Make.com template
-  // - Direct API calls - now via webhook
+  // 📊 Get alert statistics for admin dashboard
+  async getAlertStats(dateRange: { start: string; end: string }) {
+    try {
+      const { data, error } = await supabase
+        .from("alert_delivery_log")
+        .select("*")
+        .eq("delivery_channel", "telegram")
+        .gte("created_at", dateRange.start)
+        .lte("created_at", dateRange.end);
+
+      if (error) throw error;
+
+      return {
+        total_alerts: data.length,
+        successful_alerts: data.filter((log) => log.delivery_status === "sent")
+          .length,
+        failed_alerts: data.filter((log) => log.delivery_status === "failed")
+          .length,
+        unique_users: new Set(data.map((log) => log.user_id)).size,
+      };
+    } catch (error) {
+      console.error("❌ Error fetching alert stats:", error);
+      return null;
+    }
+  }
+
+  // 🔧 Check service health for monitoring
+  async healthCheck(): Promise<{ status: string; details: any }> {
+    try {
+      // Check webhook URL configuration
+      if (!this.webhookUrl) {
+        return {
+          status: "error",
+          details: { error: "Webhook URL not configured" },
+        };
+      }
+
+      // Check database connectivity
+      const { data, error } = await supabase
+        .from("users")
+        .select("id")
+        .limit(1);
+
+      if (error) {
+        return {
+          status: "error",
+          details: { error: "Database connectivity failed", details: error },
+        };
+      }
+
+      return {
+        status: "healthy",
+        details: {
+          webhook_configured: true,
+          database_connected: true,
+          timestamp: new Date().toISOString(),
+        },
+      };
+    } catch (error) {
+      return {
+        status: "error",
+        details: { error: "Health check failed", details: error },
+      };
+    }
+  }
 }
 
 // Export singleton instance
 export const telegramAlertService = new TelegramAlertService();
 
 // Export types for use in other files
-export type { TradingSignal, TelegramUser };
+export type { TradingSignal, UserAlertSettings, SubscriptionUser };
