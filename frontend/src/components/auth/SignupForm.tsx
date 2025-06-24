@@ -1,315 +1,311 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { Button } from '../ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
-import PlanDisplay from './PlanDisplay';
-import SignupFormFields from './SignupFormFields';
-import SocialAuth from './SocialAuth';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements } from '@stripe/react-stripe-js';
-import PaymentForm from './PaymentForm';
+import React, { useState } from "react";
+import { Check, Star, Zap, TrendingUp } from "lucide-react";
+import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { toast } from "sonner";
 
-// Use your actual test key for testing with test cards
-const STRIPE_PUBLISHABLE_KEY = 'pk_test_51RYbcjP6fp0wCWWukGV48u4rYD6mhqCxFlEKjsKmwmqNkPJcDI7bKrNlqe7SPGBu4dyxy2kpBnejKQDgS0YU5uVL00omhfiN1n';
-const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
-
-const planDetails = {
-  starter: {
-    name: 'Starter',
-    price: 29,
-    badge: null,
-  },
-  professional: {
-    name: 'Professional', 
-    price: 79,
-    badge: 'Most Popular',
-  },
-  elite: {
-    name: 'Elite',
-    price: 199,
-    badge: 'Best Value',
-  }
-};
-
-interface SignupFormProps {
-  onSwitchToLogin: () => void;
-  selectedPlan?: {
-    id: string;
-    name: string;
-    price: string;
-    billingCycle?: string;
-  };
+interface PricingTier {
+  id: string;
+  name: string;
+  price: string;
+  originalPrice?: string;
+  features: string[];
+  cta: string;
+  popular?: boolean;
+  icon: React.ReactNode;
+  badge?: string;
 }
 
-const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin, selectedPlan }) => {
-  const { signup, loading } = useAuth();
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  });
-  const [planInfo, setPlanInfo] = useState(selectedPlan || null);
-  const [paymentMethodId, setPaymentMethodId] = useState<string | null>(null);
-  const [paymentError, setPaymentError] = useState<string | null>(null);
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isGoogleSignIn, setIsGoogleSignIn] = useState(false);
+// CORRECTED PRICING: $19 Starter, $49 Professional (removed Elite)
+const pricingTiers: PricingTier[] = [
+  {
+    id: "starter",
+    name: "Starter",
+    price: "$19",
+    features: [
+      "2-3 signals per day",
+      "Email alerts",
+      "Full confidence scores",
+      "TradingView charts",
+      "Paper trading system",
+      "Mobile responsive access",
+    ],
+    cta: "Start Free Trial",
+    icon: <TrendingUp className="h-6 w-6" />,
+  },
+  {
+    id: "professional",
+    name: "Professional",
+    price: "$49",
+    features: [
+      "Everything in Starter",
+      "5-7 signals per day",
+      "Telegram instant alerts",
+      "Advanced filters",
+      "AI signal explanations",
+      "Priority support",
+      "Discord community access",
+    ],
+    cta: "Start 7-day Trial",
+    popular: true,
+    icon: <Star className="h-6 w-6" />,
+    badge: "Most Popular",
+  },
+];
 
-  useEffect(() => {
-    // Check URL parameters for plan info
-    const urlParams = new URLSearchParams(window.location.search);
-    const planId = urlParams.get('plan');
-    const planPrice = urlParams.get('price');
-    const billingCycle = urlParams.get('billing') || 'monthly';
+interface PricingSectionProps {
+  onSignupClick?: (planInfo?: any) => void;
+}
 
-    if (planId && planPrice) {
-      const planDetail = planDetails[planId as keyof typeof planDetails];
-      if (planDetail) {
-        setPlanInfo({
-          id: planId,
-          name: planDetail.name,
-          price: planPrice,
-          billingCycle: billingCycle
-        });
-      }
-    } else if (!selectedPlan) {
-      // Default to professional plan if no plan specified
-      setPlanInfo({
-        id: 'professional',
-        name: 'Professional',
-        price: '79',
-        billingCycle: 'monthly'
-      });
-    }
+const PricingSection: React.FC<PricingSectionProps> = ({ onSignupClick }) => {
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(
+    "monthly"
+  );
 
-    // Restore form data if available
-    const savedFormData = localStorage.getItem('signupFormData');
-    if (savedFormData) {
-      try {
-        setFormData(JSON.parse(savedFormData));
-      } catch (error) {
-        console.error('Error parsing saved form data:', error);
-      }
-    }
-  }, [selectedPlan]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    
-    if (!isGoogleSignIn && formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      toast.error('Passwords do not match');
-      return;
-    }
-
-    if (planInfo && !paymentMethodId) {
-      setError('Please enter your payment information');
-      toast.error('Please enter your payment information');
-      return;
-    }
-    
-    try {
-      setIsProcessingPayment(true);
-      
-      // First create the user account (only if not Google sign-in)
-      if (!isGoogleSignIn) {
-        await signup(formData.email, formData.password, formData.name);
-      }
-      
-      // If there's a plan and payment method, create subscription
-      if (planInfo && paymentMethodId) {
-        // TODO: Connect to backend logic via /src/backend-functions/CreateSubscription.ts
-        console.log('Creating subscription with payment method:', paymentMethodId);
-        console.log('Plan info:', planInfo);
-        
-        // Store subscription info for later processing
-        localStorage.setItem('pendingSubscription', JSON.stringify({
-          planId: planInfo.id,
-          paymentMethodId: paymentMethodId
-        }));
-      }
-      
-      // Store plan selection for post-signup flow
-      if (planInfo) {
-        localStorage.setItem('selectedPlan', JSON.stringify(planInfo));
-        localStorage.setItem('showWelcome', 'true');
-      }
-      
-      // Clear saved form data on successful signup
-      localStorage.removeItem('signupFormData');
-      
-      toast.success('Account created successfully! Welcome to Kurzora.');
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Signup failed. Please try again.';
-      setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setIsProcessingPayment(false);
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newFormData = {
-      ...formData,
-      [e.target.name]: e.target.value
+  const handleSubscribe = (tier: PricingTier) => {
+    const price = tier.price.replace("$", "");
+    const planInfo = {
+      id: tier.id,
+      name: tier.name,
+      price: price,
+      billingCycle,
     };
-    setFormData(newFormData);
-    
-    // Save form data to localStorage
-    localStorage.setItem('signupFormData', JSON.stringify(newFormData));
-  };
 
-  const handleChangePlan = () => {
-    // Save current form data before navigation
-    localStorage.setItem('signupFormData', JSON.stringify(formData));
-    window.location.href = '/pricing';
-  };
-
-  const handlePaymentSuccess = (paymentMethodId: string) => {
-    setPaymentMethodId(paymentMethodId);
-    setPaymentError(null);
-    toast.success('Payment method added successfully');
-  };
-
-  const handlePaymentError = (error: string) => {
-    setPaymentError(error);
-    setPaymentMethodId(null);
-  };
-
-  const handleGoogleSignIn = async () => {
-    try {
-      setError(null);
-      setIsGoogleSignIn(true);
-      
-      // TODO: Connect to backend logic via /src/backend-functions/GoogleAuth.ts
-      console.log('Attempting Google sign-in...');
-      
-      // Mock Google sign-in for now - replace with actual Firebase implementation
-      const mockUser = {
-        uid: 'google_' + Date.now(),
-        email: 'user@gmail.com',
-        displayName: 'Google User',
-        photoURL: null
-      };
-      
-      // Set form data from Google user
-      setFormData(prev => ({
-        ...prev,
-        name: mockUser.displayName || '',
-        email: mockUser.email || ''
-      }));
-      
-      toast.success('Google sign-in successful! Please complete payment information.');
-    } catch (error) {
-      console.error('Google sign-in error:', error);
-      setError('Failed to sign in with Google. Please try again.');
-      setIsGoogleSignIn(false);
+    if (onSignupClick) {
+      // Store plan info for the signup form
+      localStorage.setItem("selectedPlan", JSON.stringify(planInfo));
+      onSignupClick(planInfo);
+    } else {
+      // If we're on a dedicated pricing page, store the plan and navigate cleanly
+      localStorage.setItem("selectedPlan", JSON.stringify(planInfo));
+      window.location.href = "/";
+      // Use a timeout to trigger signup after navigation
+      setTimeout(() => {
+        const event = new CustomEvent("showSignup", { detail: planInfo });
+        window.dispatchEvent(event);
+      }, 100);
     }
   };
 
-  const getButtonText = () => {
-    if (isProcessingPayment) {
-      return 'Setting up your subscription...';
+  const getDiscountedPrice = (price: string) => {
+    if (billingCycle === "yearly") {
+      // FIXED: Hardcoded yearly prices to eliminate floating-point errors
+      if (price === "$19") return "$15";
+      if (price === "$49") return "$39";
+      return price;
     }
-    if (loading) {
-      return planInfo ? 'Creating account...' : 'Creating account...';
+    return price;
+  };
+
+  const getDailyPrice = (price: string) => {
+    // FIXED: Hardcoded daily prices to eliminate floating-point errors
+    if (billingCycle === "yearly") {
+      if (price === "$19") return "0.50"; // $15/30 days
+      if (price === "$49") return "1.30"; // $39/30 days
+    } else {
+      if (price === "$19") return "0.63"; // $19/30 days
+      if (price === "$49") return "1.63"; // $49/30 days
     }
-    if (planInfo) {
-      return 'Start Free Trial';
-    }
-    return 'Create Account';
+    return "0.00";
   };
 
   return (
-    <Card className="w-full max-w-md bg-slate-900/50 backdrop-blur-sm border-blue-800/30">
-      <CardHeader className="space-y-1">
-        <div className="flex justify-center mb-4">
-          <img src="/kurzora-logo.svg" alt="Kurzora Logo" className="h-12 w-auto" />
+    <div className="max-w-7xl mx-auto px-4 py-16">
+      <div className="text-center mb-12">
+        <div className="mb-4">
+          <span className="bg-blue-600/20 text-blue-400 border border-blue-500/30 text-sm px-3 py-1 rounded-full">
+            🎉 Early Bird Pricing
+          </span>
         </div>
-        <CardTitle className="text-2xl text-center text-white">Create account</CardTitle>
-        <CardDescription className="text-center text-slate-400">
-          Join thousands of successful traders
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <PlanDisplay planInfo={planInfo} onChangePlan={handleChangePlan} />
-        
-        {/* Error Message Container */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-            <p className="text-sm text-red-400">{error}</p>
-          </div>
-        )}
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {!isGoogleSignIn && <SignupFormFields formData={formData} onChange={handleChange} />}
-          
-          {isGoogleSignIn && (
-            <div className="space-y-2">
-              <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                <p className="text-sm text-green-400">Signed in with Google as {formData.email}</p>
-              </div>
-            </div>
-          )}
+        <h2 className="text-4xl font-bold text-white mb-4">
+          Choose Your Trading Edge
+        </h2>
+        <p className="text-slate-400 text-lg mb-8 max-w-2xl mx-auto">
+          Join thousands of profitable traders with our proven signal
+          technology. All plans include a 7-day free trial with no commitment.
+        </p>
 
-          {/* Payment Information Section - Always show if plan is selected */}
-          {planInfo && (
-            <div className="mt-6">
-              <Elements stripe={stripePromise}>
-                <PaymentForm
-                  onPaymentSuccess={handlePaymentSuccess}
-                  onPaymentError={handlePaymentError}
-                  loading={loading || isProcessingPayment}
-                  planInfo={planInfo}
-                />
-              </Elements>
-              {paymentError && (
-                <p className="text-sm text-red-400 mt-2">{paymentError}</p>
-              )}
-            </div>
+        <div className="flex items-center justify-center space-x-4 mb-8">
+          <span
+            className={`text-sm ${
+              billingCycle === "monthly" ? "text-white" : "text-slate-400"
+            }`}
+          >
+            Monthly
+          </span>
+          <button
+            onClick={() =>
+              setBillingCycle(billingCycle === "monthly" ? "yearly" : "monthly")
+            }
+            className="relative inline-flex h-6 w-11 items-center rounded-full bg-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                billingCycle === "yearly" ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </button>
+          <span
+            className={`text-sm ${
+              billingCycle === "yearly" ? "text-white" : "text-slate-400"
+            }`}
+          >
+            Yearly
+          </span>
+          {billingCycle === "yearly" && (
+            <span className="bg-emerald-600 text-white text-xs px-2 py-1 rounded-full">
+              Save 20%
+            </span>
           )}
-          
-          <button 
-            type="submit"
-            className="w-full py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed text-white"
-            disabled={loading || isProcessingPayment}
+        </div>
+      </div>
+
+      {/* CONSISTENT LAYOUT: Same width and spacing for both monthly and yearly */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 max-w-6xl mx-auto">
+        {pricingTiers.map((tier) => (
+          <Card
+            key={tier.id}
+            className={`relative bg-slate-800/50 backdrop-blur-sm border-slate-700 hover:bg-slate-800/70 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/10 w-full max-w-md md:max-w-lg ${
+              tier.popular ? "ring-2 ring-purple-500/50" : ""
+            }`}
           >
-            {(loading || isProcessingPayment) ? (
-              <span className="flex items-center justify-center gap-2">
-                <Loader2 className="w-5 h-5 animate-spin" />
-                {getButtonText()}
-              </span>
-            ) : (
-              getButtonText()
+            {tier.badge && (
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <span className="bg-gradient-to-r from-purple-600 to-purple-700 text-white text-xs px-3 py-1 rounded-full flex items-center">
+                  <Star className="h-3 w-3 mr-1" />
+                  {tier.badge}
+                </span>
+              </div>
             )}
-          </button>
-        </form>
-        
-        <SocialAuth onGoogleSignIn={handleGoogleSignIn} />
-        
-        <div className="text-center text-sm">
-          <span className="text-slate-400">Already have an account? </span>
-          <button 
-            onClick={onSwitchToLogin}
-            className="text-blue-400 hover:text-blue-300 font-medium"
-          >
-            Sign in
-          </button>
+
+            <CardHeader className="text-center pb-6 px-8 pt-10">
+              <div className="flex justify-center mb-6">
+                <div
+                  className={`p-4 rounded-xl ${
+                    tier.popular
+                      ? "bg-gradient-to-r from-purple-600 to-purple-700"
+                      : "bg-gradient-to-r from-blue-500 to-blue-600"
+                  }`}
+                >
+                  <div className="text-white">{tier.icon}</div>
+                </div>
+              </div>
+
+              <CardTitle className="text-2xl text-white mb-4">
+                {tier.name}
+              </CardTitle>
+
+              <div className="flex items-baseline justify-center space-x-2 mb-3">
+                <span className="text-5xl font-bold text-white">
+                  {getDiscountedPrice(tier.price)}
+                </span>
+                <span className="text-slate-400 text-lg">
+                  /{billingCycle === "monthly" ? "month" : "year"}
+                </span>
+              </div>
+
+              {billingCycle === "yearly" && (
+                <div className="text-base text-green-400 mb-3 font-medium">
+                  Save $
+                  {tier.price === "$19"
+                    ? "46"
+                    : tier.price === "$49"
+                    ? "117"
+                    : "0"}
+                  /year
+                </div>
+              )}
+
+              <p className="text-base text-slate-400">
+                Just ${getDailyPrice(tier.price)}/day
+              </p>
+            </CardHeader>
+
+            <CardContent className="space-y-6 px-8 pb-10">
+              <ul className="space-y-4">
+                {tier.features.map((feature, index) => (
+                  <li key={index} className="flex items-start space-x-3">
+                    <Check className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-slate-300 text-base leading-relaxed">
+                      {feature}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              <Button
+                onClick={() => handleSubscribe(tier)}
+                className={`w-full py-4 text-lg font-semibold transition-all ${
+                  tier.popular
+                    ? "bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                }`}
+              >
+                <Zap className="h-5 w-5 mr-2" />
+                {tier.cta}
+              </Button>
+
+              <div className="space-y-4">
+                <p className="text-center text-base text-slate-400">
+                  7-day free trial • Cancel anytime • No setup fees
+                </p>
+
+                <p className="text-sm text-slate-500 text-center">
+                  🔐 256-bit SSL encryption • PCI compliant • Powered by Stripe
+                </p>
+
+                <p className="text-sm text-slate-500 text-center">
+                  One winning trade pays for 6 months
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Trust indicators section */}
+      <div className="mt-16 text-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          <div className="flex flex-col items-center">
+            <div className="p-3 bg-emerald-600/20 rounded-full mb-4">
+              <Zap className="h-6 w-6 text-emerald-400" />
+            </div>
+            <h3 className="text-white font-semibold mb-2">Instant Setup</h3>
+            <p className="text-slate-400 text-sm">
+              Start receiving signals within minutes of signing up
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center">
+            <div className="p-3 bg-emerald-600/20 rounded-full mb-4">
+              <Star className="h-6 w-6 text-emerald-400" />
+            </div>
+            <h3 className="text-white font-semibold mb-2">Proven Results</h3>
+            <p className="text-slate-400 text-sm">
+              Average 73% win rate verified by our users
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center">
+            <div className="p-3 bg-emerald-600/20 rounded-full mb-4">
+              <TrendingUp className="h-6 w-6 text-emerald-400" />
+            </div>
+            <h3 className="text-white font-semibold mb-2">Expert Support</h3>
+            <p className="text-slate-400 text-sm">
+              Get help from our team of professional traders
+            </p>
+          </div>
         </div>
-        
-        <div className="text-center text-xs text-slate-400">
-          By creating an account, you agree to our{' '}
-          <a href="#" className="text-blue-400 hover:text-blue-300">Terms of Service</a>
-          {' '}and{' '}
-          <a href="#" className="text-blue-400 hover:text-blue-300">Privacy Policy</a>
+
+        <div className="mt-8 text-center">
+          <p className="text-slate-400 text-sm">
+            ⚡ <strong className="text-white">Early bird pricing</strong> -
+            Prices increase after first 100 customers
+          </p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 
-export default SignupForm;
+export default PricingSection;
