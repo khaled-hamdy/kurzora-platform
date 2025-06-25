@@ -96,7 +96,7 @@ const AdminUsers: React.FC = () => {
         subscription_status: "trial", // Default - you can enhance this
         is_active: true, // Default - you can enhance this
         total_trades: tradesByUser[user.id] || 0,
-        total_revenue: 29, // Estimated $29/month - you can enhance this
+        total_revenue: 19, // FIXED: Updated to $19/month Starter tier
         last_login: user.created_at, // Placeholder - you can enhance this
       }));
 
@@ -118,7 +118,7 @@ const AdminUsers: React.FC = () => {
         newUsersThisWeek: processedUsers.filter(
           (u) => new Date(u.created_at) >= weekAgo
         ).length,
-        totalRevenue: processedUsers.length * 29,
+        totalRevenue: processedUsers.length * 19, // FIXED: Updated to $19 pricing
         averageTradesPerUser:
           processedUsers.length > 0
             ? Math.round(

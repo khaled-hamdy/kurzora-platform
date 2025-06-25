@@ -1,20 +1,19 @@
 import React from "react";
 
-// CORRECTED PRICING: $19 Starter, $49 Professional (removed Elite)
 const planDetails = {
   starter: {
     name: "Starter",
-    price: 19,
+    price: 19, // FIXED: Changed from 29 to 19
     badge: null,
     icon: "📈",
   },
   professional: {
     name: "Professional",
-    price: 49,
+    price: 49, // FIXED: Changed from 79 to 49
     badge: "Most Popular",
     icon: "⭐",
   },
-  // Elite tier removed
+  // REMOVED: Elite tier completely removed
 };
 
 interface PlanDisplayProps {
@@ -42,12 +41,12 @@ const PlanDisplay: React.FC<PlanDisplayProps> = ({
 
     const badgeClass =
       planInfo.id === "professional"
-        ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
-        : "bg-blue-500/20 text-blue-400 border border-blue-500/30";
+        ? "bg-green-500/20 text-green-400"
+        : "bg-amber-500/20 text-amber-400";
 
     return (
       <span
-        className={`inline-block ${badgeClass} text-xs px-3 py-1 rounded-full mb-2`}
+        className={`inline-block ${badgeClass} text-xs px-2 py-1 rounded-full mb-2`}
       >
         {planBadge}
       </span>
