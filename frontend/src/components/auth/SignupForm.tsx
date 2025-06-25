@@ -49,7 +49,8 @@ const SignupForm: React.FC<SignupFormProps> = ({
   onSwitchToLogin,
   selectedPlan,
 }) => {
-  const { signup, loading } = useAuth();
+  // 🔧 FIXED: Changed 'signup' to 'signUp' to match AuthContext
+  const { signUp, loading } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -125,26 +126,43 @@ const SignupForm: React.FC<SignupFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("🚀 FORM SUBMIT TRIGGERED!"); // Debug log to see if form submission starts
     setError(null);
 
     if (!isGoogleSignIn && formData.password !== formData.confirmPassword) {
+      console.log("❌ Password mismatch error");
       setError("Passwords do not match");
       toast.error("Passwords do not match");
       return;
     }
 
     if (planInfo && !paymentMethodId) {
+      console.log("❌ Missing payment method error");
       setError("Please enter your payment information");
       toast.error("Please enter your payment information");
       return;
     }
 
+    console.log("✅ All validations passed, proceeding with signup...");
+
     try {
       setIsProcessingPayment(true);
 
+      // 🔧 FIXED: Changed 'signup' to 'signUp' to match AuthContext
       // First create the user account (only if not Google sign-in)
       if (!isGoogleSignIn) {
-        await signup(formData.email, formData.password, formData.name);
+        console.log("🚀 Starting user signup process...");
+        const result = await signUp(
+          formData.email,
+          formData.password,
+          formData.name
+        );
+
+        // Check if signup had an error
+        if (result.error) {
+          throw new Error(result.error);
+        }
+        console.log("✅ User signup successful!");
       }
 
       // If there's a plan and payment method, create subscription
@@ -175,7 +193,31 @@ const SignupForm: React.FC<SignupFormProps> = ({
       // Clear saved form data on successful signup
       localStorage.removeItem("signupFormData");
 
+      // Show success message
       toast.success("Account created successfully! Welcome to Kurzora.");
+
+      // 🚀 ENHANCED: Immediate redirect with multiple fallback methods
+      console.log("🔄 Starting immediate redirect to dashboard...");
+
+      // Method 1: Immediate redirect (don't wait for setTimeout)
+      try {
+        window.location.replace("/dashboard");
+        return; // Exit if successful
+      } catch (immediateError) {
+        console.warn("⚠️ Immediate redirect failed, trying fallback...");
+      }
+
+      // Method 2: Fallback with setTimeout
+      setTimeout(() => {
+        try {
+          console.log("🔄 Executing fallback redirect...");
+          window.location.href = "/dashboard";
+        } catch (timeoutError) {
+          console.error("❌ Fallback redirect failed:", timeoutError);
+          // Method 3: Force page reload as last resort
+          window.location = "/dashboard";
+        }
+      }, 100); // Very short delay
     } catch (error) {
       const errorMessage =
         error instanceof Error
@@ -208,7 +250,8 @@ const SignupForm: React.FC<SignupFormProps> = ({
   const handlePaymentSuccess = (paymentMethodId: string) => {
     setPaymentMethodId(paymentMethodId);
     setPaymentError(null);
-    toast.success("Payment method added successfully");
+    // 🔧 FIXED: Removed confusing "Payment method added" toast
+    // User will see green checkmark in payment form instead
   };
 
   const handlePaymentError = (error: string) => {
@@ -260,10 +303,10 @@ const SignupForm: React.FC<SignupFormProps> = ({
 
   const getButtonText = () => {
     if (isProcessingPayment) {
-      return "Setting up your subscription...";
+      return "Creating your account...";
     }
     if (loading) {
-      return planInfo ? "Creating account..." : "Creating account...";
+      return "Setting up your profile...";
     }
     if (planInfo) {
       return "Start Free Trial";
@@ -334,8 +377,11 @@ const SignupForm: React.FC<SignupFormProps> = ({
 
           {/* Payment Information Section - Always show if plan is selected */}
           {planInfo && (
-            <div className="mt-6">
-              <Elements stripe={stripePromise}>
+            <div className="mt-6" key={`payment-${planInfo.id}`}>
+              <Elements
+                stripe={stripePromise}
+                key={`stripe-elements-${planInfo.id}`}
+              >
                 <PaymentForm
                   onPaymentSuccess={handlePaymentSuccess}
                   onPaymentError={handlePaymentError}
