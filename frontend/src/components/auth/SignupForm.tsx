@@ -131,11 +131,12 @@ const SignupForm: React.FC<SignupFormProps> = ({
         planInfo: planInfo,
       });
 
-      // Create user account
+      // 🎯 FIXED: Pass planInfo directly to signUp function
       const signUpResult = await signUp(
         formData.email,
         formData.password,
-        formData.name
+        formData.name,
+        planInfo || undefined // Pass plan info as parameter
       );
 
       if (signUpResult.error) {
@@ -144,7 +145,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
 
       console.log("✅ User signup successful!");
 
-      // Store plan info for later processing
+      // Store plan info for later processing (backend still needs this)
       if (planInfo) {
         localStorage.setItem("selectedPlan", JSON.stringify(planInfo));
       }

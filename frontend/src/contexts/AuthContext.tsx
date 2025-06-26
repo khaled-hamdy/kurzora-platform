@@ -21,7 +21,13 @@ interface AuthContextType {
   signUp: (
     email: string,
     password: string,
-    name: string
+    name: string,
+    planInfo?: {
+      id: string;
+      name: string;
+      price: string;
+      billingCycle?: string;
+    }
   ) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
   updateProfile: (updates: { name?: string }) => Promise<{ error?: string }>;
@@ -52,9 +58,281 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isProcessingSubscription, setIsProcessingSubscription] =
     useState(false);
 
+  // Store plan info temporarily during signup
+  const pendingPlanInfo = useRef<any>(null);
+
   // Prevent multiple redirects
   const isRedirecting = useRef(false);
   const mounted = useRef(true);
+
+  // 🎯 FIXED: Simplified and reliable plan tier determination
+  const determineSubscriptionTier = useCallback(
+    (planInfo: any): "starter" | "professional" => {
+      console.log(
+        "🎯 PLAN LOGIC: Determining subscription tier for:",
+        planInfo
+      );
+
+      // Method 1: PRIORITIZE direct plan info from signup flow (MOST IMPORTANT)
+      if (planInfo?.id) {
+        const planId = planInfo.id.toLowerCase().trim();
+        console.log(
+          "🎯 PLAN LOGIC: Using direct plan info - planInfo.id:",
+          planId
+        );
+
+        if (planId === "starter") {
+          console.log("✅ PLAN LOGIC: STARTER plan explicitly selected");
+          return "starter";
+        } else if (planId === "professional") {
+          console.log("✅ PLAN LOGIC: PROFESSIONAL plan explicitly selected");
+          return "professional";
+        } else {
+          console.warn(
+            "⚠️ PLAN LOGIC: Unknown plan ID:",
+            planId,
+            "- defaulting to starter"
+          );
+          return "starter"; // Changed default to starter for unknown plans
+        }
+      }
+
+      // Method 2: Check localStorage as fallback (only if no direct plan info)
+      try {
+        const selectedPlanStr = localStorage.getItem("selectedPlan");
+        if (selectedPlanStr) {
+          const selectedPlan = JSON.parse(selectedPlanStr);
+          console.log(
+            "🎯 PLAN LOGIC: Using localStorage fallback:",
+            selectedPlan
+          );
+
+          if (selectedPlan?.id) {
+            const planId = selectedPlan.id.toLowerCase().trim();
+            if (planId === "starter") {
+              console.log("✅ PLAN LOGIC: STARTER plan from localStorage");
+              return "starter";
+            } else if (planId === "professional") {
+              console.log("✅ PLAN LOGIC: PROFESSIONAL plan from localStorage");
+              return "professional";
+            }
+          }
+        }
+      } catch (error) {
+        console.warn("⚠️ PLAN LOGIC: localStorage parsing error:", error);
+      }
+
+      // Method 3: Check URL parameters as additional fallback
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const planFromUrl = urlParams.get("plan");
+        if (planFromUrl) {
+          const planId = planFromUrl.toLowerCase().trim();
+          console.log("🎯 PLAN LOGIC: Using URL parameter fallback:", planId);
+
+          if (planId === "starter") {
+            console.log("✅ PLAN LOGIC: STARTER plan from URL");
+            return "starter";
+          } else if (planId === "professional") {
+            console.log("✅ PLAN LOGIC: PROFESSIONAL plan from URL");
+            return "professional";
+          }
+        }
+      } catch (error) {
+        console.warn("⚠️ PLAN LOGIC: URL parsing error:", error);
+      }
+
+      // Method 4: SIMPLE default (only when no plan info exists anywhere)
+      console.log(
+        "🎯 PLAN LOGIC: No explicit plan found - using default STARTER"
+      );
+      return "starter"; // Changed default to starter for better user experience
+    },
+    []
+  );
+
+  // OPTIMIZATION: New background profile fetching - doesn't block login
+  const fetchUserProfileInBackground = useCallback(async (userId: string) => {
+    try {
+      console.log("👤 Mac AuthContext: Background profile fetch for:", userId);
+
+      // Use a timeout to prevent hanging
+      const profilePromise = supabase
+        .from("users")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Profile fetch timeout")), 2000)
+      );
+
+      const { data, error } = (await Promise.race([
+        profilePromise,
+        timeoutPromise,
+      ])) as any;
+
+      if (!mounted.current) return;
+
+      if (error) {
+        if (error.code === "PGRST116") {
+          console.log(
+            "🆕 Mac AuthContext: No profile found, creating in background..."
+          );
+          createUserProfileInBackground(userId);
+        } else {
+          console.error("❌ Mac AuthContext: Profile fetch error:", error);
+          setUserProfile(null);
+        }
+        return;
+      }
+
+      console.log("✅ Mac AuthContext: Profile loaded in background");
+      setUserProfile(data);
+    } catch (error) {
+      console.error(
+        "💥 Mac AuthContext: Background profile fetch error:",
+        error
+      );
+      // Don't set profile to null on timeout - user can still use the app
+    }
+  }, []);
+
+  // OPTIMIZATION: Background profile creation - doesn't block login
+  const createUserProfileInBackground = useCallback(
+    async (userId: string) => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user || !mounted.current) return;
+
+        console.log(
+          "🆕 Mac AuthContext: Creating profile in background for:",
+          user.email
+        );
+
+        // 🔍 ENHANCED DEBUG: Check pendingPlanInfo state
+        console.log(
+          "🔍 CREATE PROFILE DEBUG: pendingPlanInfo.current =",
+          pendingPlanInfo.current
+        );
+        console.log(
+          "🔍 CREATE PROFILE DEBUG: pendingPlanInfo type:",
+          typeof pendingPlanInfo.current
+        );
+
+        if (pendingPlanInfo.current) {
+          console.log(
+            "🔍 CREATE PROFILE DEBUG: pendingPlanInfo.current.id =",
+            pendingPlanInfo.current.id
+          );
+          console.log(
+            "🔍 CREATE PROFILE DEBUG: pendingPlanInfo.current.name =",
+            pendingPlanInfo.current.name
+          );
+        }
+
+        // Check localStorage as backup
+        try {
+          const selectedPlan = localStorage.getItem("selectedPlan");
+          console.log(
+            "🔍 CREATE PROFILE DEBUG: localStorage selectedPlan =",
+            selectedPlan
+          );
+          if (selectedPlan) {
+            const parsed = JSON.parse(selectedPlan);
+            console.log(
+              "🔍 CREATE PROFILE DEBUG: parsed localStorage =",
+              parsed
+            );
+          }
+        } catch (e) {
+          console.log("🔍 CREATE PROFILE DEBUG: localStorage error =", e);
+        }
+
+        // 🎯 FIXED: Use simplified plan determination
+        console.log(
+          "🔍 CREATE PROFILE DEBUG: About to call determineSubscriptionTier..."
+        );
+        const subscriptionTier = determineSubscriptionTier(
+          pendingPlanInfo.current
+        );
+        console.log(
+          "🔍 CREATE PROFILE DEBUG: Final tier decision:",
+          subscriptionTier
+        );
+
+        console.log(
+          "🎯 FINAL DECISION: Creating user with tier:",
+          subscriptionTier
+        );
+        console.log(
+          "🎯 CONTEXT: pendingPlanInfo.current =",
+          pendingPlanInfo.current
+        );
+
+        const profileData = {
+          id: userId,
+          email: user.email?.toLowerCase().trim() || "",
+          name: user.user_metadata?.name || user.email?.split("@")[0] || "User",
+          subscription_tier: subscriptionTier as "starter" | "professional",
+          subscription_status: "trial",
+          language: "en",
+          timezone: "UTC",
+          starting_balance: 10000.0,
+          current_balance: 10000.0,
+          risk_percentage: 2.0,
+          notification_settings: {},
+          is_active: true,
+        };
+
+        console.log("🎯 CREATING USER: Final profile data:", {
+          email: profileData.email,
+          subscription_tier: profileData.subscription_tier,
+          subscription_status: profileData.subscription_status,
+        });
+
+        console.log(
+          "🔍 CREATE PROFILE DEBUG: About to insert into Supabase..."
+        );
+        const { data, error } = await supabase
+          .from("users")
+          .insert([profileData])
+          .select()
+          .single();
+
+        if (error) {
+          console.error(
+            "❌ Mac AuthContext: Background profile creation error:",
+            error
+          );
+        } else {
+          console.log("✅ Mac AuthContext: Profile created successfully!");
+          console.log(
+            "✅ VERIFICATION: User tier in database:",
+            data.subscription_tier
+          );
+          console.log("🔍 CREATE PROFILE DEBUG: Database insertion successful");
+          if (mounted.current) {
+            setUserProfile(data);
+          }
+        }
+
+        // Clear pending plan info after use
+        console.log(
+          "🔍 CREATE PROFILE DEBUG: Clearing pendingPlanInfo.current"
+        );
+        pendingPlanInfo.current = null;
+      } catch (error) {
+        console.error(
+          "💥 Mac AuthContext: Background create profile error:",
+          error
+        );
+      }
+    },
+    [determineSubscriptionTier, pendingPlanInfo]
+  );
 
   useEffect(() => {
     mounted.current = true;
@@ -190,7 +468,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       mounted.current = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [fetchUserProfileInBackground, createUserProfileInBackground]);
 
   const clearAuthState = useCallback(async () => {
     console.log("🧹 Mac AuthContext: Clearing auth state");
@@ -198,6 +476,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setSession(null);
     setUserProfile(null);
     setLoading(false);
+    pendingPlanInfo.current = null; // Clear pending plan info
 
     // Clear Mac browser storage
     try {
@@ -234,106 +513,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         window.location.replace(path);
       }
     }, 100);
-  }, []);
-
-  // OPTIMIZATION: New background profile fetching - doesn't block login
-  const fetchUserProfileInBackground = useCallback(async (userId: string) => {
-    try {
-      console.log("👤 Mac AuthContext: Background profile fetch for:", userId);
-
-      // Use a timeout to prevent hanging
-      const profilePromise = supabase
-        .from("users")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Profile fetch timeout")), 2000)
-      );
-
-      const { data, error } = (await Promise.race([
-        profilePromise,
-        timeoutPromise,
-      ])) as any;
-
-      if (!mounted.current) return;
-
-      if (error) {
-        if (error.code === "PGRST116") {
-          console.log(
-            "🆕 Mac AuthContext: No profile found, creating in background..."
-          );
-          createUserProfileInBackground(userId);
-        } else {
-          console.error("❌ Mac AuthContext: Profile fetch error:", error);
-          setUserProfile(null);
-        }
-        return;
-      }
-
-      console.log("✅ Mac AuthContext: Profile loaded in background");
-      setUserProfile(data);
-    } catch (error) {
-      console.error(
-        "💥 Mac AuthContext: Background profile fetch error:",
-        error
-      );
-      // Don't set profile to null on timeout - user can still use the app
-    }
-  }, []);
-
-  // OPTIMIZATION: Background profile creation - doesn't block login
-  const createUserProfileInBackground = useCallback(async (userId: string) => {
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user || !mounted.current) return;
-
-      console.log(
-        "🆕 Mac AuthContext: Creating profile in background for:",
-        user.email
-      );
-
-      const profileData = {
-        id: userId,
-        email: user.email?.toLowerCase().trim() || "",
-        name: user.user_metadata?.name || user.email?.split("@")[0] || "User",
-        subscription_tier: "starter" as const,
-        subscription_status: "trial",
-        language: "en", // Fixed: was preferred_language
-        timezone: "UTC",
-        starting_balance: 10000.0,
-        current_balance: 10000.0,
-        risk_percentage: 2.0,
-        notification_settings: {},
-        is_active: true,
-      };
-
-      const { data, error } = await supabase
-        .from("users")
-        .insert([profileData])
-        .select()
-        .single();
-
-      if (error) {
-        console.error(
-          "❌ Mac AuthContext: Background profile creation error:",
-          error
-        );
-      } else {
-        console.log("✅ Mac AuthContext: Profile created in background");
-        if (mounted.current) {
-          setUserProfile(data);
-        }
-      }
-    } catch (error) {
-      console.error(
-        "💥 Mac AuthContext: Background create profile error:",
-        error
-      );
-    }
   }, []);
 
   // 🎯 NEW: Process pending subscription after signup
@@ -442,10 +621,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const signUp = async (email: string, password: string, name: string) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    name: string,
+    planInfo?: {
+      id: string;
+      name: string;
+      price: string;
+      billingCycle?: string;
+    }
+  ) => {
     try {
       console.log("📝 Mac AuthContext: Sign up attempt for:", email);
+      console.log("🎯 SIGNUP: Plan info received:", planInfo);
+      console.log("🔍 SIGNUP DEBUG: planInfo type:", typeof planInfo);
+      console.log("🔍 SIGNUP DEBUG: planInfo.id:", planInfo?.id);
       setLoading(true);
+
+      // 🎯 FIXED: Store plan info with better validation
+      if (planInfo) {
+        // Validate plan info structure
+        if (!planInfo.id || !planInfo.name || !planInfo.price) {
+          console.warn("⚠️ SIGNUP: Invalid plan info structure:", planInfo);
+        } else {
+          pendingPlanInfo.current = planInfo;
+          console.log("💾 SIGNUP: Stored valid plan info:", planInfo);
+          console.log(
+            "🔍 SIGNUP DEBUG: pendingPlanInfo.current after storage:",
+            pendingPlanInfo.current
+          );
+        }
+      } else {
+        console.log(
+          "ℹ️ SIGNUP: No plan info provided - will use default logic"
+        );
+      }
+
+      // ADDITIONAL DEBUG: Check what's in localStorage
+      try {
+        const selectedPlan = localStorage.getItem("selectedPlan");
+        console.log(
+          "🔍 SIGNUP DEBUG: localStorage selectedPlan:",
+          selectedPlan
+        );
+      } catch (e) {
+        console.log("🔍 SIGNUP DEBUG: localStorage error:", e);
+      }
 
       // Step 1: Create user account in Supabase Auth
       const { data, error } = await supabase.auth.signUp({
@@ -459,10 +681,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       });
 
       if (error) {
+        pendingPlanInfo.current = null; // Clear on error
         return { error: error.message };
       }
 
       if (!data.user) {
+        pendingPlanInfo.current = null; // Clear on error
         return { error: "Failed to create user account" };
       }
 
@@ -493,9 +717,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       // Profile will be created by fetchUserProfile when auth state changes
+      console.log(
+        "🔍 SIGNUP DEBUG: End of signUp function. pendingPlanInfo.current:",
+        pendingPlanInfo.current
+      );
       return {};
     } catch (error) {
       console.error("💥 Mac AuthContext: Sign up error:", error);
+      pendingPlanInfo.current = null; // Clear on error
       return { error: "An unexpected error occurred during sign up" };
     } finally {
       setLoading(false);
@@ -510,6 +739,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       localStorage.removeItem("pendingSubscription");
       localStorage.removeItem("selectedPlan");
       localStorage.removeItem("signupFormData");
+      pendingPlanInfo.current = null; // Clear pending plan info
 
       // Immediate state clearing for Mac Safari compatibility
       await clearAuthState();

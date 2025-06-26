@@ -38,6 +38,14 @@ const LandingPage: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
 
+  // Professional plan object for main CTA buttons
+  const professionalPlan = {
+    id: "professional",
+    name: "Professional",
+    price: "49",
+    billingCycle: "monthly",
+  };
+
   // Check if we should show signup from navigation state or URL params
   useEffect(() => {
     // Check localStorage for plan selection
@@ -180,7 +188,7 @@ const LandingPage: React.FC = () => {
                 {t("landing.signIn")}
               </Button>
               <Button
-                onClick={() => setShowAuth("signup")}
+                onClick={() => handleSignupClick(professionalPlan)}
                 className="bg-blue-600 hover:bg-blue-700 text-white text-sm"
                 size="sm"
               >
@@ -243,7 +251,7 @@ const LandingPage: React.FC = () => {
                   </Button>
                   <Button
                     onClick={() => {
-                      setShowAuth("signup");
+                      handleSignupClick(professionalPlan);
                       setMobileMenuOpen(false);
                     }}
                     className="bg-blue-600 hover:bg-blue-700 text-white justify-start"
@@ -284,7 +292,7 @@ const LandingPage: React.FC = () => {
             <div className="flex justify-center mb-6 px-4">
               <Button
                 size="lg"
-                onClick={() => setShowAuth("signup")}
+                onClick={() => handleSignupClick(professionalPlan)}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg w-full sm:w-auto"
               >
                 {t("landing.startTrial")}
@@ -482,7 +490,7 @@ const LandingPage: React.FC = () => {
               <div className="flex justify-center mb-6">
                 <Button
                   size="lg"
-                  onClick={() => setShowAuth("signup")}
+                  onClick={() => handleSignupClick(professionalPlan)}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg"
                 >
                   Start Trial
@@ -569,7 +577,7 @@ const LandingPage: React.FC = () => {
           </p>
           <Button
             size="lg"
-            onClick={() => setShowAuth("signup")}
+            onClick={() => handleSignupClick(professionalPlan)}
             className="bg-white text-blue-600 hover:bg-slate-100 px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold w-full sm:w-auto"
           >
             {t("landing.startTrial")}
