@@ -9,7 +9,8 @@ import React, {
   useRef,
 } from "react";
 import { User, Session } from "@supabase/supabase-js";
-import { supabase, Database } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
+import { Database } from "@/types/database";
 
 interface AuthContextType {
   user: User | null;
@@ -25,6 +26,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   updateProfile: (updates: { name?: string }) => Promise<{ error?: string }>;
   isAdmin: () => boolean;
+  isProcessingSubscription: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -47,6 +49,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   >(null);
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
+  const [isProcessingSubscription, setIsProcessingSubscription] =
+    useState(false);
 
   // Prevent multiple redirects
   const isRedirecting = useRef(false);
@@ -332,6 +336,82 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
+  // 🎯 NEW: Process pending subscription after signup
+  const processPendingSubscription = useCallback(
+    async (userId: string, userEmail: string, userName: string) => {
+      try {
+        console.log("💳 Mac AuthContext: Checking for pending subscription...");
+
+        // Check for pending subscription in localStorage
+        const pendingSubscriptionStr = localStorage.getItem(
+          "pendingSubscription"
+        );
+
+        if (!pendingSubscriptionStr) {
+          console.log("ℹ️ Mac AuthContext: No pending subscription found");
+          return null;
+        }
+
+        const pendingSubscription = JSON.parse(pendingSubscriptionStr);
+        console.log(
+          "📦 Mac AuthContext: Found pending subscription:",
+          pendingSubscription
+        );
+
+        setIsProcessingSubscription(true);
+
+        // Call backend API to process subscription
+        const response = await fetch(
+          "http://localhost:3001/api/subscription/process",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              userId,
+              userEmail,
+              userName,
+              planId: pendingSubscription.planId,
+              paymentMethodId: pendingSubscription.paymentMethodId,
+              billingCycle: pendingSubscription.billingCycle || "monthly",
+            }),
+          }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || "Subscription processing failed");
+        }
+
+        console.log(
+          "✅ Mac AuthContext: Subscription processed successfully:",
+          result
+        );
+
+        // Clear pending subscription from localStorage
+        localStorage.removeItem("pendingSubscription");
+        localStorage.removeItem("selectedPlan");
+        console.log("🧹 Mac AuthContext: Cleared pending subscription data");
+
+        // Refresh user profile to get updated subscription data
+        await fetchUserProfileInBackground(userId);
+
+        return result;
+      } catch (error) {
+        console.error(
+          "❌ Mac AuthContext: Subscription processing error:",
+          error
+        );
+        throw error;
+      } finally {
+        setIsProcessingSubscription(false);
+      }
+    },
+    [fetchUserProfileInBackground]
+  );
+
   // Keep your original fetchUserProfile for backwards compatibility
   const fetchUserProfile = fetchUserProfileInBackground;
   const createUserProfile = createUserProfileInBackground;
@@ -367,6 +447,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       console.log("📝 Mac AuthContext: Sign up attempt for:", email);
       setLoading(true);
 
+      // Step 1: Create user account in Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email: email.toLowerCase().trim(),
         password,
@@ -381,7 +462,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         return { error: error.message };
       }
 
+      if (!data.user) {
+        return { error: "Failed to create user account" };
+      }
+
       console.log("✅ Mac AuthContext: Sign up successful");
+
+      // Step 2: Process pending subscription if exists
+      try {
+        const subscriptionResult = await processPendingSubscription(
+          data.user.id,
+          email.toLowerCase().trim(),
+          name.trim()
+        );
+
+        if (subscriptionResult) {
+          console.log(
+            "🎉 Mac AuthContext: Subscription created with 7-day trial!"
+          );
+        } else {
+          console.log("ℹ️ Mac AuthContext: No subscription to process");
+        }
+      } catch (subscriptionError) {
+        console.error(
+          "❌ Mac AuthContext: Subscription processing failed:",
+          subscriptionError
+        );
+        // Don't return error here - user account was created successfully
+        // They can contact support or try again later
+      }
+
       // Profile will be created by fetchUserProfile when auth state changes
       return {};
     } catch (error) {
@@ -395,6 +505,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const signOut = async () => {
     try {
       console.log("🚪 Mac AuthContext: Sign out initiated");
+
+      // Clear subscription data on logout
+      localStorage.removeItem("pendingSubscription");
+      localStorage.removeItem("selectedPlan");
+      localStorage.removeItem("signupFormData");
 
       // Immediate state clearing for Mac Safari compatibility
       await clearAuthState();
@@ -485,6 +600,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     signOut,
     updateProfile,
     isAdmin,
+    isProcessingSubscription,
   };
 
   // OPTIMIZATION: Reduced initialization timeout

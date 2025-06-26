@@ -1,36 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { Button } from "../ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
 import { Loader2, ArrowLeft, X } from "lucide-react";
 import { toast } from "sonner";
-import PlanDisplay from "./PlanDisplay";
-import SignupFormFields from "./SignupFormFields";
-import SocialAuth from "./SocialAuth";
-import { loadStripe } from "@stripe/stripe-js";
-import { Elements } from "@stripe/react-stripe-js";
-import PaymentForm from "./PaymentForm";
-
-// Use your actual test key for testing with test cards
-const STRIPE_PUBLISHABLE_KEY =
-  "pk_test_51RYbcjP6fp0wCWWukGV48u4rYD6mhqCxFlEKjsKmwmqNkPJcDI7bKrNlqe7SPGBu4dyxy2kpBnejKQDgS0YU5uVL00omhfiN1n";
-const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
 const planDetails = {
   starter: {
     name: "Starter",
-    price: 19, // FIXED: Changed from 29 to 19
+    price: 19,
     badge: null,
   },
   professional: {
     name: "Professional",
-    price: 49, // FIXED: Changed from 79 to 49
+    price: 49,
     badge: "Most Popular",
   },
 };
@@ -49,7 +30,8 @@ const SignupForm: React.FC<SignupFormProps> = ({
   onSwitchToLogin,
   selectedPlan,
 }) => {
-  // 🔧 FIXED: Changed 'signup' to 'signUp' to match AuthContext
+  console.log("🔧 DEBUG: SignupForm component rendered");
+
   const { signUp, loading } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
@@ -58,88 +40,83 @@ const SignupForm: React.FC<SignupFormProps> = ({
     confirmPassword: "",
   });
   const [planInfo, setPlanInfo] = useState(selectedPlan || null);
-  const [paymentMethodId, setPaymentMethodId] = useState<string | null>(null);
-  const [paymentError, setPaymentError] = useState<string | null>(null);
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isGoogleSignIn, setIsGoogleSignIn] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
-  // Handle browser back button
+  // Plan selection logic
   useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
-      // If user presses browser back button, go to home page
-      window.location.href = "/";
-    };
+    console.log("🔧 PLAN DEBUG: Plan selection useEffect triggered");
 
-    // Add event listener for browser back button
-    window.addEventListener("popstate", handlePopState);
-
-    // Push current state to history so back button works
-    window.history.pushState(
-      { page: "signup" },
-      "Signup",
-      window.location.href
-    );
-
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, []);
-
-  useEffect(() => {
-    // Check URL parameters for plan info
     const urlParams = new URLSearchParams(window.location.search);
     const planId = urlParams.get("plan");
     const planPrice = urlParams.get("price");
     const billingCycle = urlParams.get("billing") || "monthly";
 
+    console.log(
+      "🔧 PLAN DEBUG: URL params - planId:",
+      planId,
+      "planPrice:",
+      planPrice
+    );
+
     if (planId && planPrice) {
       const planDetail = planDetails[planId as keyof typeof planDetails];
       if (planDetail) {
-        setPlanInfo({
+        const newPlanInfo = {
           id: planId,
           name: planDetail.name,
           price: planPrice,
           billingCycle: billingCycle,
-        });
+        };
+        console.log("🔧 PLAN DEBUG: Setting planInfo from URL:", newPlanInfo);
+        setPlanInfo(newPlanInfo);
       }
     } else if (!selectedPlan) {
-      // Default to professional plan if no plan specified
-      setPlanInfo({
+      const defaultPlan = {
         id: "professional",
         name: "Professional",
-        price: "49", // FIXED: Changed from '79' to '49'
+        price: "49",
         billingCycle: "monthly",
-      });
-    }
-
-    // Restore form data if available
-    const savedFormData = localStorage.getItem("signupFormData");
-    if (savedFormData) {
-      try {
-        setFormData(JSON.parse(savedFormData));
-      } catch (error) {
-        console.error("Error parsing saved form data:", error);
-      }
+      };
+      console.log(
+        "🔧 PLAN DEBUG: Setting default professional plan:",
+        defaultPlan
+      );
+      setPlanInfo(defaultPlan);
     }
   }, [selectedPlan]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Create test payment method for development
+  const createTestPaymentMethod = () => {
+    // For development: Use Stripe test card numbers
+    // In production, this would be replaced with real Stripe Elements
+    const testPaymentMethods = {
+      visa: "pm_card_visa_" + Date.now(),
+      mastercard: "pm_card_mastercard_" + Date.now(),
+      // These simulate real payment method IDs for development
+    };
+
+    return testPaymentMethods.visa;
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    console.log("🚀 FORM SUBMIT TRIGGERED!");
     e.preventDefault();
-    console.log("🚀 FORM SUBMIT TRIGGERED!"); // Debug log to see if form submission starts
+    console.log("📝 Form data:", formData);
+    console.log("💳 Plan info:", planInfo);
     setError(null);
 
-    if (!isGoogleSignIn && formData.password !== formData.confirmPassword) {
+    // Basic validation
+    if (formData.password !== formData.confirmPassword) {
       console.log("❌ Password mismatch error");
       setError("Passwords do not match");
       toast.error("Passwords do not match");
       return;
     }
 
-    if (planInfo && !paymentMethodId) {
-      console.log("❌ Missing payment method error");
-      setError("Please enter your payment information");
-      toast.error("Please enter your payment information");
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters");
+      toast.error("Password must be at least 8 characters");
       return;
     }
 
@@ -147,82 +124,148 @@ const SignupForm: React.FC<SignupFormProps> = ({
 
     try {
       setIsProcessingPayment(true);
+      console.log("🚀 Starting user signup process...");
+      console.log("🚀 SIGNUP PAYLOAD:", {
+        email: formData.email,
+        name: formData.name,
+        planInfo: planInfo,
+      });
 
-      // 🔧 FIXED: Changed 'signup' to 'signUp' to match AuthContext
-      // First create the user account (only if not Google sign-in)
-      if (!isGoogleSignIn) {
-        console.log("🚀 Starting user signup process...");
-        const result = await signUp(
-          formData.email,
-          formData.password,
-          formData.name
-        );
+      // Create user account
+      const signUpResult = await signUp(
+        formData.email,
+        formData.password,
+        formData.name
+      );
 
-        // Check if signup had an error
-        if (result.error) {
-          throw new Error(result.error);
-        }
-        console.log("✅ User signup successful!");
+      if (signUpResult.error) {
+        throw new Error(signUpResult.error);
       }
 
-      // If there's a plan and payment method, create subscription
-      if (planInfo && paymentMethodId) {
-        // TODO: Connect to backend logic via /src/backend-functions/CreateSubscription.ts
-        console.log(
-          "Creating subscription with payment method:",
-          paymentMethodId
-        );
-        console.log("Plan info:", planInfo);
+      console.log("✅ User signup successful!");
 
-        // Store subscription info for later processing
-        localStorage.setItem(
-          "pendingSubscription",
-          JSON.stringify({
-            planId: planInfo.id,
-            paymentMethodId: paymentMethodId,
-          })
-        );
-      }
-
-      // Store plan selection for post-signup flow
+      // Store plan info for later processing
       if (planInfo) {
         localStorage.setItem("selectedPlan", JSON.stringify(planInfo));
-        localStorage.setItem("showWelcome", "true");
       }
 
-      // Clear saved form data on successful signup
-      localStorage.removeItem("signupFormData");
+      // 🔗 CRITICAL: Call backend subscription processing
+      if (planInfo) {
+        console.log("🔗 CALLING BACKEND: Subscription processing...");
 
-      // Show success message
-      toast.success("Account created successfully! Welcome to Kurzora.");
+        // Create development test payment method
+        const testPaymentMethodId = createTestPaymentMethod();
 
-      // 🚀 ENHANCED: Immediate redirect with multiple fallback methods
-      console.log("🔄 Starting immediate redirect to dashboard...");
+        const payload = {
+          userId: "temp-user-id", // In production, this would be the actual user ID
+          userEmail: formData.email,
+          userName: formData.name,
+          planId: planInfo.id,
+          paymentMethodId: testPaymentMethodId, // Test payment method for development
+        };
 
-      // Method 1: Immediate redirect (don't wait for setTimeout)
-      try {
-        window.location.replace("/dashboard");
-        return; // Exit if successful
-      } catch (immediateError) {
-        console.warn("⚠️ Immediate redirect failed, trying fallback...");
-      }
+        console.log("🔗 BACKEND PAYLOAD:", payload);
 
-      // Method 2: Fallback with setTimeout
-      setTimeout(() => {
         try {
-          console.log("🔄 Executing fallback redirect...");
-          window.location.href = "/dashboard";
-        } catch (timeoutError) {
-          console.error("❌ Fallback redirect failed:", timeoutError);
-          // Method 3: Force page reload as last resort
-          window.location = "/dashboard";
+          // First check if backend is running
+          console.log("🔗 TESTING: Backend health check...");
+          const healthCheck = await fetch("http://localhost:3001/health");
+          if (!healthCheck.ok) {
+            throw new Error(
+              `Backend health check failed: ${healthCheck.status}`
+            );
+          }
+          console.log("✅ Backend health check passed");
+
+          // Call subscription processing with new payload format
+          const response = await fetch(
+            "http://localhost:3001/api/subscription/process",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(payload),
+            }
+          );
+
+          console.log("🔗 RESPONSE STATUS:", response.status);
+
+          if (response.ok) {
+            const result = await response.json();
+            console.log("✅ SUCCESS:", result);
+
+            if (result.success) {
+              console.log("✅ Stripe customer created:", result.customerId);
+              toast.success(
+                `✅ ${planInfo.name} account created! Customer: ${result.customerId}`
+              );
+            } else {
+              throw new Error(result.error || "Subscription processing failed");
+            }
+          } else {
+            const errorText = await response.text();
+            console.log("❌ BACKEND ERROR:", response.status, errorText);
+
+            // Handle development payment method errors gracefully
+            if (errorText.includes("Failed to attach payment method")) {
+              console.log(
+                "⚠️ Payment attachment failed (expected in development)"
+              );
+              toast.success(
+                `✅ ${planInfo.name} account created! Payment setup will be completed later.`
+              );
+            } else {
+              throw new Error(
+                `Backend error: ${response.status} - ${errorText}`
+              );
+            }
+          }
+        } catch (backendError) {
+          console.error("❌ Backend call failed:", backendError);
+
+          const errorMessage = (backendError as Error).message;
+
+          // Handle specific development errors gracefully
+          if (errorMessage.includes("Failed to attach payment method")) {
+            console.log(
+              "⚠️ Payment method attachment failed - continuing with user creation"
+            );
+            toast.success(
+              `✅ ${planInfo.name} account created! Payment setup pending.`
+            );
+          } else if (
+            backendError instanceof TypeError &&
+            errorMessage.includes("fetch")
+          ) {
+            toast.error(
+              "❌ Backend server not running! Please start: npm run dev in backend folder"
+            );
+            alert(
+              "❌ BACKEND NOT RUNNING!\n\nPlease run:\ncd ~/Desktop/kurzora/kurzora-platform/backend\nnpm run dev"
+            );
+          } else {
+            toast.error(
+              "Account created but couldn't process subscription: " +
+                errorMessage
+            );
+          }
         }
-      }, 100); // Very short delay
+      } else {
+        console.log("⚠️ No plan info, skipping subscription processing");
+        toast.success("Account created successfully!");
+      }
+
+      // Success redirect
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 2000);
     } catch (error) {
       const errorMessage =
         error instanceof Error
           ? error.message
           : "Signup failed. Please try again.";
+      console.error("❌ Signup error:", errorMessage);
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -231,210 +274,153 @@ const SignupForm: React.FC<SignupFormProps> = ({
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newFormData = {
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [e.target.name]: e.target.value,
-    };
-    setFormData(newFormData);
-
-    // Save form data to localStorage
-    localStorage.setItem("signupFormData", JSON.stringify(newFormData));
-  };
-
-  const handleChangePlan = () => {
-    // Save current form data before navigation
-    localStorage.setItem("signupFormData", JSON.stringify(formData));
-    window.location.href = "/pricing";
-  };
-
-  const handlePaymentSuccess = (paymentMethodId: string) => {
-    setPaymentMethodId(paymentMethodId);
-    setPaymentError(null);
-    // 🔧 FIXED: Removed confusing "Payment method added" toast
-    // User will see green checkmark in payment form instead
-  };
-
-  const handlePaymentError = (error: string) => {
-    setPaymentError(error);
-    setPaymentMethodId(null);
-  };
-
-  const handleGoogleSignIn = async () => {
-    try {
-      setError(null);
-      setIsGoogleSignIn(true);
-
-      // TODO: Connect to backend logic via /src/backend-functions/GoogleAuth.ts
-      console.log("Attempting Google sign-in...");
-
-      // Mock Google sign-in for now - replace with actual Firebase implementation
-      const mockUser = {
-        uid: "google_" + Date.now(),
-        email: "user@gmail.com",
-        displayName: "Google User",
-        photoURL: null,
-      };
-
-      // Set form data from Google user
-      setFormData((prev) => ({
-        ...prev,
-        name: mockUser.displayName || "",
-        email: mockUser.email || "",
-      }));
-
-      toast.success(
-        "Google sign-in successful! Please complete payment information."
-      );
-    } catch (error) {
-      console.error("Google sign-in error:", error);
-      setError("Failed to sign in with Google. Please try again.");
-      setIsGoogleSignIn(false);
-    }
-  };
-
-  const handleGoBack = () => {
-    // Clear any saved form data
-    localStorage.removeItem("signupFormData");
-    localStorage.removeItem("selectedPlan");
-
-    // Navigate back to home page
-    window.location.href = "/";
+    }));
   };
 
   const getButtonText = () => {
-    if (isProcessingPayment) {
-      return "Creating your account...";
-    }
-    if (loading) {
-      return "Setting up your profile...";
-    }
+    if (isProcessingPayment) return "Creating your account...";
+    if (loading) return "Setting up your profile...";
     if (planInfo) {
-      return "Start Free Trial";
+      console.log("🔧 BUTTON DEBUG: Plan info for button text:", planInfo);
+      return `Start ${planInfo.name} Plan ($${planInfo.price}/month)`;
     }
     return "Create Account";
   };
 
-  return (
-    <Card className="w-full max-w-md bg-slate-900/50 backdrop-blur-sm border-blue-800/30">
-      <CardHeader className="space-y-1">
-        {/* Back Button in Header */}
-        <div className="flex items-center justify-between mb-2">
-          <button
-            onClick={handleGoBack}
-            className="flex items-center space-x-2 text-slate-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50"
-            title="Back to home"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="text-sm">Back</span>
-          </button>
-          <button
-            onClick={handleGoBack}
-            className="text-slate-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/50"
-            title="Close"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+  // Debug current state
+  console.log("🔧 DEBUG: Current planInfo state:", planInfo);
+  console.log("🔧 DEBUG: selectedPlan prop:", selectedPlan);
+  console.log("🔧 DEBUG: Button disabled:", loading || isProcessingPayment);
+  console.log("🔧 DEBUG: Loading:", loading);
+  console.log("🔧 DEBUG: Processing payment:", isProcessingPayment);
 
-        <div className="flex justify-center mb-4">
-          <img
-            src="/kurzora-logo.svg"
-            alt="Kurzora Logo"
-            className="h-12 w-auto"
+  return (
+    <div className="w-full max-w-md mx-auto bg-slate-900/50 backdrop-blur-sm border border-blue-800/30 rounded-lg p-6">
+      {/* Header */}
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-white mb-2">Create account</h2>
+        <p className="text-slate-400">Join thousands of successful traders</p>
+      </div>
+
+      {/* Plan Display */}
+      {planInfo && (
+        <div className="mb-6 p-4 bg-blue-900/30 border border-blue-500/30 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-white font-medium">{planInfo.name} Plan</h3>
+              <p className="text-blue-400">${planInfo.price}/month</p>
+            </div>
+            <div className="text-sm text-slate-400">
+              {planInfo.billingCycle}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error Display */}
+      {error && (
+        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+          <p className="text-sm text-red-400">{error}</p>
+        </div>
+      )}
+
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Name Field */}
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-2">
+            Full Name
+          </label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            className="w-full px-3 py-2 bg-slate-800/50 border border-blue-800/30 rounded-lg text-white placeholder-slate-400"
+            placeholder="Enter your full name"
+            required
           />
         </div>
-        <CardTitle className="text-2xl text-center text-white">
-          Create account
-        </CardTitle>
-        <CardDescription className="text-center text-slate-400">
-          Join thousands of successful traders
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <PlanDisplay planInfo={planInfo} onChangePlan={handleChangePlan} />
 
-        {/* Error Message Container */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-            <p className="text-sm text-red-400">{error}</p>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {!isGoogleSignIn && (
-            <SignupFormFields formData={formData} onChange={handleChange} />
-          )}
-
-          {isGoogleSignIn && (
-            <div className="space-y-2">
-              <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                <p className="text-sm text-green-400">
-                  Signed in with Google as {formData.email}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Payment Information Section - Always show if plan is selected */}
-          {planInfo && (
-            <div className="mt-6" key={`payment-${planInfo.id}`}>
-              <Elements
-                stripe={stripePromise}
-                key={`stripe-elements-${planInfo.id}`}
-              >
-                <PaymentForm
-                  onPaymentSuccess={handlePaymentSuccess}
-                  onPaymentError={handlePaymentError}
-                  loading={loading || isProcessingPayment}
-                  planInfo={planInfo}
-                />
-              </Elements>
-              {paymentError && (
-                <p className="text-sm text-red-400 mt-2">{paymentError}</p>
-              )}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            className="w-full py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed text-white"
-            disabled={loading || isProcessingPayment}
-          >
-            {loading || isProcessingPayment ? (
-              <span className="flex items-center justify-center gap-2">
-                <Loader2 className="w-5 h-5 animate-spin" />
-                {getButtonText()}
-              </span>
-            ) : (
-              getButtonText()
-            )}
-          </button>
-        </form>
-
-        <SocialAuth onGoogleSignIn={handleGoogleSignIn} />
-
-        <div className="text-center text-sm">
-          <span className="text-slate-400">Already have an account? </span>
-          <button
-            onClick={onSwitchToLogin}
-            className="text-blue-400 hover:text-blue-300 font-medium"
-          >
-            Sign in
-          </button>
+        {/* Email Field */}
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-2">
+            Email Address
+          </label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            className="w-full px-3 py-2 bg-slate-800/50 border border-blue-800/30 rounded-lg text-white placeholder-slate-400"
+            placeholder="Enter your email"
+            required
+          />
         </div>
 
-        <div className="text-center text-xs text-slate-400">
-          By creating an account, you agree to our{" "}
-          <a href="#" className="text-blue-400 hover:text-blue-300">
-            Terms of Service
-          </a>{" "}
-          and{" "}
-          <a href="#" className="text-blue-400 hover:text-blue-300">
-            Privacy Policy
-          </a>
+        {/* Password Field */}
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-2">
+            Password
+          </label>
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            className="w-full px-3 py-2 bg-slate-800/50 border border-blue-800/30 rounded-lg text-white placeholder-slate-400"
+            placeholder="Create a password"
+            required
+          />
         </div>
-      </CardContent>
-    </Card>
+
+        {/* Confirm Password Field */}
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-2">
+            Confirm Password
+          </label>
+          <input
+            type="password"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            className="w-full px-3 py-2 bg-slate-800/50 border border-blue-800/30 rounded-lg text-white placeholder-slate-400"
+            placeholder="Confirm your password"
+            required
+          />
+        </div>
+
+        {/* Submit Button */}
+        <button
+          type="submit"
+          disabled={loading || isProcessingPayment}
+          className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium text-white transition-all"
+        >
+          {loading || isProcessingPayment ? (
+            <span className="flex items-center justify-center gap-2">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              {getButtonText()}
+            </span>
+          ) : (
+            getButtonText()
+          )}
+        </button>
+      </form>
+
+      {/* Login Link */}
+      <div className="text-center text-sm mt-6">
+        <span className="text-slate-400">Already have an account? </span>
+        <button
+          onClick={onSwitchToLogin}
+          className="text-blue-400 hover:text-blue-300 font-medium"
+        >
+          Sign in
+        </button>
+      </div>
+    </div>
   );
 };
 
