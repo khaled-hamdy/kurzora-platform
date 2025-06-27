@@ -1,4 +1,4 @@
-// src/contexts/SignalsContext.tsx - TEMPORARY VERSION
+// src/contexts/SignalsContext.tsx - ENHANCED WITH ALERT INTEGRATION
 import React, {
   createContext,
   useContext,
@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import { supabase } from "../lib/supabase";
 import { calculateFinalScore } from "../utils/signalCalculations";
+import { telegramAlertService } from "../services/telegramAlerts";
 
 export interface Signal {
   ticker: string;
@@ -23,6 +24,7 @@ export interface Signal {
   sector: string;
   market: string;
   timestamp: string;
+  finalScore?: number;
 }
 
 interface SignalsContextType {
@@ -46,6 +48,9 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastFetched, setLastFetched] = useState<number | null>(null);
+  const [previousSignalIds, setPreviousSignalIds] = useState<Set<string>>(
+    new Set()
+  );
 
   const fetchSignals = async (forceRefresh: boolean = false) => {
     const now = Date.now();
@@ -69,7 +74,7 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
       setError(null);
       console.log("🔄 Fetching signals from database...");
 
-      // ✅ TEMPORARY: Get all active signals (not just ones with timeframe data)
+      // ✅ Get all active signals (not just ones with timeframe data)
       const { data, error: queryError } = await supabase
         .from("trading_signals")
         .select("*")
@@ -89,9 +94,23 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
         return;
       }
 
-      // ✅ TEMPORARY: Handle both signals with real timeframe data AND signals without
+      // 🚨 ALERT DETECTION: Track new signals for alert triggers
+      const currentSignalIds = new Set(data.map((record) => record.id));
+      const newSignals = data.filter(
+        (record) => !previousSignalIds.has(record.id)
+      );
+      console.log(`🔍 Alert Check: ${newSignals.length} new signals detected`);
+
+      // ✅ Handle both signals with real timeframe data AND signals without
       const transformedSignals: Signal[] = data.map((record) => {
         const realSignals = record.signals;
+        let timeframeSignals: {
+          "1H": number;
+          "4H": number;
+          "1D": number;
+          "1W": number;
+        };
+        let finalScore: number;
 
         // If we have real timeframe data, use it
         if (
@@ -103,42 +122,31 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
           realSignals["1W"]
         ) {
           console.log(`✅ ${record.ticker}: Using real timeframe data`);
-          return {
-            ticker: record.ticker,
-            name: record.company_name || `${record.ticker} Corporation`,
-            price: record.entry_price || record.current_price || 100,
-            change: record.price_change_percent || 0,
-            signals: {
-              "1H": realSignals["1H"],
-              "4H": realSignals["4H"],
-              "1D": realSignals["1D"],
-              "1W": realSignals["1W"],
-            },
-            sector: record.sector || "Technology",
-            market: record.market || "usa",
-            timestamp: record.created_at,
+          timeframeSignals = {
+            "1H": realSignals["1H"],
+            "4H": realSignals["4H"],
+            "1D": realSignals["1D"],
+            "1W": realSignals["1W"],
           };
+          finalScore = calculateFinalScore(timeframeSignals);
+        } else {
+          // ✅ If no timeframe data, create consistent fake data based on confidence_score
+          console.log(
+            `⚠️ ${record.ticker}: No timeframe data, creating consistent synthetic data from confidence_score`
+          );
+          const baseScore = record.confidence_score || 80;
+          // 🚀 UNIFIED: Use industry-standard distribution that matches scoring-engine weights
+          timeframeSignals = {
+            "1H": Math.round(baseScore * 0.95), // Slightly lower for 1H volatility
+            "4H": baseScore, // Base score for 4H (most weighted)
+            "1D": Math.round(baseScore * 1.02), // Slightly higher for 1D stability
+            "1W": Math.round(baseScore * 0.97), // Slightly lower for 1W lag
+          };
+          finalScore = calculateFinalScore(timeframeSignals);
         }
 
-        // ✅ TEMPORARY: If no timeframe data, create consistent fake data based on confidence_score
         console.log(
-          `⚠️ ${record.ticker}: No timeframe data, creating consistent synthetic data from confidence_score`
-        );
-        const baseScore = record.confidence_score || 80;
-        // 🚀 UNIFIED: Use industry-standard distribution that matches scoring-engine weights
-        const syntheticSignals = {
-          "1H": Math.round(baseScore * 0.95), // Slightly lower for 1H volatility
-          "4H": baseScore, // Base score for 4H (most weighted)
-          "1D": Math.round(baseScore * 1.02), // Slightly higher for 1D stability
-          "1W": Math.round(baseScore * 0.97), // Slightly lower for 1W lag
-        };
-
-        // 🚀 UNIFIED: Calculate final score using platform's single source of truth
-        const calculatedScore = calculateFinalScore(syntheticSignals);
-
-        console.log(
-          `🔍 ${record.ticker}: DB=${baseScore}, Calculated=${calculatedScore}, Synthetic=`,
-          syntheticSignals
+          `🔍 ${record.ticker}: DB=${record.confidence_score}, Calculated=${finalScore}`
         );
 
         return {
@@ -146,12 +154,79 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
           name: record.company_name || `${record.ticker} Corporation`,
           price: record.entry_price || record.current_price || 100,
           change: record.price_change_percent || 0,
-          signals: syntheticSignals,
+          signals: timeframeSignals,
           sector: record.sector || "Technology",
           market: record.market || "usa",
           timestamp: record.created_at,
+          finalScore: finalScore,
         };
       });
+
+      // 🚨 ALERT TRIGGER: Process new high-score signals for alerts
+      if (!forceRefresh && newSignals.length > 0) {
+        console.log("🚨 Checking new signals for alert triggers...");
+
+        for (const newSignalRecord of newSignals) {
+          const transformedSignal = transformedSignals.find(
+            (s) =>
+              s.ticker === newSignalRecord.ticker &&
+              s.timestamp === newSignalRecord.created_at
+          );
+
+          if (
+            transformedSignal &&
+            transformedSignal.finalScore &&
+            transformedSignal.finalScore >= 70
+          ) {
+            console.log(
+              `🔔 ALERT TRIGGER: ${transformedSignal.ticker} score ${transformedSignal.finalScore} >= 70`
+            );
+
+            try {
+              // Use your existing production alert service
+              const alertSuccess =
+                await telegramAlertService.processSignalForAlerts({
+                  id: newSignalRecord.id,
+                  symbol: transformedSignal.ticker,
+                  signals: transformedSignal.signals,
+                  strength:
+                    transformedSignal.finalScore >= 85
+                      ? "strong"
+                      : transformedSignal.finalScore >= 70
+                      ? "valid"
+                      : "weak",
+                  entry_price: transformedSignal.price,
+                  signal_type:
+                    transformedSignal.change >= 0 ? "bullish" : "bearish",
+                  created_at: transformedSignal.timestamp,
+                });
+
+              if (alertSuccess) {
+                console.log(
+                  `✅ Production alert sent successfully for ${transformedSignal.ticker}`
+                );
+              } else {
+                console.log(
+                  `📭 No eligible users or alert failed for ${transformedSignal.ticker}`
+                );
+              }
+            } catch (alertError) {
+              console.error(
+                `❌ Failed to send alert for ${transformedSignal.ticker}:`,
+                alertError
+              );
+              // Don't fail the whole operation if alert fails
+            }
+          } else if (transformedSignal) {
+            console.log(
+              `📊 ${transformedSignal.ticker} score ${transformedSignal.finalScore} < 70, no alert triggered`
+            );
+          }
+        }
+      }
+
+      // Update previous signal IDs for next comparison
+      setPreviousSignalIds(currentSignalIds);
 
       setSignals(transformedSignals);
       setLastFetched(now);
