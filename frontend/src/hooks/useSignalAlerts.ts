@@ -1,10 +1,12 @@
 // src/hooks/useSignalAlerts.ts
-// Production Hook to monitor new signals and send Telegram alerts
+// Production Hook to monitor new signals and send Email + Telegram alerts
 // 🚀 PRODUCTION: Subscription-based alerts with database integration
+// 📧 ENHANCED: Now supports both Email and Telegram alerts in parallel
 
 import { useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { telegramAlertService } from "@/services/telegramAlerts";
+import { emailAlertService } from "@/services/emailAlerts";
 import { calculateFinalScore } from "../utils/signalCalculations";
 
 interface SignalAlertHookProps {
@@ -36,7 +38,9 @@ export function useSignalAlerts({ enabled = true }: SignalAlertHookProps = {}) {
   useEffect(() => {
     if (!enabled) return;
 
-    console.log("🚀 Starting production signal alert monitoring...");
+    console.log(
+      "🚀 Starting production signal alert monitoring (Email + Telegram)..."
+    );
 
     // Monitor for new signals in real-time
     const subscription = supabase
@@ -101,19 +105,41 @@ export function useSignalAlerts({ enabled = true }: SignalAlertHookProps = {}) {
         return;
       }
 
-      // 🚀 PRODUCTION: Use new production service method
-      const success = await telegramAlertService.processSignalForAlerts(
-        signalData
+      // 🚀 PRODUCTION: Process both Email and Telegram alerts in parallel
+      console.log(
+        `🔄 Sending alerts via Email + Telegram for ${signalData.ticker}...`
       );
 
-      if (success) {
+      const [telegramSuccess, emailSuccess] = await Promise.all([
+        telegramAlertService.processSignalForAlerts(signalData),
+        emailAlertService.processSignalForEmailAlerts(signalData),
+      ]);
+
+      // Log results
+      if (telegramSuccess) {
+        console.log(`✅ Telegram alerts processed for ${signalData.ticker}`);
+      } else {
+        console.log(`❌ Telegram alerts failed for ${signalData.ticker}`);
+      }
+
+      if (emailSuccess) {
+        console.log(`📧 Email alerts processed for ${signalData.ticker}`);
+      } else {
+        console.log(`❌ Email alerts failed for ${signalData.ticker}`);
+      }
+
+      // Mark as processed if at least one channel succeeded
+      if (telegramSuccess || emailSuccess) {
         console.log(
-          `✅ Production alerts processed for ${signalData.ticker} (score: ${finalScore})`
+          `✅ Alerts processed for ${
+            signalData.ticker
+          } (score: ${finalScore}) - Telegram: ${
+            telegramSuccess ? "✅" : "❌"
+          }, Email: ${emailSuccess ? "✅" : "❌"}`
         );
-        // Mark signal as processed
         processedSignals.current.add(signalId);
       } else {
-        console.log(`❌ Failed to process alerts for ${signalData.ticker}`);
+        console.log(`❌ All alert channels failed for ${signalData.ticker}`);
       }
     } catch (error) {
       console.error(
@@ -214,14 +240,13 @@ export function useSignalAlerts({ enabled = true }: SignalAlertHookProps = {}) {
     return true;
   };
 
-  // 🧪 TEST FUNCTION: Send test alert to verify Telegram integration
+  // 🧪 TEST FUNCTION: Send test Telegram alert (existing)
   const sendTestAlert = async (): Promise<boolean> => {
     try {
       console.log("🧪 Creating test signal for Telegram alert verification...");
 
-      // Create a realistic test signal with high score
       const testSignal: TradingSignalData = {
-        id: `test-${Date.now()}`,
+        id: `test-telegram-${Date.now()}`,
         ticker: "AAPL",
         symbol: "AAPL",
         signals: {
@@ -240,44 +265,154 @@ export function useSignalAlerts({ enabled = true }: SignalAlertHookProps = {}) {
       };
 
       const finalScore = calculateFinalScore(testSignal.signals);
-      console.log(`🎯 Test signal created with score: ${finalScore}`);
+      console.log(`🎯 Test Telegram signal created with score: ${finalScore}`);
 
-      // Validate the test signal
       if (!isValidSignalData(testSignal)) {
-        console.error("❌ Test signal validation failed");
+        console.error("❌ Test Telegram signal validation failed");
         return false;
       }
 
-      // Send test signal through production webhook system
       const success = await telegramAlertService.processSignalForAlerts(
         testSignal
       );
 
       if (success) {
-        console.log(
-          "✅ Test alert sent successfully through production system"
-        );
+        console.log("✅ Test Telegram alert sent successfully");
         return true;
       } else {
-        console.error("❌ Test alert failed to send");
+        console.error("❌ Test Telegram alert failed to send");
         return false;
       }
     } catch (error) {
-      console.error("❌ Error sending test alert:", error);
+      console.error("❌ Error sending test Telegram alert:", error);
       return false;
     }
   };
 
-  // 🚀 PRODUCTION: Health check method for monitoring
+  // 📧 NEW: Test function for email alerts
+  const sendTestEmailAlert = async (): Promise<boolean> => {
+    try {
+      console.log("📧 Creating test signal for Email alert verification...");
+
+      const testSignal: TradingSignalData = {
+        id: `test-email-${Date.now()}`,
+        ticker: "TSLA",
+        symbol: "TSLA",
+        signals: {
+          "1H": 87,
+          "4H": 85,
+          "1D": 89,
+          "1W": 83,
+        },
+        entry_price: 250.75,
+        stop_loss: 240.0,
+        take_profit: 270.0,
+        signal_type: "BUY",
+        strength: "Strong",
+        status: "active",
+        created_at: new Date().toISOString(),
+      };
+
+      const finalScore = calculateFinalScore(testSignal.signals);
+      console.log(`📧 Test Email signal created with score: ${finalScore}`);
+
+      if (!isValidSignalData(testSignal)) {
+        console.error("❌ Test Email signal validation failed");
+        return false;
+      }
+
+      const success = await emailAlertService.processSignalForEmailAlerts(
+        testSignal
+      );
+
+      if (success) {
+        console.log("✅ Test Email alert sent successfully");
+        return true;
+      } else {
+        console.error("❌ Test Email alert failed to send");
+        return false;
+      }
+    } catch (error) {
+      console.error("❌ Error sending test Email alert:", error);
+      return false;
+    }
+  };
+
+  // 📧 NEW: Test both alert systems together
+  const sendTestBothAlerts = async (): Promise<{
+    telegram: boolean;
+    email: boolean;
+  }> => {
+    try {
+      console.log("🚀 Testing both Email + Telegram alerts together...");
+
+      const testSignal: TradingSignalData = {
+        id: `test-both-${Date.now()}`,
+        ticker: "NVDA",
+        symbol: "NVDA",
+        signals: {
+          "1H": 92,
+          "4H": 88,
+          "1D": 85,
+          "1W": 91,
+        },
+        entry_price: 450.25,
+        stop_loss: 430.0,
+        take_profit: 480.0,
+        signal_type: "BUY",
+        strength: "Strong",
+        status: "active",
+        created_at: new Date().toISOString(),
+      };
+
+      const finalScore = calculateFinalScore(testSignal.signals);
+      console.log(
+        `🎯 Test signal created for both systems with score: ${finalScore}`
+      );
+
+      if (!isValidSignalData(testSignal)) {
+        console.error("❌ Test signal validation failed");
+        return { telegram: false, email: false };
+      }
+
+      // Test both systems in parallel
+      const [telegramSuccess, emailSuccess] = await Promise.all([
+        telegramAlertService.processSignalForAlerts(testSignal),
+        emailAlertService.processSignalForEmailAlerts(testSignal),
+      ]);
+
+      console.log(
+        `✅ Test results - Telegram: ${telegramSuccess ? "✅" : "❌"}, Email: ${
+          emailSuccess ? "✅" : "❌"
+        }`
+      );
+
+      return { telegram: telegramSuccess, email: emailSuccess };
+    } catch (error) {
+      console.error("❌ Error testing both alert systems:", error);
+      return { telegram: false, email: false };
+    }
+  };
+
+  // 🚀 PRODUCTION: Enhanced health check for both systems
   const getAlertSystemStatus = async () => {
     try {
-      const healthCheck = await telegramAlertService.healthCheck();
+      const [telegramHealth, emailHealth] = await Promise.all([
+        telegramAlertService.healthCheck(),
+        emailAlertService.emailHealthCheck(),
+      ]);
+
       const processedCount = processedSignals.current.size;
 
       return {
-        status: healthCheck.status,
+        status:
+          telegramHealth.status === "healthy" &&
+          emailHealth.status === "healthy"
+            ? "healthy"
+            : "degraded",
         processed_signals_count: processedCount,
-        service_health: healthCheck.details,
+        telegram_health: telegramHealth.details,
+        email_health: emailHealth.details,
         monitoring_enabled: enabled,
         timestamp: new Date().toISOString(),
       };
@@ -291,17 +426,48 @@ export function useSignalAlerts({ enabled = true }: SignalAlertHookProps = {}) {
     }
   };
 
-  // 🚀 PRODUCTION: Get alert statistics for admin dashboard
+  // 🚀 PRODUCTION: Get combined alert statistics
   const getAlertStats = async (dateRange?: { start: string; end: string }) => {
     try {
       const defaultRange = dateRange || {
-        start: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // Last 24 hours
+        start: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
         end: new Date().toISOString(),
       };
 
-      return await telegramAlertService.getAlertStats(defaultRange);
+      const [telegramStats, emailStats] = await Promise.all([
+        telegramAlertService.getAlertStats(defaultRange),
+        emailAlertService.getEmailAlertStats(defaultRange),
+      ]);
+
+      return {
+        telegram: telegramStats,
+        email: emailStats,
+        combined: {
+          total_alerts:
+            (telegramStats?.total_alerts || 0) +
+            (emailStats?.total_email_alerts || 0),
+          total_users:
+            (telegramStats?.unique_users || 0) +
+            (emailStats?.unique_email_users || 0),
+        },
+      };
     } catch (error) {
-      console.error("❌ Error fetching alert stats:", error);
+      console.error("❌ Error fetching combined alert stats:", error);
+      return null;
+    }
+  };
+
+  // 📧 NEW: Get email-only statistics
+  const getEmailStats = async (dateRange?: { start: string; end: string }) => {
+    try {
+      const defaultRange = dateRange || {
+        start: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        end: new Date().toISOString(),
+      };
+
+      return await emailAlertService.getEmailAlertStats(defaultRange);
+    } catch (error) {
+      console.error("❌ Error fetching email stats:", error);
       return null;
     }
   };
@@ -324,7 +490,7 @@ export function useSignalAlerts({ enabled = true }: SignalAlertHookProps = {}) {
         return false;
       }
 
-      // Process the signal
+      // Process the signal (will send to both Telegram and Email)
       await handleNewSignal(signalData);
       return true;
     } catch (error) {
@@ -334,13 +500,16 @@ export function useSignalAlerts({ enabled = true }: SignalAlertHookProps = {}) {
   };
 
   return {
-    // 🧪 TEST FUNCTION: For development testing
-    sendTestAlert,
+    // 🧪 TEST FUNCTIONS
+    sendTestAlert, // Telegram test (existing)
+    sendTestEmailAlert, // Email test (new)
+    sendTestBothAlerts, // Both systems test (new)
 
     // 🚀 PRODUCTION: Admin/monitoring methods
-    getAlertSystemStatus,
-    getAlertStats,
-    reprocessSignal,
+    getAlertSystemStatus, // Enhanced for both systems
+    getAlertStats, // Combined stats (enhanced)
+    getEmailStats, // Email-only stats (new)
+    reprocessSignal, // Enhanced to process both systems
     processedSignalsCount: processedSignals.current.size,
   };
 }
