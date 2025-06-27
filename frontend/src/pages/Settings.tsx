@@ -12,8 +12,7 @@ import {
 import { Button } from "../components/ui/button";
 import { Switch } from "../components/ui/switch";
 import { Label } from "../components/ui/label";
-import { Badge } from "../components/ui/badge";
-import { Bell, Globe, Shield, Smartphone, Mail } from "lucide-react";
+import { Bell, Shield, Mail } from "lucide-react";
 
 // Import the production-ready TelegramConnection component
 import { TelegramConnection } from "../components/telegram";
@@ -23,9 +22,8 @@ const Settings: React.FC = () => {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
 
-  // Ultra-simplified settings state - only essential toggles
+  // Ultra-minimal settings state - only email alerts
   const [emailAlerts, setEmailAlerts] = useState(true);
-  const [pushNotifications, setPushNotifications] = useState(false);
 
   React.useEffect(() => {
     console.log("Settings page: Auth state - loading:", loading, "user:", user);
@@ -97,59 +95,13 @@ const Settings: React.FC = () => {
               {/* REAL TelegramConnection component - shows 70% threshold automatically */}
               <TelegramConnection />
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Smartphone className="h-4 w-4 text-slate-400" />
-                  <Label className="text-slate-300">
-                    {t("settings.pushNotifications")}
-                  </Label>
-                </div>
-                <Switch
-                  checked={pushNotifications}
-                  onCheckedChange={setPushNotifications}
-                />
-              </div>
+              {/* REMOVED: Push Notifications - too complex, email + Telegram is enough */}
 
               {/* REMOVED: Digest frequency dropdown - too complex */}
             </CardContent>
           </Card>
 
-          {/* Language & Locale - SIMPLIFIED */}
-          <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-lg text-white flex items-center">
-                <Globe className="h-5 w-5 mr-2 text-purple-400" />
-                {t("settings.language")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label className="text-slate-300 text-sm font-medium">
-                  Language
-                </Label>
-                <div className="flex space-x-2 mt-2">
-                  <Badge
-                    variant={language === "en" ? "default" : "outline"}
-                    className="cursor-pointer"
-                  >
-                    🇺🇸 English
-                  </Badge>
-                  <Badge
-                    variant={language === "ar" ? "default" : "outline"}
-                    className="cursor-pointer"
-                  >
-                    🇸🇦 العربية
-                  </Badge>
-                  <Badge
-                    variant={language === "de" ? "default" : "outline"}
-                    className="cursor-pointer"
-                  >
-                    🇩🇪 Deutsch
-                  </Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* REMOVED: Language & Locale section - user has header dropdown already */}
 
           {/* Security - SIMPLIFIED (removed 2FA and complex features) */}
           <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
