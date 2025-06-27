@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
@@ -12,18 +12,31 @@ import {
 import { Button } from "../components/ui/button";
 import { Switch } from "../components/ui/switch";
 import { Label } from "../components/ui/label";
-import { Bell, Shield, Mail } from "lucide-react";
+import { Bell, Shield, Mail, RefreshCw } from "lucide-react";
 
 // Import the production-ready TelegramConnection component
 import { TelegramConnection } from "../components/telegram";
+
+// Import the alert settings hook for email database integration
+import { useUserAlertSettings } from "../hooks/useUserAlertSettings";
 
 const Settings: React.FC = () => {
   const { user, loading } = useAuth();
   const { t, language } = useLanguage();
   const navigate = useNavigate();
 
-  // Ultra-minimal settings state - only email alerts
-  const [emailAlerts, setEmailAlerts] = useState(true);
+  // Get email settings from database (same pattern as Telegram)
+  const {
+    alertSettings,
+    loading: settingsLoading,
+    saving: settingsSaving,
+    updateSettings,
+  } = useUserAlertSettings();
+
+  // Handle email toggle changes (same pattern as Telegram updateSettings)
+  const handleEmailToggle = async (enabled: boolean) => {
+    await updateSettings({ email_enabled: enabled });
+  };
 
   React.useEffect(() => {
     console.log("Settings page: Auth state - loading:", loading, "user:", user);
@@ -76,23 +89,31 @@ const Settings: React.FC = () => {
               <CardTitle className="text-lg text-white flex items-center">
                 <Bell className="h-5 w-5 mr-2 text-blue-400" />
                 {t("settings.notifications")}
+                {settingsSaving && (
+                  <RefreshCw className="h-4 w-4 ml-2 animate-spin text-slate-400" />
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Email Alerts - Connected to Database */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <Mail className="h-4 w-4 text-slate-400" />
                   <Label className="text-slate-300">
                     {t("settings.emailAlerts")}
                   </Label>
+                  {settingsLoading && (
+                    <RefreshCw className="h-3 w-3 animate-spin text-slate-400" />
+                  )}
                 </div>
                 <Switch
-                  checked={emailAlerts}
-                  onCheckedChange={setEmailAlerts}
+                  checked={alertSettings?.email_enabled ?? true}
+                  onCheckedChange={handleEmailToggle}
+                  disabled={settingsLoading || settingsSaving}
                 />
               </div>
 
-              {/* REAL TelegramConnection component - shows 70% threshold automatically */}
+              {/* REAL TelegramConnection component - shows 80% threshold automatically */}
               <TelegramConnection />
 
               {/* REMOVED: Push Notifications - too complex, email + Telegram is enough */}
