@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
@@ -20,7 +20,7 @@ import { TelegramConnection } from "../components/telegram";
 // Import the alert settings hook for email database integration
 import { useUserAlertSettings } from "../hooks/useUserAlertSettings";
 
-const Settings: React.FC = () => {
+const Settings: React.FC = React.memo(() => {
   const { user, loading } = useAuth();
   const { t, language } = useLanguage();
   const navigate = useNavigate();
@@ -33,20 +33,28 @@ const Settings: React.FC = () => {
     updateSettings,
   } = useUserAlertSettings();
 
-  // Handle email toggle changes (same pattern as Telegram updateSettings)
-  const handleEmailToggle = async (enabled: boolean) => {
-    await updateSettings({ email_enabled: enabled });
-  };
+  // 🔧 MEMOIZED: Handle email toggle changes (same pattern as Telegram updateSettings)
+  const handleEmailToggle = useCallback(
+    async (enabled: boolean) => {
+      await updateSettings({ email_enabled: enabled });
+    },
+    [updateSettings]
+  );
+
+  // 🔧 MEMOIZED: Navigation handler
+  const handleRedirect = useCallback(() => {
+    console.log("Settings page: User not authenticated, redirecting to home");
+    navigate("/");
+  }, [navigate]);
 
   React.useEffect(() => {
     console.log("Settings page: Auth state - loading:", loading, "user:", user);
 
     // Only redirect if not loading and no user
     if (!loading && !user) {
-      console.log("Settings page: User not authenticated, redirecting to home");
-      navigate("/");
+      handleRedirect();
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, handleRedirect]);
 
   // Show loading spinner while authentication state is being determined
   if (loading) {
@@ -164,6 +172,9 @@ const Settings: React.FC = () => {
       </div>
     </Layout>
   );
-};
+});
+
+// Set display name for debugging
+Settings.displayName = "Settings";
 
 export default Settings;

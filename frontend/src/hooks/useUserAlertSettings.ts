@@ -1,8 +1,9 @@
 // src/hooks/useUserAlertSettings.ts
 // Production hook for managing user alert settings, Telegram connection, and Email alerts
 // 🚀 PRODUCTION: Complete CRUD operations with subscription validation
+// 🔧 FIXED: Added memoization to prevent input focus issues
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -81,8 +82,8 @@ export function useUserAlertSettings(): UseUserAlertSettingsReturn {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch user alert settings and profile
-  const fetchData = async () => {
+  // 🔧 MEMOIZED: Fetch user alert settings and profile
+  const fetchData = useCallback(async () => {
     if (!user?.id) {
       setLoading(false);
       return;
@@ -174,77 +175,77 @@ export function useUserAlertSettings(): UseUserAlertSettingsReturn {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id, user?.email, user?.user_metadata?.name]);
 
-  // Update alert settings
-  const updateSettings = async (
-    updates: Partial<UserAlertSettings>
-  ): Promise<boolean> => {
-    if (!user?.id || !alertSettings) {
-      setError("User not authenticated or settings not loaded");
-      return false;
-    }
-
-    try {
-      setSaving(true);
-      setError(null);
-
-      const { data, error } = await supabase
-        .from("user_alert_settings")
-        .update(updates)
-        .eq("user_id", user.id)
-        .select()
-        .single();
-
-      if (error) {
-        throw new Error(`Failed to update settings: ${error.message}`);
+  // 🔧 MEMOIZED: Update alert settings
+  const updateSettings = useCallback(
+    async (updates: Partial<UserAlertSettings>): Promise<boolean> => {
+      if (!user?.id || !alertSettings) {
+        setError("User not authenticated or settings not loaded");
+        return false;
       }
 
-      setAlertSettings(data);
-      console.log("✅ Settings updated successfully");
-      return true;
-    } catch (err) {
-      console.error("Error updating settings:", err);
-      setError(
-        err instanceof Error ? err.message : "Failed to update settings"
-      );
-      return false;
-    } finally {
-      setSaving(false);
-    }
-  };
+      try {
+        setSaving(true);
+        setError(null);
 
-  // TELEGRAM FUNCTIONS (existing)
-  // Enable Telegram alerts
-  const enableTelegramAlerts = async (): Promise<boolean> => {
+        const { data, error } = await supabase
+          .from("user_alert_settings")
+          .update(updates)
+          .eq("user_id", user.id)
+          .select()
+          .single();
+
+        if (error) {
+          throw new Error(`Failed to update settings: ${error.message}`);
+        }
+
+        setAlertSettings(data);
+        console.log("✅ Settings updated successfully");
+        return true;
+      } catch (err) {
+        console.error("Error updating settings:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to update settings"
+        );
+        return false;
+      } finally {
+        setSaving(false);
+      }
+    },
+    [user?.id, alertSettings]
+  );
+
+  // 🔧 MEMOIZED: TELEGRAM FUNCTIONS
+  const enableTelegramAlerts = useCallback(async (): Promise<boolean> => {
     return await updateSettings({ telegram_enabled: true });
-  };
+  }, [updateSettings]);
 
-  // Disable Telegram alerts
-  const disableTelegramAlerts = async (): Promise<boolean> => {
+  const disableTelegramAlerts = useCallback(async (): Promise<boolean> => {
     return await updateSettings({
       telegram_enabled: false,
       telegram_chat_id: null,
     });
-  };
+  }, [updateSettings]);
 
-  // Update Telegram chat ID
-  const updateTelegramChatId = async (chatId: string): Promise<boolean> => {
-    const success = await updateSettings({
-      telegram_chat_id: chatId,
-      telegram_enabled: true,
-    });
+  const updateTelegramChatId = useCallback(
+    async (chatId: string): Promise<boolean> => {
+      const success = await updateSettings({
+        telegram_chat_id: chatId,
+        telegram_enabled: true,
+      });
 
-    if (success) {
-      console.log(`✅ Telegram chat ID updated: ${chatId}`);
-    }
+      if (success) {
+        console.log(`✅ Telegram chat ID updated: ${chatId}`);
+      }
 
-    return success;
-  };
+      return success;
+    },
+    [updateSettings]
+  );
 
-  // EMAIL FUNCTIONS (new - following Telegram pattern)
-  // Enable Email alerts
-  const enableEmailAlerts = async (): Promise<boolean> => {
+  // 🔧 MEMOIZED: EMAIL FUNCTIONS
+  const enableEmailAlerts = useCallback(async (): Promise<boolean> => {
     const success = await updateSettings({ email_enabled: true });
 
     if (success) {
@@ -252,10 +253,9 @@ export function useUserAlertSettings(): UseUserAlertSettingsReturn {
     }
 
     return success;
-  };
+  }, [updateSettings]);
 
-  // Disable Email alerts
-  const disableEmailAlerts = async (): Promise<boolean> => {
+  const disableEmailAlerts = useCallback(async (): Promise<boolean> => {
     const success = await updateSettings({ email_enabled: false });
 
     if (success) {
@@ -263,16 +263,16 @@ export function useUserAlertSettings(): UseUserAlertSettingsReturn {
     }
 
     return success;
-  };
+  }, [updateSettings]);
 
-  // Refresh data
-  const refreshSettings = async (): Promise<void> => {
+  // 🔧 MEMOIZED: Refresh data
+  const refreshSettings = useCallback(async (): Promise<void> => {
     setLoading(true);
     await fetchData();
-  };
+  }, [fetchData]);
 
-  // Get Telegram alert statistics (existing)
-  const getAlertStats = async () => {
+  // 🔧 MEMOIZED: Get Telegram alert statistics
+  const getAlertStats = useCallback(async () => {
     if (!user?.id) return null;
 
     try {
@@ -310,10 +310,10 @@ export function useUserAlertSettings(): UseUserAlertSettingsReturn {
       console.error("Error calculating alert stats:", error);
       return null;
     }
-  };
+  }, [user?.id]);
 
-  // Get Email alert statistics (new - following Telegram pattern)
-  const getEmailStats = async () => {
+  // 🔧 MEMOIZED: Get Email alert statistics
+  const getEmailStats = useCallback(async () => {
     if (!user?.id) return null;
 
     try {
@@ -351,30 +351,40 @@ export function useUserAlertSettings(): UseUserAlertSettingsReturn {
       console.error("Error calculating email stats:", error);
       return null;
     }
-  };
+  }, [user?.id]);
 
-  // COMPUTED PROPERTIES
+  // 🔧 MEMOIZED: COMPUTED PROPERTIES
+  const computedProperties = useMemo(() => {
+    // Telegram computed properties
+    const canUseTelegram =
+      userProfile?.subscription_tier === "professional" ||
+      userProfile?.subscription_tier === "elite";
+    const isConnected = Boolean(
+      alertSettings?.telegram_enabled && alertSettings?.telegram_chat_id
+    );
+    const canReceiveAlerts =
+      canUseTelegram &&
+      isConnected &&
+      userProfile?.subscription_status === "active";
 
-  // Telegram computed properties (existing)
-  const canUseTelegram =
-    userProfile?.subscription_tier === "professional" ||
-    userProfile?.subscription_tier === "elite";
-  const isConnected = Boolean(
-    alertSettings?.telegram_enabled && alertSettings?.telegram_chat_id
-  );
-  const canReceiveAlerts =
-    canUseTelegram &&
-    isConnected &&
-    userProfile?.subscription_status === "active";
+    // Email computed properties
+    const canUseEmail = true; // Email available to all users
+    const isEmailEnabled = Boolean(alertSettings?.email_enabled);
+    const canReceiveEmailAlerts =
+      canUseEmail &&
+      isEmailEnabled &&
+      Boolean(userProfile?.email) &&
+      userProfile?.subscription_status === "active";
 
-  // Email computed properties (new - simpler than Telegram)
-  const canUseEmail = true; // Email available to all users (unlike Telegram which needs Professional)
-  const isEmailEnabled = Boolean(alertSettings?.email_enabled);
-  const canReceiveEmailAlerts =
-    canUseEmail &&
-    isEmailEnabled &&
-    Boolean(userProfile?.email) && // User must have valid email address
-    userProfile?.subscription_status === "active";
+    return {
+      canUseTelegram,
+      isConnected,
+      canReceiveAlerts,
+      canUseEmail,
+      isEmailEnabled,
+      canReceiveEmailAlerts,
+    };
+  }, [userProfile, alertSettings]);
 
   // Load data on mount and user change
   useEffect(() => {
@@ -385,45 +395,65 @@ export function useUserAlertSettings(): UseUserAlertSettingsReturn {
       setAlertSettings(null);
       setUserProfile(null);
     }
-  }, [user?.id]);
+  }, [user?.id, fetchData]);
 
-  return {
-    // Data state
-    alertSettings,
-    userProfile,
+  // 🔧 MEMOIZED: Return object to prevent unnecessary re-renders
+  return useMemo(
+    () => ({
+      // Data state
+      alertSettings,
+      userProfile,
 
-    // Loading states
-    loading,
-    saving,
+      // Loading states
+      loading,
+      saving,
 
-    // Error states
-    error,
+      // Error states
+      error,
 
-    // Computed states - Telegram
-    canUseTelegram,
-    isConnected,
-    canReceiveAlerts,
+      // Computed states - Telegram
+      canUseTelegram: computedProperties.canUseTelegram,
+      isConnected: computedProperties.isConnected,
+      canReceiveAlerts: computedProperties.canReceiveAlerts,
 
-    // Computed states - Email
-    canUseEmail,
-    isEmailEnabled,
-    canReceiveEmailAlerts,
+      // Computed states - Email
+      canUseEmail: computedProperties.canUseEmail,
+      isEmailEnabled: computedProperties.isEmailEnabled,
+      canReceiveEmailAlerts: computedProperties.canReceiveEmailAlerts,
 
-    // Actions - General
-    updateSettings,
-    refreshSettings,
+      // Actions - General
+      updateSettings,
+      refreshSettings,
 
-    // Actions - Telegram
-    enableTelegramAlerts,
-    disableTelegramAlerts,
-    updateTelegramChatId,
+      // Actions - Telegram
+      enableTelegramAlerts,
+      disableTelegramAlerts,
+      updateTelegramChatId,
 
-    // Actions - Email
-    enableEmailAlerts,
-    disableEmailAlerts,
+      // Actions - Email
+      enableEmailAlerts,
+      disableEmailAlerts,
 
-    // Stats
-    getAlertStats,
-    getEmailStats,
-  };
+      // Stats
+      getAlertStats,
+      getEmailStats,
+    }),
+    [
+      alertSettings,
+      userProfile,
+      loading,
+      saving,
+      error,
+      computedProperties,
+      updateSettings,
+      refreshSettings,
+      enableTelegramAlerts,
+      disableTelegramAlerts,
+      updateTelegramChatId,
+      enableEmailAlerts,
+      disableEmailAlerts,
+      getAlertStats,
+      getEmailStats,
+    ]
+  );
 }
