@@ -8,6 +8,7 @@ import {
   processSubscription,
   getSubscriptionStatus,
 } from "./api/subscription/process.js";
+import { processSignalAlerts } from "./api/signal-alerts/process.js";
 
 // Load environment variables
 dotenv.config();
@@ -49,6 +50,7 @@ app.get("/", (req, res) => {
       health: "GET /health",
       processSubscription: "POST /api/subscription/process",
       getSubscriptionStatus: "GET /api/subscription/status/:userId",
+      processSignalAlerts: "POST /api/process-signal-alerts",
     },
   });
 });
@@ -56,6 +58,9 @@ app.get("/", (req, res) => {
 // Subscription endpoints
 app.post("/api/subscription/process", processSubscription);
 app.get("/api/subscription/status/:userId", getSubscriptionStatus);
+
+// Signal alerts endpoint - PRODUCTION EMAIL ALERTS TRIGGER
+app.post("/api/process-signal-alerts", processSignalAlerts);
 
 // Error handling middleware
 app.use((error, req, res, next) => {
@@ -78,6 +83,7 @@ app.use("*", (req, res) => {
       "GET /health",
       "POST /api/subscription/process",
       "GET /api/subscription/status/:userId",
+      "POST /api/process-signal-alerts",
     ],
   });
 });
