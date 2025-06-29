@@ -244,71 +244,99 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     [user] // 🔧 FIXED: Add user dependency
   );
 
-  // 🔧 ENHANCED: Background profile fetching with forced fresh data
-  const fetchUserProfileInBackground = useCallback(async (userId: string) => {
-    try {
-      console.log("👤 Mac AuthContext: Background profile fetch for:", userId);
-      console.log("🔄 FETCH FIX: Forcing fresh profile fetch from database");
-
-      // 🔧 CRITICAL FIX: Force fresh fetch with cache-busting
-      const profilePromise = supabase
-        .from("users")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      const timeoutPromise = new Promise(
-        (_, reject) =>
-          setTimeout(() => reject(new Error("Profile fetch timeout")), 3000) // Increased timeout
-      );
-
-      const { data, error } = (await Promise.race([
-        profilePromise,
-        timeoutPromise,
-      ])) as any;
-
-      if (!mounted.current) return;
-
-      if (error) {
-        if (error.code === "PGRST116") {
-          console.log(
-            "🆕 Mac AuthContext: No profile found, creating in background..."
-          );
-          createUserProfileInBackground(userId);
-        } else {
-          console.error("❌ Mac AuthContext: Profile fetch error:", error);
-          setUserProfile(null);
-        }
-        return;
-      }
-
-      // 🔧 CRITICAL FIX: Log what we found in the database
-      console.log("✅ Mac AuthContext: Profile loaded from database:", {
-        email: data.email,
-        subscription_tier: data.subscription_tier,
-        subscription_status: data.subscription_status,
-        id: data.id,
-      });
-
-      // 🔧 CRITICAL FIX: Verify the profile tier
-      if (data.subscription_tier === "professional") {
+  // 🔧 ENHANCED: Background profile fetching with forced fresh data + SECURITY FIX
+  const fetchUserProfileInBackground = useCallback(
+    async (userId: string) => {
+      try {
         console.log(
-          "🎉 FETCH SUCCESS: Professional tier confirmed from database!"
+          "👤 Mac AuthContext: Background profile fetch for:",
+          userId
         );
-      } else if (data.subscription_tier === "starter") {
-        console.log("⚠️ FETCH WARNING: Database shows Starter tier");
-      }
+        console.log("🔄 FETCH FIX: Forcing fresh profile fetch from database");
 
-      console.log("🔄 FETCH FIX: Setting userProfile state with fresh data");
-      setUserProfile(data);
-    } catch (error) {
-      console.error(
-        "💥 Mac AuthContext: Background profile fetch error:",
-        error
-      );
-      // Don't set profile to null on timeout - user can still use the app
-    }
-  }, []);
+        // 🔧 CRITICAL FIX: Force fresh fetch with cache-busting
+        const profilePromise = supabase
+          .from("users")
+          .select("*")
+          .eq("id", userId)
+          .single();
+
+        const timeoutPromise = new Promise(
+          (_, reject) =>
+            setTimeout(() => reject(new Error("Profile fetch timeout")), 3000) // Increased timeout
+        );
+
+        const { data, error } = (await Promise.race([
+          profilePromise,
+          timeoutPromise,
+        ])) as any;
+
+        if (!mounted.current) return;
+
+        if (error) {
+          if (error.code === "PGRST116") {
+            // 🚨 SECURITY FIX: Check if this is a recently created user vs deleted user
+            const currentUser = user;
+            if (currentUser?.created_at) {
+              const userCreatedAt = new Date(currentUser.created_at);
+              const now = new Date();
+              const timeSinceCreation = now.getTime() - userCreatedAt.getTime();
+              const isRecentlyCreated = timeSinceCreation < 5 * 60 * 1000; // 5 minutes
+
+              if (isRecentlyCreated) {
+                console.log(
+                  "🆕 Mac AuthContext: Recently created user (< 5 min), creating profile..."
+                );
+                createUserProfileInBackground(userId);
+              } else {
+                console.log(
+                  "🚨 SECURITY FIX: Older user with no profile - likely deleted by admin, signing out"
+                );
+                await signOut();
+                return;
+              }
+            } else {
+              console.log(
+                "🆕 Mac AuthContext: No creation timestamp, assuming new user..."
+              );
+              createUserProfileInBackground(userId);
+            }
+          } else {
+            console.error("❌ Mac AuthContext: Profile fetch error:", error);
+            setUserProfile(null);
+          }
+          return;
+        }
+
+        // 🔧 CRITICAL FIX: Log what we found in the database
+        console.log("✅ Mac AuthContext: Profile loaded from database:", {
+          email: data.email,
+          subscription_tier: data.subscription_tier,
+          subscription_status: data.subscription_status,
+          id: data.id,
+        });
+
+        // 🔧 CRITICAL FIX: Verify the profile tier
+        if (data.subscription_tier === "professional") {
+          console.log(
+            "🎉 FETCH SUCCESS: Professional tier confirmed from database!"
+          );
+        } else if (data.subscription_tier === "starter") {
+          console.log("⚠️ FETCH WARNING: Database shows Starter tier");
+        }
+
+        console.log("🔄 FETCH FIX: Setting userProfile state with fresh data");
+        setUserProfile(data);
+      } catch (error) {
+        console.error(
+          "💥 Mac AuthContext: Background profile fetch error:",
+          error
+        );
+        // Don't set profile to null on timeout - user can still use the app
+      }
+    },
+    [user]
+  ); // 🔧 SECURITY FIX: Add user dependency for security check
 
   // 🔧 CRITICAL FIX: Profile creation with fresh user metadata reading
   const createUserProfileInBackground = useCallback(
