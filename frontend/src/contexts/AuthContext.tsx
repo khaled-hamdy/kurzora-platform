@@ -283,7 +283,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           starting_balance: 10000.0,
           current_balance: 10000.0,
           risk_percentage: 2.0,
-          notification_settings: {},
+          // 🔧 PERMANENT FIX: Proper notification settings based on tier
+          notification_settings: {
+            email_alerts_enabled: true,
+            telegram_alerts_enabled: subscriptionTier === "professional",
+            daily_alert_limit: subscriptionTier === "starter" ? 3 : null,
+            minimum_score: 65,
+          },
           is_active: true,
         };
 
@@ -291,6 +297,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           email: profileData.email,
           subscription_tier: profileData.subscription_tier,
           subscription_status: profileData.subscription_status,
+          notification_settings: profileData.notification_settings,
         });
 
         console.log(
@@ -312,6 +319,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           console.log(
             "✅ VERIFICATION: User tier in database:",
             data.subscription_tier
+          );
+          console.log(
+            "✅ VERIFICATION: Notification settings:",
+            data.notification_settings
           );
           console.log("🔍 CREATE PROFILE DEBUG: Database insertion successful");
           if (mounted.current) {

@@ -1,6 +1,7 @@
 // src/services/telegramAlerts.ts
 // Production Telegram Alert Service for Kurzora Trading Platform
 // 🚀 PRODUCTION: Subscription-based alerts with database integration
+// 🔧 FIXED: Proper array handling for Supabase joins + null safety
 
 import { supabase } from "@/lib/supabase";
 import { calculateFinalScore } from "@/utils/signalCalculations";
@@ -82,6 +83,10 @@ class TelegramAlertService {
         return false;
       }
 
+      console.log(
+        `🎯 Found ${eligibleUsers.length} eligible Professional users for Telegram alerts`
+      );
+
       // Send webhook with real signal data and user list
       return await this.sendProductionWebhook(
         signal,
@@ -99,6 +104,10 @@ class TelegramAlertService {
     signalScore: number
   ): Promise<SubscriptionUser[]> {
     try {
+      console.log(
+        `🔍 Searching for Professional users with signal score >= ${signalScore}`
+      );
+
       const { data: users, error } = await supabase
         .from("users")
         .select(
@@ -128,10 +137,43 @@ class TelegramAlertService {
         return [];
       }
 
-      // Filter users who haven't exceeded daily limits
-      const filteredUsers = await this.filterByDailyLimits(users || []);
+      console.log(`📋 Database returned ${users?.length || 0} users`);
 
-      console.log(`✅ Found ${filteredUsers.length} eligible users for alerts`);
+      // 🔧 FIXED: Properly handle Supabase join arrays and validate data
+      const validUsers = (users || [])
+        .filter((user) => {
+          // Get first element from join array (Supabase returns arrays for joins)
+          const alertSettings = user.user_alert_settings?.[0];
+
+          if (!alertSettings) {
+            console.log(`⚠️ Skipping ${user.email}: No alert settings found`);
+            return false;
+          }
+
+          if (!alertSettings.telegram_enabled) {
+            console.log(`⚠️ Skipping ${user.email}: Telegram not enabled`);
+            return false;
+          }
+
+          if (!alertSettings.telegram_chat_id) {
+            console.log(`⚠️ Skipping ${user.email}: No Chat ID`);
+            return false;
+          }
+
+          console.log(
+            `✅ User ${user.email} has valid Telegram settings: chat_id=${alertSettings.telegram_chat_id}`
+          );
+          return true;
+        })
+        .map((user) => ({
+          ...user,
+          alert_settings: user.user_alert_settings[0], // Extract first element
+        }));
+
+      // Filter users who haven't exceeded daily limits
+      const filteredUsers = await this.filterByDailyLimits(validUsers);
+
+      console.log(`🎯 Final eligible users: ${filteredUsers.length}`);
       return filteredUsers;
     } catch (error) {
       console.error("❌ Error fetching eligible users:", error);
@@ -147,6 +189,14 @@ class TelegramAlertService {
 
     for (const user of users) {
       try {
+        // Alert settings is already extracted in getEligibleUsers
+        const alertSettings = user.alert_settings;
+
+        if (!alertSettings) {
+          console.log(`⚠️ Skipping user ${user.email}: No alert settings`);
+          continue;
+        }
+
         // Check how many alerts sent today
         const { count } = await supabase
           .from("alert_delivery_log")
@@ -157,7 +207,7 @@ class TelegramAlertService {
           .lt("created_at", `${today}T23:59:59`);
 
         const alertsToday = count || 0;
-        const maxAlerts = user.user_alert_settings?.max_alerts_per_day || 10;
+        const maxAlerts = alertSettings.max_alerts_per_day || 10;
 
         if (alertsToday < maxAlerts) {
           filteredUsers.push({
@@ -165,8 +215,12 @@ class TelegramAlertService {
             email: user.email,
             subscription_tier: user.subscription_tier,
             subscription_status: user.subscription_status,
-            alert_settings: user.user_alert_settings,
+            alert_settings: alertSettings,
           });
+
+          console.log(
+            `✅ User ${user.email} eligible: ${alertsToday}/${maxAlerts} alerts today, chat_id=${alertSettings.telegram_chat_id}`
+          );
         } else {
           console.log(
             `📈 User ${user.email} exceeded daily limit (${alertsToday}/${maxAlerts})`
@@ -194,6 +248,16 @@ class TelegramAlertService {
       return false;
     }
 
+    // 🔧 FIXED: Add extra validation before mapping
+    const validEligibleUsers = eligibleUsers.filter(
+      (user) => user.alert_settings?.telegram_chat_id
+    );
+
+    if (validEligibleUsers.length === 0) {
+      console.error("❌ No users with valid chat IDs after filtering");
+      return false;
+    }
+
     const payload: WebhookPayload = {
       signal_id: signal.id,
       symbol: signal.symbol,
@@ -205,10 +269,10 @@ class TelegramAlertService {
       signal_type: signal.signal_type,
       alert_type: "signal_alert",
       timestamp: new Date().toISOString(),
-      user_count: eligibleUsers.length,
-      eligible_users: eligibleUsers.map((user) => ({
+      user_count: validEligibleUsers.length,
+      eligible_users: validEligibleUsers.map((user) => ({
         user_id: user.id,
-        chat_id: user.alert_settings.telegram_chat_id!,
+        chat_id: user.alert_settings.telegram_chat_id!, // Safe now
         subscription_tier: user.subscription_tier,
       })),
     };
@@ -216,8 +280,14 @@ class TelegramAlertService {
     try {
       console.log(`📤 Sending production webhook for ${signal.symbol}:`, {
         score: finalScore,
-        users: eligibleUsers.length,
+        users: validEligibleUsers.length,
         webhook_url: this.webhookUrl.substring(0, 50) + "...",
+        chat_ids: payload.eligible_users.map((u) => u.chat_id),
+        payload_preview: {
+          symbol: payload.symbol,
+          final_score: payload.final_score,
+          user_count: payload.user_count,
+        },
       });
 
       const response = await fetch(this.webhookUrl, {
@@ -230,18 +300,20 @@ class TelegramAlertService {
 
       if (response.ok) {
         console.log(
-          `✅ Production webhook sent successfully for ${signal.symbol}`
+          `✅ Production webhook sent successfully for ${signal.symbol} to ${validEligibleUsers.length} users`
         );
 
         // Log successful alerts to database
-        await this.logAlertDeliveries(signal.id, eligibleUsers);
+        await this.logAlertDeliveries(signal.id, validEligibleUsers);
 
         return true;
       } else {
+        const responseText = await response.text();
         console.error(
           `❌ Production webhook failed:`,
           response.status,
-          response.statusText
+          response.statusText,
+          responseText
         );
         return false;
       }

@@ -1,4 +1,7 @@
-// src/contexts/SignalsContext.tsx - ENHANCED WITH ALERT INTEGRATION
+// src/contexts/SignalsContext.tsx - PRODUCTION SIGNALS PROVIDER
+// 🚀 ARCHITECTURE: Clean signals management with Edge Function alert processing
+// 🎯 ALERTS: Handled by Supabase Edge Function for enterprise-grade reliability
+
 import React, {
   createContext,
   useContext,
@@ -8,7 +11,6 @@ import React, {
 } from "react";
 import { supabase } from "../lib/supabase";
 import { calculateFinalScore } from "../utils/signalCalculations";
-import { telegramAlertService } from "../services/telegramAlerts";
 
 export interface Signal {
   ticker: string;
@@ -94,12 +96,17 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
         return;
       }
 
-      // 🚨 ALERT DETECTION: Track new signals for alert triggers
+      // 🚨 SIGNAL TRACKING: Monitor new signals for alert processing
       const currentSignalIds = new Set(data.map((record) => record.id));
       const newSignals = data.filter(
         (record) => !previousSignalIds.has(record.id)
       );
-      console.log(`🔍 Alert Check: ${newSignals.length} new signals detected`);
+
+      if (newSignals.length > 0) {
+        console.log(
+          `🔍 Alert Processing: ${newSignals.length} new signals detected - Edge Function will process alerts automatically`
+        );
+      }
 
       // ✅ Handle both signals with real timeframe data AND signals without
       const transformedSignals: Signal[] = data.map((record) => {
@@ -162,9 +169,17 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
         };
       });
 
-      // 🚨 ALERT TRIGGER: Process new high-score signals for alerts
+      // 🚀 ENTERPRISE ARCHITECTURE: Edge Function handles all alert processing
+      // When signals are inserted/updated in database, Supabase webhook automatically
+      // triggers the Edge Function which handles:
+      // - Professional user filtering
+      // - Telegram + Email alert distribution
+      // - Daily limit enforcement
+      // - Subscription tier validation
       if (!forceRefresh && newSignals.length > 0) {
-        console.log("🚨 Checking new signals for alert triggers...");
+        console.log(
+          "🎯 ALERT ARCHITECTURE: Edge Function processing alerts automatically via database webhooks"
+        );
 
         for (const newSignalRecord of newSignals) {
           const transformedSignal = transformedSignals.find(
@@ -179,47 +194,11 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
             transformedSignal.finalScore >= 70
           ) {
             console.log(
-              `🔔 ALERT TRIGGER: ${transformedSignal.ticker} score ${transformedSignal.finalScore} >= 70`
+              `🔔 HIGH-SCORE SIGNAL: ${transformedSignal.ticker} score ${transformedSignal.finalScore} >= 70 - Edge Function will distribute alerts`
             );
-
-            try {
-              // Use your existing production alert service
-              const alertSuccess =
-                await telegramAlertService.processSignalForAlerts({
-                  id: newSignalRecord.id,
-                  symbol: transformedSignal.ticker,
-                  signals: transformedSignal.signals,
-                  strength:
-                    transformedSignal.finalScore >= 85
-                      ? "strong"
-                      : transformedSignal.finalScore >= 70
-                      ? "valid"
-                      : "weak",
-                  entry_price: transformedSignal.price,
-                  signal_type:
-                    transformedSignal.change >= 0 ? "bullish" : "bearish",
-                  created_at: transformedSignal.timestamp,
-                });
-
-              if (alertSuccess) {
-                console.log(
-                  `✅ Production alert sent successfully for ${transformedSignal.ticker}`
-                );
-              } else {
-                console.log(
-                  `📭 No eligible users or alert failed for ${transformedSignal.ticker}`
-                );
-              }
-            } catch (alertError) {
-              console.error(
-                `❌ Failed to send alert for ${transformedSignal.ticker}:`,
-                alertError
-              );
-              // Don't fail the whole operation if alert fails
-            }
           } else if (transformedSignal) {
             console.log(
-              `📊 ${transformedSignal.ticker} score ${transformedSignal.finalScore} < 70, no alert triggered`
+              `📊 ${transformedSignal.ticker} score ${transformedSignal.finalScore} < 70, below alert threshold`
             );
           }
         }
