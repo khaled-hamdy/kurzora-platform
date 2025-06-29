@@ -65,67 +65,148 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const isRedirecting = useRef(false);
   const mounted = useRef(true);
 
-  // 🎯 FIXED: Simplified and reliable plan tier determination
+  // 🔧 FIXED: Enhanced plan tier determination with user metadata priority
   const determineSubscriptionTier = useCallback(
     (planInfo: any): "starter" | "professional" => {
       console.log(
         "🎯 PLAN LOGIC: Determining subscription tier for:",
         planInfo
       );
+      console.log("🔍 PLAN LOGIC DEBUG: planInfo type:", typeof planInfo);
+      console.log(
+        "🔍 PLAN LOGIC DEBUG: planInfo structure:",
+        JSON.stringify(planInfo)
+      );
 
-      // Method 1: PRIORITIZE direct plan info from signup flow (MOST IMPORTANT)
-      if (planInfo?.id) {
-        const planId = planInfo.id.toLowerCase().trim();
-        console.log(
-          "🎯 PLAN LOGIC: Using direct plan info - planInfo.id:",
-          planId
-        );
-
-        if (planId === "starter") {
-          console.log("✅ PLAN LOGIC: STARTER plan explicitly selected");
-          return "starter";
-        } else if (planId === "professional") {
-          console.log("✅ PLAN LOGIC: PROFESSIONAL plan explicitly selected");
-          return "professional";
-        } else {
-          console.warn(
-            "⚠️ PLAN LOGIC: Unknown plan ID:",
-            planId,
-            "- defaulting to starter"
+      // 🔧 NEW: Method 1 - Check user metadata (most reliable, survives email verification)
+      try {
+        const currentUser = user; // Use the current user from context
+        if (
+          currentUser &&
+          currentUser.user_metadata &&
+          currentUser.user_metadata.selected_plan
+        ) {
+          const metadataPlan = currentUser.user_metadata.selected_plan;
+          console.log(
+            "🎯 PLAN LOGIC: Found plan in user metadata:",
+            metadataPlan
           );
-          return "starter"; // Changed default to starter for unknown plans
+
+          if (metadataPlan.id) {
+            const planId = metadataPlan.id.toLowerCase().trim();
+            console.log("🔍 PLAN LOGIC DEBUG: metadata planId:", planId);
+
+            if (planId === "professional") {
+              console.log(
+                "✅ PLAN LOGIC: PROFESSIONAL plan from user metadata - MOST RELIABLE METHOD"
+              );
+              return "professional";
+            } else if (planId === "starter") {
+              console.log(
+                "✅ PLAN LOGIC: STARTER plan from user metadata - MOST RELIABLE METHOD"
+              );
+              return "starter";
+            }
+          }
+        } else {
+          console.log(
+            "🔍 PLAN LOGIC DEBUG: No user metadata or selected_plan found"
+          );
         }
+      } catch (error) {
+        console.warn("⚠️ PLAN LOGIC: User metadata parsing error:", error);
       }
 
-      // Method 2: Check localStorage as fallback (only if no direct plan info)
+      // 🔧 Method 2: localStorage (survives most browser actions but not clearAuthState)
       try {
         const selectedPlanStr = localStorage.getItem("selectedPlan");
+        console.log("🔍 PLAN LOGIC DEBUG: localStorage raw:", selectedPlanStr);
+
         if (selectedPlanStr) {
           const selectedPlan = JSON.parse(selectedPlanStr);
-          console.log(
-            "🎯 PLAN LOGIC: Using localStorage fallback:",
-            selectedPlan
-          );
+          console.log("🎯 PLAN LOGIC: Found localStorage plan:", selectedPlan);
 
           if (selectedPlan?.id) {
             const planId = selectedPlan.id.toLowerCase().trim();
-            if (planId === "starter") {
-              console.log("✅ PLAN LOGIC: STARTER plan from localStorage");
-              return "starter";
-            } else if (planId === "professional") {
-              console.log("✅ PLAN LOGIC: PROFESSIONAL plan from localStorage");
+            console.log("🔍 PLAN LOGIC DEBUG: localStorage planId:", planId);
+
+            if (planId === "professional") {
+              console.log(
+                "✅ PLAN LOGIC: PROFESSIONAL plan from localStorage - BACKUP METHOD"
+              );
               return "professional";
+            } else if (planId === "starter") {
+              console.log(
+                "✅ PLAN LOGIC: STARTER plan from localStorage - BACKUP METHOD"
+              );
+              return "starter";
             }
           }
+        } else {
+          console.log(
+            "🔍 PLAN LOGIC DEBUG: No localStorage selectedPlan found"
+          );
         }
       } catch (error) {
         console.warn("⚠️ PLAN LOGIC: localStorage parsing error:", error);
       }
 
-      // Method 3: Check URL parameters as additional fallback
+      // 🔧 Method 3: Direct plan info with STRONGER validation
+      if (planInfo && typeof planInfo === "object") {
+        console.log("🔍 PLAN LOGIC DEBUG: Checking direct planInfo...");
+        console.log("🔍 PLAN LOGIC DEBUG: planInfo.id exists:", !!planInfo.id);
+        console.log("🔍 PLAN LOGIC DEBUG: planInfo.id value:", planInfo.id);
+        console.log(
+          "🔍 PLAN LOGIC DEBUG: planInfo.id type:",
+          typeof planInfo.id
+        );
+
+        // 🔧 STRONGER VALIDATION: Check for valid, non-empty string
+        if (
+          planInfo.id &&
+          typeof planInfo.id === "string" &&
+          planInfo.id.trim().length > 0
+        ) {
+          const planId = planInfo.id.toLowerCase().trim();
+          console.log(
+            "🎯 PLAN LOGIC: Using direct plan info - planId:",
+            planId
+          );
+
+          if (planId === "professional") {
+            console.log("✅ PLAN LOGIC: PROFESSIONAL plan explicitly selected");
+            return "professional";
+          } else if (planId === "starter") {
+            console.log("✅ PLAN LOGIC: STARTER plan explicitly selected");
+            return "starter";
+          } else {
+            console.warn(
+              "⚠️ PLAN LOGIC: Unknown plan ID:",
+              planId,
+              "- continuing to fallbacks"
+            );
+          }
+        } else {
+          console.log(
+            "🔍 PLAN LOGIC DEBUG: planInfo.id invalid or empty, skipping direct method"
+          );
+          console.log(
+            "🔍 PLAN LOGIC DEBUG: planInfo.id raw value:",
+            JSON.stringify(planInfo.id)
+          );
+        }
+      } else {
+        console.log(
+          "🔍 PLAN LOGIC DEBUG: No valid planInfo object, skipping direct method"
+        );
+      }
+
+      // Method 4: Check URL parameters as additional fallback
       try {
         const urlParams = new URLSearchParams(window.location.search);
         const planFromUrl = urlParams.get("plan");
+        console.log("🔍 PLAN LOGIC DEBUG: URL plan parameter:", planFromUrl);
+
         if (planFromUrl) {
           const planId = planFromUrl.toLowerCase().trim();
           console.log("🎯 PLAN LOGIC: Using URL parameter fallback:", planId);
@@ -142,29 +223,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         console.warn("⚠️ PLAN LOGIC: URL parsing error:", error);
       }
 
-      // Method 4: SIMPLE default (only when no plan info exists anywhere)
+      // Method 5: Default fallback
       console.log(
-        "🎯 PLAN LOGIC: No explicit plan found - using default STARTER"
+        "🎯 PLAN LOGIC: No valid plan found in any method - using default STARTER"
       );
-      return "starter"; // Changed default to starter for better user experience
+      console.log(
+        "🔍 PLAN LOGIC DEBUG: Final fallback - all methods exhausted"
+      );
+      console.log(
+        "🔍 PLAN LOGIC DEBUG: User metadata check result: no valid plan"
+      );
+      console.log(
+        "🔍 PLAN LOGIC DEBUG: localStorage check result: no valid plan"
+      );
+      console.log("🔍 PLAN LOGIC DEBUG: planInfo check result: no valid plan");
+      console.log("🔍 PLAN LOGIC DEBUG: URL check result: no valid plan");
+
+      return "starter";
     },
-    []
+    [user] // 🔧 FIXED: Add user dependency
   );
 
-  // OPTIMIZATION: New background profile fetching - doesn't block login
+  // 🔧 ENHANCED: Background profile fetching with forced fresh data
   const fetchUserProfileInBackground = useCallback(async (userId: string) => {
     try {
       console.log("👤 Mac AuthContext: Background profile fetch for:", userId);
+      console.log("🔄 FETCH FIX: Forcing fresh profile fetch from database");
 
-      // Use a timeout to prevent hanging
+      // 🔧 CRITICAL FIX: Force fresh fetch with cache-busting
       const profilePromise = supabase
         .from("users")
         .select("*")
         .eq("id", userId)
         .single();
 
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Profile fetch timeout")), 2000)
+      const timeoutPromise = new Promise(
+        (_, reject) =>
+          setTimeout(() => reject(new Error("Profile fetch timeout")), 3000) // Increased timeout
       );
 
       const { data, error } = (await Promise.race([
@@ -187,7 +282,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         return;
       }
 
-      console.log("✅ Mac AuthContext: Profile loaded in background");
+      // 🔧 CRITICAL FIX: Log what we found in the database
+      console.log("✅ Mac AuthContext: Profile loaded from database:", {
+        email: data.email,
+        subscription_tier: data.subscription_tier,
+        subscription_status: data.subscription_status,
+        id: data.id,
+      });
+
+      // 🔧 CRITICAL FIX: Verify the profile tier
+      if (data.subscription_tier === "professional") {
+        console.log(
+          "🎉 FETCH SUCCESS: Professional tier confirmed from database!"
+        );
+      } else if (data.subscription_tier === "starter") {
+        console.log("⚠️ FETCH WARNING: Database shows Starter tier");
+      }
+
+      console.log("🔄 FETCH FIX: Setting userProfile state with fresh data");
       setUserProfile(data);
     } catch (error) {
       console.error(
@@ -198,19 +310,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
-  // OPTIMIZATION: Background profile creation - doesn't block login
+  // 🔧 CRITICAL FIX: Profile creation with fresh user metadata reading
   const createUserProfileInBackground = useCallback(
     async (userId: string) => {
       try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user || !mounted.current) return;
-
+        // 🔧 CRITICAL FIX: Get fresh user data directly from Supabase
         console.log(
           "🆕 Mac AuthContext: Creating profile in background for:",
-          user.email
+          userId
         );
+        console.log("🔄 PROFILE FIX: Getting fresh user data from Supabase...");
+
+        const {
+          data: { user: freshUser },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError || !freshUser || !mounted.current) {
+          console.error(
+            "❌ PROFILE FIX: Could not get fresh user data:",
+            userError
+          );
+          return;
+        }
+
+        console.log("✅ PROFILE FIX: Got fresh user data:", {
+          email: freshUser.email,
+          id: freshUser.id,
+          metadata_keys: Object.keys(freshUser.user_metadata || {}),
+        });
+
+        // 🔧 CRITICAL FIX: Check fresh user metadata for plan
+        if (freshUser.user_metadata && freshUser.user_metadata.selected_plan) {
+          console.log(
+            "🎯 PROFILE FIX: Found selected_plan in fresh user metadata:",
+            freshUser.user_metadata.selected_plan
+          );
+        } else {
+          console.log(
+            "⚠️ PROFILE FIX: No selected_plan found in fresh user metadata"
+          );
+          console.log(
+            "🔍 PROFILE FIX: Full user metadata:",
+            freshUser.user_metadata
+          );
+        }
 
         // 🔍 ENHANCED DEBUG: Check pendingPlanInfo state
         console.log(
@@ -251,13 +395,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           console.log("🔍 CREATE PROFILE DEBUG: localStorage error =", e);
         }
 
-        // 🎯 FIXED: Use simplified plan determination
+        // 🔧 CRITICAL FIX: Determine subscription tier from fresh user metadata
         console.log(
-          "🔍 CREATE PROFILE DEBUG: About to call determineSubscriptionTier..."
+          "🔍 CREATE PROFILE DEBUG: About to determine subscription tier..."
         );
-        const subscriptionTier = determineSubscriptionTier(
-          pendingPlanInfo.current
-        );
+
+        let subscriptionTier: "starter" | "professional" = "starter";
+
+        // Method 1: Check fresh user metadata (most reliable)
+        if (freshUser.user_metadata && freshUser.user_metadata.selected_plan) {
+          const metadataPlan = freshUser.user_metadata.selected_plan;
+          console.log(
+            "🎯 PROFILE LOGIC: Found plan in fresh user metadata:",
+            metadataPlan
+          );
+
+          if (
+            metadataPlan.id &&
+            metadataPlan.id.toLowerCase().trim() === "professional"
+          ) {
+            console.log(
+              "✅ PROFILE LOGIC: PROFESSIONAL plan from fresh user metadata - DIRECT METHOD"
+            );
+            subscriptionTier = "professional";
+          } else if (
+            metadataPlan.id &&
+            metadataPlan.id.toLowerCase().trim() === "starter"
+          ) {
+            console.log(
+              "✅ PROFILE LOGIC: STARTER plan from fresh user metadata - DIRECT METHOD"
+            );
+            subscriptionTier = "starter";
+          }
+        } else {
+          console.log(
+            "🔍 PROFILE LOGIC: No selected_plan in fresh user metadata, checking other sources..."
+          );
+
+          // Fallback to original logic
+          subscriptionTier = determineSubscriptionTier(pendingPlanInfo.current);
+        }
+
         console.log(
           "🔍 CREATE PROFILE DEBUG: Final tier decision:",
           subscriptionTier
@@ -268,14 +446,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           subscriptionTier
         );
         console.log(
-          "🎯 CONTEXT: pendingPlanInfo.current =",
-          pendingPlanInfo.current
+          "🎯 CONTEXT: Fresh user metadata selected_plan =",
+          freshUser.user_metadata?.selected_plan
         );
 
         const profileData = {
           id: userId,
-          email: user.email?.toLowerCase().trim() || "",
-          name: user.user_metadata?.name || user.email?.split("@")[0] || "User",
+          email: freshUser.email?.toLowerCase().trim() || "",
+          name:
+            freshUser.user_metadata?.name ||
+            freshUser.email?.split("@")[0] ||
+            "User",
           subscription_tier: subscriptionTier as "starter" | "professional",
           subscription_status: "trial",
           language: "en",
@@ -411,7 +592,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     initializeAuth();
 
-    // Auth state change listener
+    // 🔧 ENHANCED: Auth state change listener with forced refresh
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -438,11 +619,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             "👤 Mac AuthContext: User signed in:",
             session.user.email
           );
+
+          // 🔧 CRITICAL FIX: Clear any cached profile data first
+          console.log("🧹 SIGNIN FIX: Clearing cached profile data");
+          setUserProfile(null);
+
+          // Set session and user immediately
           setSession(session);
           setUser(session.user);
 
-          // OPTIMIZATION: Don't wait for profile on login
-          fetchUserProfileInBackground(session.user.id);
+          // 🔧 CRITICAL FIX: FORCE fresh profile fetch from database
+          console.log("🔄 SIGNIN FIX: Force refreshing profile from database");
+
+          // Use a timeout to ensure user state is set first
+          setTimeout(async () => {
+            await fetchUserProfileInBackground(session.user.id);
+          }, 100);
 
           // Only redirect on login page
           if (!isRedirecting.current && window.location.pathname === "/") {
@@ -455,6 +647,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           console.log("🔄 Mac AuthContext: Token refreshed");
           setSession(session);
           setUser(session.user);
+
+          // 🔧 CRITICAL FIX: Also refresh profile on token refresh
+          console.log("🔄 TOKEN FIX: Refreshing profile after token refresh");
+          await fetchUserProfileInBackground(session.user.id);
           return;
         }
 
@@ -462,7 +658,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         if (session?.user) {
           setSession(session);
           setUser(session.user);
-          fetchUserProfileInBackground(session.user.id);
+
+          // 🔧 CRITICAL FIX: Always refresh profile, never use cache
+          console.log(
+            "🔄 OTHER EVENT FIX: Refreshing profile for event:",
+            event
+          );
+          await fetchUserProfileInBackground(session.user.id);
         } else {
           await clearAuthState();
         }
@@ -680,14 +882,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         console.log("🔍 SIGNUP DEBUG: localStorage error:", e);
       }
 
-      // Step 1: Create user account in Supabase Auth
+      // 🔧 NEW FIX: Prepare user metadata with plan information
+      const userMetadata: any = {
+        name: name.trim(),
+      };
+
+      // 🎯 CRITICAL FIX: Store plan info in user metadata (survives email verification)
+      if (planInfo && planInfo.id) {
+        userMetadata.selected_plan = {
+          id: planInfo.id,
+          name: planInfo.name,
+          price: planInfo.price,
+          billingCycle: planInfo.billingCycle || "monthly",
+        };
+        console.log(
+          "🔐 SIGNUP: Storing plan in user metadata:",
+          userMetadata.selected_plan
+        );
+      }
+
+      // Step 1: Create user account in Supabase Auth WITH PLAN METADATA
       const { data, error } = await supabase.auth.signUp({
         email: email.toLowerCase().trim(),
         password,
         options: {
-          data: {
-            name: name.trim(),
-          },
+          data: userMetadata, // 🔧 FIXED: Include plan info in metadata
         },
       });
 
@@ -702,6 +921,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       console.log("✅ Mac AuthContext: Sign up successful");
+      console.log("🔐 SIGNUP: User metadata stored:", data.user.user_metadata);
 
       // Step 2: Process pending subscription if exists
       try {
