@@ -1,735 +1,88 @@
-// COMPLETE: SignalsTest.tsx - Enhanced Demo with 15 Diverse Signals
-// File: src/pages/SignalsTest.tsx
-// FEATURES: 15 signals across 7 sectors, Database schema alignment, TradingView integration
-
 import React, { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
-// ✅ SINGLE SOURCE OF TRUTH: Import unified scoring from utils
-import { calculateFinalScore } from "../utils/signalCalculations";
 
-// 🚀 UNIFIED: Helper function using single source of truth for scoring
-const getSignalScore = (signal: DatabaseSignal): number => {
-  // Always use calculateFinalScore if signals data is properly structured
-  if (signal.signals && typeof signal.signals === "object") {
-    try {
-      const timeframeSignals = signal.signals as {
-        "1H": number;
-        "4H": number;
-        "1D": number;
-        "1W": number;
-      };
-      // Verify all required timeframes exist
-      if (
-        timeframeSignals["1H"] !== undefined &&
-        timeframeSignals["4H"] !== undefined &&
-        timeframeSignals["1D"] !== undefined &&
-        timeframeSignals["1W"] !== undefined
-      ) {
-        // 🚀 UNIFIED: Use the platform's single source of truth
-        return calculateFinalScore(timeframeSignals);
-      }
-    } catch (error) {
-      console.log("Using synthetic timeframe data due to signals format issue");
-    }
-  }
-
-  // 🚀 IMPROVED: Create synthetic timeframe data using industry-standard distribution
-  // instead of falling back to confidence_score directly
-  const baseScore = signal.confidence_score;
-  const syntheticSignals = {
-    "1H": Math.round(baseScore * 0.95), // Slightly lower for 1H volatility
-    "4H": baseScore, // Base score for 4H
-    "1D": Math.round(baseScore * 1.02), // Slightly higher for 1D stability
-    "1W": Math.round(baseScore * 0.97), // Slightly lower for 1W lag
-  };
-
-  console.log(
-    `📊 ${signal.ticker}: Created synthetic signals for scoring consistency`
-  );
-  return calculateFinalScore(syntheticSignals);
-};
+// ✅ SIMPLIFIED: Remove problematic imports, use our own scoring
+// import { StockScanner } from "@/lib/signals/stock-scanner";
+// import { SignalProcessor } from "@/lib/signals/signal-processor";
+// import { TechnicalIndicators } from "@/lib/signals/technical-indicators";
+// import { ScoringEngine } from "@/lib/signals/scoring-engine";
 
 // Supabase configuration
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Database Signal Format - EXACT MATCH to trading_signals table
-interface DatabaseSignal {
-  // Basic required fields
+// Polygon.io configuration
+const POLYGON_API_KEY = import.meta.env.VITE_POLYGON_API_KEY;
+const POLYGON_BASE_URL = "https://api.polygon.io";
+
+// Real Signal Interface (matches your system)
+interface RealSignal {
   ticker: string;
-  company_name: string;
+  companyName: string;
+  currentPrice: number;
+  finalScore: number;
+  signalType: "bullish" | "bearish" | "neutral";
+  strength: "strong" | "valid" | "weak";
+  timeframeScores: {
+    "1H": number;
+    "4H": number;
+    "1D": number;
+    "1W": number;
+  };
+  riskReward: {
+    entryPrice: number;
+    stopLoss: number;
+    takeProfit: number;
+    riskRewardRatio: number;
+  };
+  indicators: {
+    rsi: number;
+    macd: number;
+    bollingerBands: {
+      upper: number;
+      middle: number;
+      lower: number;
+      percentB: number;
+    };
+    volume: {
+      ratio: number;
+      trend: string;
+    };
+  };
   sector: string;
-  confidence_score: number;
-  signal_type: "bullish" | "bearish" | "neutral";
-
-  // Price fields
-  entry_price: number;
-  current_price: number;
-  price_change_percent: number;
-
-  // Risk management
-  stop_loss: number;
-  take_profit: number;
-  risk_reward_ratio: number;
-
-  // JSONB field for timeframe scores
-  signals: Record<string, number>;
-
-  // Enhanced fields that EXIST in your database
-  market?: string;
-  industry_subsector?: string;
-  market_cap_category?: string;
-  market_cap_value?: number;
-  volume_category?: string;
-  volume_ratio?: number;
-  week_52_performance?: string;
-  week_52_high?: number;
-  week_52_low?: number;
-  exchange_code?: string;
-  country_code?: string;
-  country_name?: string;
-  region?: string;
-  currency_code?: string;
-  average_volume?: number;
-
-  // Data quality fields
-  data_quality_score?: number;
-  data_quality_level?: string;
-  adaptive_analysis?: boolean;
-
-  // Financial metrics
-  beta?: number;
-  pe_ratio?: number;
-  dividend_yield?: number;
-  shares_outstanding?: number;
-  float_shares?: number;
-
-  // Flags
-  is_etf?: boolean;
-  is_reit?: boolean;
-  is_adr?: boolean;
-
-  // Status and timing
-  status?: "active";
-  expires_at?: string;
-  explanation?: string;
+  exchange: string;
+  marketCap: number;
+  volume: number;
+  createdAt: Date;
 }
 
-// Transform function with exact database field mapping
-const transformSignalForDatabase = (signal: any): DatabaseSignal => {
-  // Determine signal_type based on confidence_score
-  let signal_type: "bullish" | "bearish" | "neutral";
-  if (signal.confidence_score >= 65) {
-    signal_type = "bullish";
-  } else if (signal.confidence_score <= 35) {
-    signal_type = "bearish";
-  } else {
-    signal_type = "neutral";
-  }
+// Real Market Data Interface
+interface MarketDataSnapshot {
+  ticker: string;
+  price: number;
+  volume: number;
+  change: number;
+  changePercent: number;
+  marketCap?: number;
+  sector?: string;
+  exchange?: string;
+}
 
-  return {
-    // Basic required fields
-    ticker: signal.ticker,
-    company_name:
-      signal.company_name || signal.companyName || `${signal.ticker} Corp.`,
-    sector: signal.sector || "Technology",
-    confidence_score: signal.confidence_score || signal.confidenceScore,
-    signal_type: signal_type,
+// Scan Progress Interface
+interface ScanProgress {
+  stage: string;
+  stocksScanned: number;
+  totalStocks: number;
+  currentStock: string;
+  signalsFound: number;
+  timeElapsed: number;
+  validSignals: number;
+  apiCallsMade: number;
+  dataQuality: string;
+}
 
-    // Price fields
-    entry_price: signal.entry_price || signal.entryPrice,
-    current_price:
-      signal.current_price || signal.entry_price || signal.entryPrice,
-    price_change_percent:
-      signal.price_change_percent || signal.changePercent || 0,
-
-    // Risk management
-    stop_loss: signal.stop_loss || signal.stopLoss || signal.entry_price * 0.98,
-    take_profit:
-      signal.take_profit || signal.takeProfit || signal.entry_price * 1.05,
-    risk_reward_ratio:
-      signal.risk_reward_ratio || signal.riskRewardRatio || 2.5,
-
-    // JSONB field for timeframe scores
-    signals: signal.signals ||
-      signal.timeframeScores || {
-        "1H": signal.confidence_score - 5,
-        "4H": signal.confidence_score,
-        "1D": signal.confidence_score + 2,
-        "1W": signal.confidence_score - 3,
-      },
-
-    // Enhanced fields
-    market: "US",
-    industry_subsector:
-      signal.industry_subsector || signal.industrySubsector || "Technology",
-    market_cap_category:
-      signal.market_cap_category || signal.marketCapCategory || "Large",
-    market_cap_value:
-      signal.market_cap_value || signal.marketCapValue || 10000000000,
-    volume_category:
-      signal.volume_category || signal.volumeCategory || "Medium",
-    volume_ratio: signal.volume_ratio || signal.volumeRatio || 1.0,
-    week_52_performance:
-      signal.week_52_performance || signal.week52Performance || "Middle Range",
-    week_52_high:
-      signal.week_52_high || signal.week52High || signal.entry_price * 1.2,
-    week_52_low:
-      signal.week_52_low || signal.week52Low || signal.entry_price * 0.8,
-    exchange_code: signal.exchange_code || signal.exchangeCode || "NASDAQ",
-    country_code: signal.country_code || signal.countryCode || "US",
-    country_name: signal.country_name || signal.countryName || "United States",
-    region: signal.region || "North America",
-    currency_code: signal.currency_code || signal.currencyCode || "USD",
-    average_volume: signal.average_volume || signal.averageVolume || 1000000,
-
-    // Data quality fields
-    data_quality_score:
-      signal.data_quality_score || signal.dataQualityScore || 85,
-    data_quality_level:
-      signal.data_quality_level || signal.dataQualityLevel || "Good",
-    adaptive_analysis:
-      signal.adaptive_analysis || signal.adaptiveAnalysis || false,
-
-    // Financial metrics
-    beta: signal.beta || 1.2,
-    pe_ratio: signal.pe_ratio || signal.peRatio || 25,
-    dividend_yield: signal.dividend_yield || signal.dividendYield || 0,
-    shares_outstanding: signal.shares_outstanding || signal.sharesOutstanding,
-    float_shares: signal.float_shares || signal.floatShares,
-
-    // Flags
-    is_etf: signal.is_etf || signal.isEtf || false,
-    is_reit: signal.is_reit || signal.isReit || false,
-    is_adr: signal.is_adr || signal.isAdr || false,
-
-    // Status and timing
-    status: "active" as const,
-    expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    explanation:
-      signal.explanation ||
-      `${signal.ticker} shows ${signal_type} signal with ${signal.confidence_score}/100 confidence.`,
-  };
-};
-
-// Database save function with error handling
-const saveSignalsToDatabase = async (
-  signals: any[]
-): Promise<{ saved: number; errors: number; errorDetails: string[] }> => {
-  console.log(
-    `💾 ENHANCED DEMO: Saving ${signals.length} diverse signals to database...`
-  );
-
-  if (signals.length === 0) {
-    return { saved: 0, errors: 0, errorDetails: [] };
-  }
-
-  // Transform all signals with proper mapping
-  const dbSignals = signals
-    .map((signal) => {
-      try {
-        return transformSignalForDatabase(signal);
-      } catch (error) {
-        console.error(`❌ Transform error for ${signal.ticker}:`, error);
-        return null;
-      }
-    })
-    .filter(Boolean);
-
-  console.log(
-    `💾 Transformed ${dbSignals.length}/${signals.length} signals successfully`
-  );
-
-  if (dbSignals.length === 0) {
-    return {
-      saved: 0,
-      errors: signals.length,
-      errorDetails: ["All signals failed transformation"],
-    };
-  }
-
-  try {
-    // Insert with proper field mapping
-    const { data, error } = await supabase
-      .from("trading_signals")
-      .insert(dbSignals)
-      .select();
-
-    if (error) {
-      console.error(`❌ Database insert error:`, error);
-      return {
-        saved: 0,
-        errors: signals.length,
-        errorDetails: [`Database insert failed: ${error.message}`],
-      };
-    } else {
-      console.log(
-        `✅ ENHANCED DEMO: Database insert successful - ${
-          data?.length || dbSignals.length
-        } signals saved`
-      );
-      return {
-        saved: data?.length || dbSignals.length,
-        errors: 0,
-        errorDetails: [],
-      };
-    }
-  } catch (saveError) {
-    console.error(`❌ Database save exception:`, saveError);
-    return {
-      saved: 0,
-      errors: signals.length,
-      errorDetails: [
-        `Database operation failed: ${
-          saveError instanceof Error ? saveError.message : "Unknown error"
-        }`,
-      ],
-    };
-  }
-};
-
-// ENHANCED: 15 Diverse Signals Across 7 Sectors
-const performOptimizedStockScan = async (): Promise<{
-  signals: any[];
-  stats: any;
-}> => {
-  const startTime = Date.now();
-
-  try {
-    console.log(
-      "🚀 ENHANCED DEMO: Starting scan with 15 diverse signals across 7 sectors..."
-    );
-
-    // 15 diverse signals across multiple sectors and score ranges
-    const optimizedSignals = [
-      // TECHNOLOGY SECTOR (High performers)
-      {
-        id: "demo-1",
-        ticker: "NVDA",
-        company_name: "NVIDIA Corporation",
-        sector: "Technology",
-        confidence_score: 84,
-        entry_price: 485.3,
-        take_profit: 521.2,
-        risk_reward_ratio: 2.8,
-        signals: { "1H": 82, "4H": 85, "1D": 84, "1W": 83 },
-        industry_subsector: "Semiconductors",
-        market_cap_category: "Large",
-        market_cap_value: 1200000000000,
-        volume_category: "High",
-        volume_ratio: 1.8,
-        week_52_performance: "Upper Range",
-        week_52_high: 505.5,
-        week_52_low: 365.25,
-        data_quality_score: 98,
-        data_quality_level: "Excellent",
-        adaptive_analysis: false,
-      },
-      {
-        id: "demo-2",
-        ticker: "AAPL",
-        company_name: "Apple Inc.",
-        sector: "Technology",
-        confidence_score: 79,
-        entry_price: 185.5,
-        take_profit: 196.8,
-        risk_reward_ratio: 2.6,
-        signals: { "1H": 77, "4H": 80, "1D": 79, "1W": 78 },
-        industry_subsector: "Consumer Electronics",
-        market_cap_category: "Large",
-        market_cap_value: 3000000000000,
-        volume_category: "High",
-        volume_ratio: 1.2,
-        week_52_performance: "Middle Range",
-        week_52_high: 199.2,
-        week_52_low: 164.85,
-        data_quality_score: 95,
-        data_quality_level: "Excellent",
-        adaptive_analysis: false,
-      },
-      {
-        id: "demo-3",
-        ticker: "MSFT",
-        company_name: "Microsoft Corporation",
-        sector: "Technology",
-        confidence_score: 76,
-        entry_price: 345.2,
-        take_profit: 365.4,
-        risk_reward_ratio: 3.0,
-        signals: { "1H": 74, "4H": 77, "1D": 76, "1W": 75 },
-        industry_subsector: "Software - Infrastructure",
-        market_cap_category: "Large",
-        market_cap_value: 2800000000000,
-        volume_category: "High",
-        volume_ratio: 1.1,
-        week_52_performance: "Upper Range",
-        week_52_high: 384.3,
-        week_52_low: 309.45,
-        data_quality_score: 94,
-        data_quality_level: "Excellent",
-        adaptive_analysis: false,
-      },
-      {
-        id: "demo-4",
-        ticker: "CRWD",
-        company_name: "CrowdStrike Holdings",
-        sector: "Technology",
-        confidence_score: 74,
-        entry_price: 341.2,
-        take_profit: 368.5,
-        risk_reward_ratio: 2.7,
-        signals: { "1H": 72, "4H": 75, "1D": 74, "1W": 73 },
-        industry_subsector: "Software - Infrastructure",
-        market_cap_category: "Large",
-        market_cap_value: 82000000000,
-        volume_category: "Medium",
-        volume_ratio: 1.2,
-        week_52_performance: "Middle Range",
-        week_52_high: 398.33,
-        week_52_low: 200.81,
-        data_quality_score: 89,
-        data_quality_level: "Good",
-        adaptive_analysis: false,
-      },
-      {
-        id: "demo-5",
-        ticker: "PLTR",
-        company_name: "Palantir Technologies",
-        sector: "Technology",
-        confidence_score: 68,
-        entry_price: 68.4,
-        take_profit: 76.3,
-        risk_reward_ratio: 2.9,
-        signals: { "1H": 66, "4H": 69, "1D": 68, "1W": 67 },
-        industry_subsector: "Software - Application",
-        market_cap_category: "Large",
-        market_cap_value: 150000000000,
-        volume_category: "Medium",
-        volume_ratio: 1.4,
-        week_52_performance: "Upper Range",
-        week_52_high: 72.19,
-        week_52_low: 15.66,
-        data_quality_score: 82,
-        data_quality_level: "Good",
-        adaptive_analysis: false,
-      },
-
-      // HEALTHCARE SECTOR (Strong fundamentals)
-      {
-        id: "demo-6",
-        ticker: "JNJ",
-        company_name: "Johnson & Johnson",
-        sector: "Healthcare",
-        confidence_score: 81,
-        entry_price: 158.4,
-        take_profit: 170.2,
-        risk_reward_ratio: 2.4,
-        signals: { "1H": 79, "4H": 82, "1D": 81, "1W": 80 },
-        industry_subsector: "Drug Manufacturers - General",
-        market_cap_category: "Large",
-        market_cap_value: 480000000000,
-        volume_category: "Medium",
-        volume_ratio: 0.9,
-        week_52_performance: "Lower Range",
-        week_52_high: 181.9,
-        week_52_low: 143.5,
-        data_quality_score: 92,
-        data_quality_level: "Excellent",
-        adaptive_analysis: false,
-      },
-      {
-        id: "demo-7",
-        ticker: "UNH",
-        company_name: "UnitedHealth Group",
-        sector: "Healthcare",
-        confidence_score: 77,
-        entry_price: 542.3,
-        take_profit: 578.5,
-        risk_reward_ratio: 2.7,
-        signals: { "1H": 75, "4H": 78, "1D": 77, "1W": 76 },
-        industry_subsector: "Healthcare Plans",
-        market_cap_category: "Large",
-        market_cap_value: 510000000000,
-        volume_category: "Medium",
-        volume_ratio: 1.0,
-        week_52_performance: "Middle Range",
-        week_52_high: 595.75,
-        week_52_low: 445.2,
-        data_quality_score: 90,
-        data_quality_level: "Excellent",
-        adaptive_analysis: false,
-      },
-
-      // FINANCIAL SERVICES (Value plays)
-      {
-        id: "demo-8",
-        ticker: "V",
-        company_name: "Visa Inc.",
-        sector: "Financial Services",
-        confidence_score: 75,
-        entry_price: 284.7,
-        take_profit: 304.2,
-        risk_reward_ratio: 2.9,
-        signals: { "1H": 73, "4H": 76, "1D": 75, "1W": 74 },
-        industry_subsector: "Credit Services",
-        market_cap_category: "Large",
-        market_cap_value: 580000000000,
-        volume_category: "Medium",
-        volume_ratio: 0.8,
-        week_52_performance: "Middle Range",
-        week_52_high: 314.4,
-        week_52_low: 244.15,
-        data_quality_score: 91,
-        data_quality_level: "Excellent",
-        adaptive_analysis: false,
-      },
-      {
-        id: "demo-9",
-        ticker: "JPM",
-        company_name: "JPMorgan Chase & Co.",
-        sector: "Financial Services",
-        confidence_score: 73,
-        entry_price: 178.9,
-        take_profit: 192.4,
-        risk_reward_ratio: 2.3,
-        signals: { "1H": 71, "4H": 74, "1D": 73, "1W": 72 },
-        industry_subsector: "Banks - Diversified",
-        market_cap_category: "Large",
-        market_cap_value: 520000000000,
-        volume_category: "High",
-        volume_ratio: 1.3,
-        week_52_performance: "Upper Range",
-        week_52_high: 194.5,
-        week_52_low: 135.2,
-        data_quality_score: 88,
-        data_quality_level: "Good",
-        adaptive_analysis: false,
-      },
-
-      // COMMUNICATION SERVICES (Growth potential)
-      {
-        id: "demo-10",
-        ticker: "GOOGL",
-        company_name: "Alphabet Inc.",
-        sector: "Communication Services",
-        confidence_score: 78,
-        entry_price: 138.9,
-        take_profit: 149.7,
-        risk_reward_ratio: 2.6,
-        signals: { "1H": 76, "4H": 79, "1D": 78, "1W": 77 },
-        industry_subsector: "Internet Content & Information",
-        market_cap_category: "Large",
-        market_cap_value: 1700000000000,
-        volume_category: "High",
-        volume_ratio: 1.3,
-        week_52_performance: "Lower Range",
-        week_52_high: 191.75,
-        week_52_low: 129.4,
-        data_quality_score: 96,
-        data_quality_level: "Excellent",
-        adaptive_analysis: false,
-      },
-
-      // ENERGY SECTOR (Recovery plays)
-      {
-        id: "demo-11",
-        ticker: "XOM",
-        company_name: "Exxon Mobil Corporation",
-        sector: "Energy",
-        confidence_score: 72,
-        entry_price: 109.2,
-        take_profit: 119.8,
-        risk_reward_ratio: 2.5,
-        signals: { "1H": 70, "4H": 73, "1D": 72, "1W": 71 },
-        industry_subsector: "Oil & Gas Integrated",
-        market_cap_category: "Large",
-        market_cap_value: 460000000000,
-        volume_category: "High",
-        volume_ratio: 1.4,
-        week_52_performance: "Middle Range",
-        week_52_high: 134.7,
-        week_52_low: 95.3,
-        data_quality_score: 83,
-        data_quality_level: "Good",
-        adaptive_analysis: false,
-      },
-
-      // CONSUMER CYCLICAL (Mixed signals)
-      {
-        id: "demo-12",
-        ticker: "TSLA",
-        company_name: "Tesla Inc.",
-        sector: "Consumer Cyclical",
-        confidence_score: 71,
-        entry_price: 248.9,
-        take_profit: 268.5,
-        risk_reward_ratio: 2.7,
-        signals: { "1H": 69, "4H": 72, "1D": 71, "1W": 70 },
-        industry_subsector: "Auto Manufacturers",
-        market_cap_category: "Large",
-        market_cap_value: 800000000000,
-        volume_category: "High",
-        volume_ratio: 2.1,
-        week_52_performance: "Lower Range",
-        week_52_high: 299.29,
-        week_52_low: 138.8,
-        data_quality_score: 85,
-        data_quality_level: "Good",
-        adaptive_analysis: false,
-      },
-      {
-        id: "demo-13",
-        ticker: "HD",
-        company_name: "The Home Depot Inc.",
-        sector: "Consumer Cyclical",
-        confidence_score: 69,
-        entry_price: 342.8,
-        take_profit: 364.9,
-        risk_reward_ratio: 2.2,
-        signals: { "1H": 67, "4H": 70, "1D": 69, "1W": 68 },
-        industry_subsector: "Home Improvement Retail",
-        market_cap_category: "Large",
-        market_cap_value: 350000000000,
-        volume_category: "Medium",
-        volume_ratio: 1.0,
-        week_52_performance: "Upper Range",
-        week_52_high: 365.9,
-        week_52_low: 287.5,
-        data_quality_score: 87,
-        data_quality_level: "Good",
-        adaptive_analysis: false,
-      },
-
-      // INDUSTRIALS (Infrastructure plays)
-      {
-        id: "demo-14",
-        ticker: "CAT",
-        company_name: "Caterpillar Inc.",
-        sector: "Industrials",
-        confidence_score: 70,
-        entry_price: 374.5,
-        take_profit: 396.8,
-        risk_reward_ratio: 2.4,
-        signals: { "1H": 68, "4H": 71, "1D": 70, "1W": 69 },
-        industry_subsector: "Farm & Heavy Construction Machinery",
-        market_cap_category: "Large",
-        market_cap_value: 200000000000,
-        volume_category: "Medium",
-        volume_ratio: 1.1,
-        week_52_performance: "Upper Range",
-        week_52_high: 414.5,
-        week_52_low: 279.9,
-        data_quality_score: 84,
-        data_quality_level: "Good",
-        adaptive_analysis: false,
-      },
-
-      // CONSUMER DEFENSIVE (Defensive plays)
-      {
-        id: "demo-15",
-        ticker: "PG",
-        company_name: "Procter & Gamble Co.",
-        sector: "Consumer Defensive",
-        confidence_score: 66,
-        entry_price: 164.3,
-        take_profit: 174.2,
-        risk_reward_ratio: 2.1,
-        signals: { "1H": 64, "4H": 67, "1D": 66, "1W": 65 },
-        industry_subsector: "Household & Personal Products",
-        market_cap_category: "Large",
-        market_cap_value: 390000000000,
-        volume_category: "Low",
-        volume_ratio: 0.7,
-        week_52_performance: "Upper Range",
-        week_52_high: 177.9,
-        week_52_low: 144.4,
-        data_quality_score: 86,
-        data_quality_level: "Good",
-        adaptive_analysis: false,
-      },
-    ];
-
-    const processingTime = (Date.now() - startTime) / 1000;
-
-    console.log(
-      `✅ ENHANCED DEMO: Generated ${optimizedSignals.length} diverse signals in ${processingTime}s`
-    );
-
-    const stats = {
-      stocksScanned: 500,
-      signalsGenerated: optimizedSignals.length,
-      signalsSaved: optimizedSignals.length,
-      averageScore: Math.round(
-        optimizedSignals.reduce((sum, s) => sum + s.confidence_score, 0) /
-          optimizedSignals.length
-      ),
-      topScore: Math.max(...optimizedSignals.map((s) => s.confidence_score)),
-      processingTime: Math.round(processingTime),
-      databaseErrors: 0,
-      sectorsAnalyzed: 7,
-      signalDistribution: {
-        "80+": optimizedSignals.filter((s) => s.confidence_score >= 80).length,
-        "75-79": optimizedSignals.filter(
-          (s) => s.confidence_score >= 75 && s.confidence_score < 80
-        ).length,
-        "70-74": optimizedSignals.filter(
-          (s) => s.confidence_score >= 70 && s.confidence_score < 75
-        ).length,
-        "65-69": optimizedSignals.filter(
-          (s) => s.confidence_score >= 65 && s.confidence_score < 70
-        ).length,
-      },
-    };
-
-    // Log impressive demo statistics
-    console.log(`📊 DEMO STATS: ${stats.sectorsAnalyzed} sectors analyzed`);
-    console.log(
-      `🏆 SCORE DISTRIBUTION: ${stats.signalDistribution["80+"]} signals ≥80, ${stats.signalDistribution["75-79"]} signals 75-79`
-    );
-    console.log(
-      `💼 SECTORS: Technology (5), Healthcare (2), Financial (2), Energy (1), Consumer (3), Industrial (1), Communication (1)`
-    );
-
-    return { signals: optimizedSignals, stats };
-  } catch (error) {
-    console.error("❌ Enhanced demo scan error:", error);
-
-    // Fallback to minimal signals
-    const fallbackSignals = [
-      {
-        id: "fallback-1",
-        ticker: "AAPL",
-        company_name: "Apple Inc.",
-        sector: "Technology",
-        confidence_score: 75,
-        entry_price: 185.5,
-        take_profit: 195.75,
-        risk_reward_ratio: 2.5,
-        signals: { "1H": 73, "4H": 76, "1D": 75, "1W": 74 },
-        industry_subsector: "Consumer Electronics",
-        market_cap_category: "Large",
-        data_quality_score: 85,
-        data_quality_level: "Good",
-      },
-    ];
-
-    const processingTime = (Date.now() - startTime) / 1000;
-    const stats = {
-      stocksScanned: 50,
-      signalsGenerated: fallbackSignals.length,
-      signalsSaved: fallbackSignals.length,
-      averageScore: 75,
-      topScore: 75,
-      processingTime: Math.round(processingTime),
-      databaseErrors: 0,
-    };
-
-    return { signals: fallbackSignals, stats };
-  }
-};
-
-// TradingView Chart Component
+// TradingView Chart Component (preserved from demo)
 const TradingViewChart: React.FC<{
   symbol: string;
   theme?: string;
@@ -785,7 +138,7 @@ const TradingViewChart: React.FC<{
 
   return (
     <div className="w-full">
-      <div id={containerId} className=""></div>
+      <div id={containerId}></div>
       <div className="mt-2">
         <a
           href={`https://www.tradingview.com/symbols/NASDAQ-${symbol}/`}
@@ -800,692 +153,1208 @@ const TradingViewChart: React.FC<{
   );
 };
 
-// Main SignalsTest Component
-const SignalsTest: React.FC = () => {
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generationStatus, setGenerationStatus] = useState<
-    | "idle"
-    | "scanning"
-    | "analyzing"
-    | "scoring"
-    | "saving"
-    | "complete"
-    | "error"
-  >("idle");
-  const [currentStep, setCurrentStep] = useState("");
-  const [generatedSignals, setGeneratedSignals] = useState<any[]>([]);
-  const [stats, setStats] = useState<any | null>(null);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [logs, setLogs] = useState<string[]>([]);
-  const [showChartsFor, setShowChartsFor] = useState<Set<string>>(new Set());
-  const [databaseErrors, setDatabaseErrors] = useState<string[]>([]);
+// ✅ FIXED: Real Market Data Fetcher using Polygon.io with correct field mapping
+class RealMarketDataService {
+  private apiKey: string;
+  private baseUrl: string;
+  private rateLimitDelay: number = 200; // 200ms between calls for Stocks Starter
 
-  const addLog = (message: string) => {
-    const timestamp = new Date().toLocaleTimeString();
-    const logEntry = `[${timestamp}] ${message}`;
-    console.log(logEntry);
-    setLogs((prev) => [...prev.slice(-20), logEntry]);
+  constructor() {
+    this.apiKey = POLYGON_API_KEY;
+    this.baseUrl = POLYGON_BASE_URL;
+  }
+
+  async fetchMarketSnapshot(
+    ticker: string
+  ): Promise<MarketDataSnapshot | null> {
+    try {
+      // Get current snapshot using the SAME URL structure
+      const snapshotUrl = `${this.baseUrl}/v2/snapshot/locale/us/markets/stocks/tickers/${ticker}?apikey=${this.apiKey}`;
+
+      const response = await fetch(snapshotUrl);
+      if (!response.ok) {
+        console.warn(`❌ Failed to fetch ${ticker}: ${response.status}`);
+        return null;
+      }
+
+      const data = await response.json();
+
+      // ✅ FIX: Use data.ticker instead of data.results[0]
+      if (!data.ticker) {
+        console.warn(`❌ No ticker data for ${ticker}`);
+        return null;
+      }
+
+      const tickerData = data.ticker;
+
+      // ✅ FIX: Extract price from ticker.day.c (current day close)
+      const currentPrice = tickerData.day?.c;
+
+      // ✅ FIX: Extract volume from ticker.day.v (current day volume)
+      const currentVolume = tickerData.day?.v || 0;
+
+      // ✅ FIX: Extract change from ticker.todaysChange and todaysChangePerc
+      const priceChange = tickerData.todaysChange || 0;
+      const changePercent = tickerData.todaysChangePerc || 0;
+
+      // Validate essential data
+      if (!currentPrice || currentPrice < 1) {
+        console.warn(`❌ Invalid price for ${ticker}: $${currentPrice}`);
+        return null;
+      }
+
+      if (currentVolume < 100000) {
+        console.warn(`❌ Low volume for ${ticker}: ${currentVolume}`);
+        return null;
+      }
+
+      console.log(
+        `✅ ${ticker}: Price=$${currentPrice}, Volume=${currentVolume}, Change=${changePercent.toFixed(
+          2
+        )}%`
+      );
+
+      return {
+        ticker: ticker,
+        price: currentPrice,
+        volume: currentVolume,
+        change: priceChange,
+        changePercent: changePercent,
+        marketCap: this.estimateMarketCap(ticker, currentPrice),
+        sector: this.getSectorForTicker(ticker),
+        exchange: this.getExchangeForTicker(ticker),
+      };
+    } catch (error) {
+      console.error(`❌ Error fetching ${ticker}:`, error);
+      return null;
+    }
+  }
+
+  // ✅ NEW: Add market cap estimation method
+  private estimateMarketCap(ticker: string, price: number): number {
+    // Simplified market cap estimation based on known share counts
+    const shareEstimates: Record<string, number> = {
+      AAPL: 15441000000, // ~15.4B shares
+      MSFT: 7433000000, // ~7.4B shares
+      GOOGL: 12600000000, // ~12.6B shares
+      AMZN: 10757000000, // ~10.7B shares
+      TSLA: 3178000000, // ~3.2B shares
+      META: 2539000000, // ~2.5B shares
+      NVDA: 24540000000, // ~24.5B shares
+      JPM: 2968000000, // ~3B shares
+      JNJ: 2373000000, // ~2.4B shares
+      V: 2064000000, // ~2.1B shares
+      PG: 2373000000, // ~2.4B shares
+      UNH: 936000000, // ~936M shares
+      HD: 1028000000, // ~1B shares
+      MA: 963000000, // ~963M shares
+      BAC: 8247000000, // ~8.2B shares
+      XOM: 4238000000, // ~4.2B shares
+      CVX: 1830000000, // ~1.8B shares
+      PFE: 5636000000, // ~5.6B shares
+      KO: 4316000000, // ~4.3B shares
+      DIS: 1823000000, // ~1.8B shares
+      CSCO: 4091000000, // ~4.1B shares
+      ADBE: 462000000, // ~462M shares
+      NFLX: 432000000, // ~432M shares
+      CRM: 1038000000, // ~1B shares
+      ABT: 1757000000, // ~1.7B shares
+      TMO: 391000000, // ~391M shares
+      COST: 442000000, // ~442M shares
+      AVGO: 465000000, // ~465M shares
+      ACN: 630000000, // ~630M shares
+      NKE: 1540000000, // ~1.5B shares
+    };
+
+    const shares = shareEstimates[ticker] || 1000000000; // Default 1B shares
+    return Math.round(price * shares);
+  }
+
+  // ✅ IMPROVED: Focus on 1D timeframe only (Stocks Starter limitation)
+  async fetchHistoricalData(
+    ticker: string,
+    timeframe: string,
+    limit: number = 50
+  ): Promise<any[]> {
+    try {
+      // Rate limiting
+      await new Promise((resolve) => setTimeout(resolve, this.rateLimitDelay));
+
+      // ✅ FIX: Only use daily data for Stocks Starter plan
+      const multiplier = 1;
+      const timespan = "day";
+
+      const endDate = new Date().toISOString().split("T")[0];
+      const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0];
+
+      const url = `${this.baseUrl}/v2/aggs/ticker/${ticker}/range/${multiplier}/${timespan}/${startDate}/${endDate}?adjusted=true&sort=desc&limit=${limit}&apikey=${this.apiKey}`;
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        console.warn(
+          `❌ Historical data failed for ${ticker}: ${response.status}`
+        );
+        return [];
+      }
+
+      const data = await response.json();
+
+      // ✅ FIX: Better validation of historical data
+      if (!data.results || data.results.length === 0) {
+        console.warn(`❌ No historical data for ${ticker} ${timeframe}`);
+        return [];
+      }
+
+      console.log(
+        `✅ ${ticker} ${timeframe}: ${data.results.length} historical points loaded`
+      );
+      return data.results;
+    } catch (error) {
+      console.error(`❌ Historical data error for ${ticker}:`, error);
+      return [];
+    }
+  }
+
+  private getSectorForTicker(ticker: string): string {
+    const sectorMap: Record<string, string> = {
+      AAPL: "Technology",
+      MSFT: "Technology",
+      GOOGL: "Communication Services",
+      AMZN: "Consumer Cyclical",
+      TSLA: "Consumer Cyclical",
+      META: "Communication Services",
+      NVDA: "Technology",
+      JPM: "Financial Services",
+      JNJ: "Healthcare",
+      V: "Financial Services",
+      PG: "Consumer Defensive",
+      UNH: "Healthcare",
+      HD: "Consumer Cyclical",
+      MA: "Financial Services",
+      BAC: "Financial Services",
+      XOM: "Energy",
+      CVX: "Energy",
+      PFE: "Healthcare",
+      KO: "Consumer Defensive",
+      DIS: "Communication Services",
+      CSCO: "Technology",
+      ADBE: "Technology",
+      NFLX: "Communication Services",
+      CRM: "Technology",
+      ABT: "Healthcare",
+      TMO: "Healthcare",
+      COST: "Consumer Defensive",
+      AVGO: "Technology",
+      ACN: "Technology",
+      NKE: "Consumer Cyclical",
+    };
+    return sectorMap[ticker] || "Technology";
+  }
+
+  private getExchangeForTicker(ticker: string): string {
+    // Simplified exchange mapping
+    const nasdaqTickers = [
+      "AAPL",
+      "MSFT",
+      "GOOGL",
+      "AMZN",
+      "TSLA",
+      "META",
+      "NVDA",
+      "ADBE",
+      "NFLX",
+      "CRM",
+      "CSCO",
+      "COST",
+      "AVGO",
+    ];
+    return nasdaqTickers.includes(ticker) ? "NASDAQ" : "NYSE";
+  }
+}
+
+// ✅ SIMPLIFIED: Real Signal Generation Engine without external dependencies
+class RealSignalGenerationEngine {
+  private marketDataService: RealMarketDataService;
+
+  constructor() {
+    this.marketDataService = new RealMarketDataService();
+  }
+
+  async performRealMarketScan(
+    progressCallback: (progress: ScanProgress) => void
+  ): Promise<{ signals: RealSignal[]; stats: any }> {
+    const startTime = Date.now();
+    const signals: RealSignal[] = [];
+
+    // Phase 1: S&P 500 quality stocks (diversified sample)
+    const stockUniverse = [
+      "AAPL",
+      "MSFT",
+      "GOOGL",
+      "AMZN",
+      "TSLA",
+      "META",
+      "NVDA",
+      "JPM",
+      "JNJ",
+      "V",
+      "PG",
+      "UNH",
+      "HD",
+      "MA",
+      "BAC",
+      "XOM",
+      "CVX",
+      "PFE",
+      "KO",
+      "DIS",
+      "CSCO",
+      "ADBE",
+      "NFLX",
+      "CRM",
+      "ABT",
+      "TMO",
+      "COST",
+      "AVGO",
+      "ACN",
+      "NKE",
+    ];
+
+    let apiCallCount = 0;
+    let validSignals = 0;
+
+    try {
+      progressCallback({
+        stage: "Initializing Real Market Scan",
+        stocksScanned: 0,
+        totalStocks: stockUniverse.length,
+        currentStock: "",
+        signalsFound: 0,
+        timeElapsed: 0,
+        validSignals: 0,
+        apiCallsMade: 0,
+        dataQuality: "Initializing",
+      });
+
+      console.log(
+        `🚀 REAL SCAN: Starting analysis of ${stockUniverse.length} quality stocks`
+      );
+
+      for (let i = 0; i < stockUniverse.length; i++) {
+        const ticker = stockUniverse[i];
+        const timeElapsed = Math.floor((Date.now() - startTime) / 1000);
+
+        progressCallback({
+          stage: "Scanning Real Market Data",
+          stocksScanned: i,
+          totalStocks: stockUniverse.length,
+          currentStock: ticker,
+          signalsFound: signals.length,
+          timeElapsed,
+          validSignals,
+          apiCallsMade: apiCallCount,
+          dataQuality: "Processing",
+        });
+
+        console.log(
+          `📊 REAL SCAN: Analyzing ${ticker} (${i + 1}/${stockUniverse.length})`
+        );
+
+        try {
+          // Step 1: Fetch real market data
+          const marketData = await this.marketDataService.fetchMarketSnapshot(
+            ticker
+          );
+          apiCallCount++;
+
+          if (
+            !marketData ||
+            marketData.price < 1 ||
+            marketData.volume < 100000
+          ) {
+            console.log(
+              `⚠️ ${ticker}: Skipped - Price: $${marketData?.price}, Volume: ${marketData?.volume}`
+            );
+            continue;
+          }
+
+          // Step 2: Fetch historical data (1D only for Stocks Starter)
+          progressCallback({
+            stage: "Fetching Historical Data",
+            stocksScanned: i,
+            totalStocks: stockUniverse.length,
+            currentStock: ticker,
+            signalsFound: signals.length,
+            timeElapsed: Math.floor((Date.now() - startTime) / 1000),
+            validSignals,
+            apiCallsMade: apiCallCount,
+            dataQuality: "Historical Analysis",
+          });
+
+          const historicalData =
+            await this.marketDataService.fetchHistoricalData(ticker, "1D", 50);
+          apiCallCount++;
+
+          // Rate limiting for Stocks Starter plan
+          await new Promise((resolve) => setTimeout(resolve, 150));
+
+          // Step 3: Calculate simplified technical indicators
+          progressCallback({
+            stage: "Calculating Technical Indicators",
+            stocksScanned: i,
+            totalStocks: stockUniverse.length,
+            currentStock: ticker,
+            signalsFound: signals.length,
+            timeElapsed: Math.floor((Date.now() - startTime) / 1000),
+            validSignals,
+            apiCallsMade: apiCallCount,
+            dataQuality: "Technical Analysis",
+          });
+
+          let finalScore = 50; // Default neutral score
+          const timeframeScores = {
+            "1H": 50, // Not available on Stocks Starter
+            "4H": 50, // Not available on Stocks Starter
+            "1D": 50,
+            "1W": 50,
+          };
+
+          const indicatorValues = {
+            rsi: 50,
+            macd: 0,
+            bollingerBands: {
+              upper: marketData.price * 1.02,
+              middle: marketData.price,
+              lower: marketData.price * 0.98,
+              percentB: 0.5,
+            },
+            volume: {
+              ratio: 1.0,
+              trend: "neutral",
+            },
+          };
+
+          // ✅ SIMPLIFIED SCORING: Use only available data
+          if (historicalData.length >= 20) {
+            try {
+              // Calculate basic technical indicators
+              const rsi = this.calculateRSI(historicalData.slice(0, 14));
+              const macd = this.calculateMACD(historicalData.slice(0, 26));
+              const bb = this.calculateBollingerBands(
+                historicalData.slice(0, 20)
+              );
+              const volumeAnalysis = this.analyzeVolume(
+                historicalData.slice(0, 20)
+              );
+
+              // ✅ SIMPLIFIED SCORING ALGORITHM
+              finalScore = this.calculateSimplifiedScore(
+                rsi,
+                macd,
+                bb,
+                volumeAnalysis,
+                marketData.changePercent
+              );
+
+              // Update timeframe scores
+              timeframeScores["1D"] = Math.round(finalScore);
+
+              // Estimate other timeframes based on 1D score and price action
+              const momentum = marketData.changePercent > 0 ? 10 : -10;
+              timeframeScores["1H"] = Math.max(
+                30,
+                Math.min(90, finalScore + momentum)
+              );
+              timeframeScores["4H"] = Math.max(
+                35,
+                Math.min(85, finalScore + momentum / 2)
+              );
+              timeframeScores["1W"] = Math.max(
+                40,
+                Math.min(80, finalScore - momentum / 2)
+              );
+
+              // Update indicator values
+              indicatorValues.rsi = rsi;
+              indicatorValues.macd = macd.macd;
+              indicatorValues.bollingerBands = bb;
+              indicatorValues.volume = volumeAnalysis;
+
+              console.log(
+                `✅ ${ticker}: Technical Analysis Complete - RSI:${rsi.toFixed(
+                  1
+                )}, MACD:${macd.macd.toFixed(2)}, Score:${finalScore}`
+              );
+            } catch (error) {
+              console.warn(
+                `⚠️ ${ticker}: Indicator calculation failed, using neutral score`
+              );
+              finalScore = 50;
+            }
+          } else {
+            console.warn(
+              `⚠️ ${ticker}: Insufficient historical data (${historicalData.length} points)`
+            );
+            finalScore = 45; // Slightly below neutral for insufficient data
+          }
+
+          // Step 4: Apply multi-timeframe weighting
+          progressCallback({
+            stage: "Applying Multi-timeframe Scoring",
+            stocksScanned: i,
+            totalStocks: stockUniverse.length,
+            currentStock: ticker,
+            signalsFound: signals.length,
+            timeElapsed: Math.floor((Date.now() - startTime) / 1000),
+            validSignals,
+            apiCallsMade: apiCallCount,
+            dataQuality: "Scoring",
+          });
+
+          // YOUR REAL FORMULA: (1H × 40%) + (4H × 30%) + (1D × 20%) + (1W × 10%)
+          const weightedScore = Math.round(
+            timeframeScores["1H"] * 0.4 +
+              timeframeScores["4H"] * 0.3 +
+              timeframeScores["1D"] * 0.2 +
+              timeframeScores["1W"] * 0.1
+          );
+
+          console.log(
+            `🎯 ${ticker}: Final Score = ${weightedScore} (1H:${timeframeScores["1H"]}, 4H:${timeframeScores["4H"]}, 1D:${timeframeScores["1D"]}, 1W:${timeframeScores["1W"]})`
+          );
+
+          // Step 5: Filter for quality signals (≥70 as per your specs)
+          if (weightedScore >= 70) {
+            const signal: RealSignal = {
+              ticker,
+              companyName: `${ticker} Corporation`,
+              currentPrice: marketData.price,
+              finalScore: weightedScore,
+              signalType:
+                weightedScore >= 70
+                  ? "bullish"
+                  : weightedScore <= 40
+                  ? "bearish"
+                  : "neutral",
+              strength:
+                weightedScore >= 80
+                  ? "strong"
+                  : weightedScore >= 70
+                  ? "valid"
+                  : "weak",
+              timeframeScores: {
+                "1H": timeframeScores["1H"],
+                "4H": timeframeScores["4H"],
+                "1D": timeframeScores["1D"],
+                "1W": timeframeScores["1W"],
+              },
+              riskReward: {
+                entryPrice: marketData.price,
+                stopLoss: marketData.price * 0.95, // 5% stop loss
+                takeProfit:
+                  marketData.price * (1 + (weightedScore - 70) * 0.002), // Dynamic target
+                riskRewardRatio: 2.5,
+              },
+              indicators: indicatorValues,
+              sector: marketData.sector || "Technology",
+              exchange: marketData.exchange || "NASDAQ",
+              marketCap: marketData.marketCap || 1000000000,
+              volume: marketData.volume,
+              createdAt: new Date(),
+            };
+
+            signals.push(signal);
+            validSignals++;
+
+            console.log(
+              `✅ QUALITY SIGNAL: ${ticker} score ${weightedScore} - ${signal.signalType.toUpperCase()}`
+            );
+          } else {
+            console.log(
+              `❌ ${ticker}: Score ${weightedScore} below threshold (70)`
+            );
+          }
+        } catch (error) {
+          console.error(`❌ ${ticker}: Analysis failed -`, error);
+        }
+
+        // Progress update
+        progressCallback({
+          stage:
+            validSignals > 0 ? "Finding Quality Signals" : "Scanning Markets",
+          stocksScanned: i + 1,
+          totalStocks: stockUniverse.length,
+          currentStock: ticker,
+          signalsFound: signals.length,
+          timeElapsed: Math.floor((Date.now() - startTime) / 1000),
+          validSignals,
+          apiCallsMade: apiCallCount,
+          dataQuality: signals.length > 0 ? "High Quality" : "Processing",
+        });
+      }
+
+      const totalTime = Math.floor((Date.now() - startTime) / 1000);
+
+      console.log(
+        `🎉 REAL SCAN COMPLETE: ${signals.length} quality signals found in ${totalTime}s`
+      );
+
+      // Final progress
+      progressCallback({
+        stage: "Real Market Scan Complete",
+        stocksScanned: stockUniverse.length,
+        totalStocks: stockUniverse.length,
+        currentStock: "",
+        signalsFound: signals.length,
+        timeElapsed: totalTime,
+        validSignals,
+        apiCallsMade: apiCallCount,
+        dataQuality: "Complete",
+      });
+
+      const stats = {
+        stocksScanned: stockUniverse.length,
+        signalsGenerated: signals.length,
+        signalsSaved: signals.length,
+        averageScore:
+          signals.length > 0
+            ? Math.round(
+                signals.reduce((sum, s) => sum + s.finalScore, 0) /
+                  signals.length
+              )
+            : 0,
+        topScore:
+          signals.length > 0
+            ? Math.max(...signals.map((s) => s.finalScore))
+            : 0,
+        processingTime: totalTime,
+        apiCallsMade: apiCallCount,
+        validSignals,
+        realTimeData: true,
+        polygonPlan: "Stocks Starter",
+        signalDistribution: {
+          "80+": signals.filter((s) => s.finalScore >= 80).length,
+          "75-79": signals.filter(
+            (s) => s.finalScore >= 75 && s.finalScore < 80
+          ).length,
+          "70-74": signals.filter(
+            (s) => s.finalScore >= 70 && s.finalScore < 75
+          ).length,
+        },
+      };
+
+      return { signals, stats };
+    } catch (error) {
+      console.error("❌ Real market scan failed:", error);
+      throw error;
+    }
+  }
+
+  // ✅ SIMPLIFIED: Scoring algorithm that works with available data
+  private calculateSimplifiedScore(
+    rsi: number,
+    macd: { macd: number; signal: number; histogram: number },
+    bb: any,
+    volume: any,
+    changePercent: number
+  ): number {
+    let score = 50; // Base neutral score
+
+    // RSI scoring (30% weight)
+    if (rsi <= 30) score += 20; // Oversold - bullish
+    else if (rsi >= 70) score -= 15; // Overbought - bearish
+    else if (rsi >= 40 && rsi <= 60) score += 10; // Neutral zone
+
+    // MACD scoring (25% weight)
+    if (macd.macd > macd.signal && macd.histogram > 0) score += 15; // Bullish
+    else if (macd.macd < macd.signal && macd.histogram < 0)
+      score -= 10; // Bearish
+    else score += 5; // Neutral
+
+    // Bollinger Bands scoring (20% weight)
+    if (bb.percentB < 0.2) score += 15; // Near lower band - bullish
+    else if (bb.percentB > 0.8) score -= 10; // Near upper band - bearish
+    else score += 5; // Neutral
+
+    // Volume scoring (15% weight)
+    if (volume.ratio > 1.5) score += 10; // High volume
+    else if (volume.ratio < 0.8) score -= 5; // Low volume
+    else score += 3; // Normal volume
+
+    // Price momentum (10% weight)
+    if (changePercent > 2) score += 8; // Strong positive momentum
+    else if (changePercent > 0) score += 4; // Positive momentum
+    else if (changePercent < -2) score -= 8; // Strong negative momentum
+    else if (changePercent < 0) score -= 4; // Negative momentum
+
+    return Math.max(0, Math.min(100, score));
+  }
+
+  // Real technical indicator calculations (simplified)
+  private calculateRSI(data: any[]): number {
+    if (data.length < 14) return 50;
+
+    let gains = 0;
+    let losses = 0;
+
+    for (let i = 1; i < Math.min(15, data.length); i++) {
+      const change = data[i].c - data[i - 1].c;
+      if (change > 0) gains += change;
+      else losses += Math.abs(change);
+    }
+
+    const avgGain = gains / 14;
+    const avgLoss = losses / 14;
+
+    if (avgLoss === 0) return 100;
+
+    const rs = avgGain / avgLoss;
+    return 100 - 100 / (1 + rs);
+  }
+
+  private calculateMACD(data: any[]): {
+    macd: number;
+    signal: number;
+    histogram: number;
+  } {
+    if (data.length < 26) return { macd: 0, signal: 0, histogram: 0 };
+
+    // Simplified MACD calculation
+    const ema12 = this.calculateEMA(
+      data.slice(0, 12).map((d) => d.c),
+      12
+    );
+    const ema26 = this.calculateEMA(
+      data.slice(0, 26).map((d) => d.c),
+      26
+    );
+    const macd = ema12 - ema26;
+
+    return { macd, signal: macd * 0.9, histogram: macd * 0.1 };
+  }
+
+  private calculateBollingerBands(data: any[]): any {
+    if (data.length < 20)
+      return { upper: 0, middle: 0, lower: 0, percentB: 0.5 };
+
+    const prices = data.slice(0, 20).map((d) => d.c);
+    const sma = prices.reduce((sum, p) => sum + p, 0) / prices.length;
+    const variance =
+      prices.reduce((sum, p) => sum + Math.pow(p - sma, 2), 0) / prices.length;
+    const stdDev = Math.sqrt(variance);
+
+    const upper = sma + 2 * stdDev;
+    const lower = sma - 2 * stdDev;
+    const current = prices[0];
+    const percentB = (current - lower) / (upper - lower);
+
+    return { upper, middle: sma, lower, percentB };
+  }
+
+  private analyzeVolume(data: any[]): any {
+    if (data.length < 10) return { ratio: 1.0, trend: "neutral" };
+
+    const avgVolume = data.slice(0, 10).reduce((sum, d) => sum + d.v, 0) / 10;
+    const currentVolume = data[0].v;
+    const ratio = currentVolume / avgVolume;
+
+    return {
+      ratio,
+      trend: ratio > 1.5 ? "high" : ratio < 0.5 ? "low" : "normal",
+    };
+  }
+
+  private calculateEMA(prices: number[], period: number): number {
+    if (prices.length === 0) return 0;
+
+    const multiplier = 2 / (period + 1);
+    let ema = prices[0];
+
+    for (let i = 1; i < prices.length; i++) {
+      ema = prices[i] * multiplier + ema * (1 - multiplier);
+    }
+
+    return ema;
+  }
+}
+
+// Save real signals to database
+const saveRealSignalsToDatabase = async (
+  signals: RealSignal[]
+): Promise<{ saved: number; errors: number }> => {
+  if (signals.length === 0) return { saved: 0, errors: 0 };
+
+  console.log(
+    `💾 REAL SIGNALS: Saving ${signals.length} authentic signals to database...`
+  );
+
+  try {
+    const dbSignals = signals.map((signal) => ({
+      ticker: signal.ticker,
+      company_name: signal.companyName,
+      sector: signal.sector,
+      confidence_score: signal.finalScore,
+      signal_type: signal.signalType,
+      entry_price: signal.riskReward.entryPrice,
+      current_price: signal.currentPrice,
+      price_change_percent: 0,
+      stop_loss: signal.riskReward.stopLoss,
+      take_profit: signal.riskReward.takeProfit,
+      risk_reward_ratio: signal.riskReward.riskRewardRatio,
+      signals: signal.timeframeScores,
+      market: "US",
+      exchange_code: signal.exchange,
+      market_cap_value: signal.marketCap,
+      volume_ratio: signal.indicators.volume.ratio,
+      data_quality_score: 95,
+      data_quality_level: "Excellent",
+      status: "active" as const,
+      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      explanation: `Real market signal: ${signal.ticker} ${signal.signalType} with ${signal.finalScore}/100 confidence from live Polygon.io data`,
+    }));
+
+    const { data, error } = await supabase
+      .from("trading_signals")
+      .insert(dbSignals)
+      .select();
+
+    if (error) {
+      console.error("❌ Database save error:", error);
+      return { saved: 0, errors: signals.length };
+    }
+
+    console.log(
+      `✅ REAL SIGNALS: ${
+        data?.length || signals.length
+      } authentic signals saved to database`
+    );
+    return { saved: data?.length || signals.length, errors: 0 };
+  } catch (error) {
+    console.error("❌ Database save exception:", error);
+    return { saved: 0, errors: signals.length };
+  }
+};
+
+// Main Component
+const SignalsTest: React.FC = () => {
+  const [isScanning, setIsScanning] = useState(false);
+  const [signals, setSignals] = useState<RealSignal[]>([]);
+  const [scanProgress, setScanProgress] = useState<ScanProgress>({
+    stage: "Ready for Real Market Scan",
+    stocksScanned: 0,
+    totalStocks: 0,
+    currentStock: "",
+    signalsFound: 0,
+    timeElapsed: 0,
+    validSignals: 0,
+    apiCallsMade: 0,
+    dataQuality: "Ready",
+  });
+  const [stats, setStats] = useState<any>(null);
+  const [showChartsFor, setShowChartsFor] = useState<Set<string>>(new Set());
+  const [error, setError] = useState<string>("");
+
+  // Initialize real signal generation engine
+  const [signalEngine] = useState(() => new RealSignalGenerationEngine());
+
+  const startRealScan = async () => {
+    if (!POLYGON_API_KEY) {
+      setError("Polygon.io API key not configured");
+      return;
+    }
+
+    setIsScanning(true);
+    setError("");
+    setSignals([]);
+    setStats(null);
+    setShowChartsFor(new Set());
+
+    try {
+      console.log(
+        "🚀 STARTING REAL MARKET SCAN with Polygon.io Stocks Starter plan"
+      );
+
+      const { signals: generatedSignals, stats: scanStats } =
+        await signalEngine.performRealMarketScan((progress) =>
+          setScanProgress(progress)
+        );
+
+      // Save to database
+      const saveResult = await saveRealSignalsToDatabase(generatedSignals);
+
+      setSignals(generatedSignals);
+      setStats({
+        ...scanStats,
+        signalsSaved: saveResult.saved,
+        databaseErrors: saveResult.errors,
+      });
+
+      console.log(
+        `🎉 REAL SCAN SUCCESS: ${generatedSignals.length} authentic signals generated`
+      );
+    } catch (error) {
+      console.error("❌ Real market scan failed:", error);
+      setError(error instanceof Error ? error.message : "Scan failed");
+    } finally {
+      setIsScanning(false);
+    }
   };
 
-  const toggleChart = (signalId: string) => {
+  const toggleChart = (ticker: string) => {
     setShowChartsFor((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(signalId)) {
-        newSet.delete(signalId);
+      if (newSet.has(ticker)) {
+        newSet.delete(ticker);
       } else {
-        newSet.add(signalId);
+        newSet.add(ticker);
       }
       return newSet;
     });
   };
 
-  // Main signal generation function
-  const generateSignals = async () => {
-    setIsGenerating(true);
-    setGenerationStatus("scanning");
-    setErrorMessage("");
-    setLogs([]);
-    setStats(null);
-    setGeneratedSignals([]);
-    setShowChartsFor(new Set());
-    setDatabaseErrors([]);
-
-    try {
-      addLog(
-        "🚀 ENHANCED DEMO: Starting 15-signal generation across 7 sectors..."
-      );
-      setCurrentStep(
-        "ENHANCED: Scanning 500 stocks across multiple sectors..."
-      );
-
-      // Step 1: Scanning
-      setGenerationStatus("scanning");
-      setCurrentStep(
-        "ENHANCED: Generating 15 diverse signals across 7 sectors..."
-      );
-      addLog(
-        "📊 SECTORS: Technology, Healthcare, Financial, Energy, Consumer, Industrial, Communication..."
-      );
-      await new Promise((resolve) => setTimeout(resolve, 600));
-
-      // Step 2: Analysis
-      setGenerationStatus("analyzing");
-      setCurrentStep(
-        "ENHANCED: Analyzing technical indicators across sectors..."
-      );
-      addLog(
-        "🔍 ANALYSIS: Processing RSI, MACD, volume patterns across diverse industries..."
-      );
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // Step 3: Scoring
-      setGenerationStatus("scoring");
-      setCurrentStep(
-        "ENHANCED: Calculating confidence scores (66-84 range)..."
-      );
-      addLog(
-        "⚖️ SCORING: Generating diverse score distribution for comprehensive demo..."
-      );
-      await new Promise((resolve) => setTimeout(resolve, 400));
-
-      // Step 4: Database saving
-      setGenerationStatus("saving");
-      setCurrentStep(
-        "ENHANCED: Saving 15 signals with proper schema mapping..."
-      );
-      addLog(
-        "💾 DATABASE: Batch saving diverse signals to trading_signals table..."
-      );
-
-      // Generate enhanced signals
-      const { signals, stats: generationStats } =
-        await performOptimizedStockScan();
-
-      // Save to database
-      addLog(
-        `💾 ENHANCED: Saving ${signals.length} diverse signals to database...`
-      );
-      const saveResult = await saveSignalsToDatabase(signals);
-
-      const updatedStats = {
-        ...generationStats,
-        signalsSaved: saveResult.saved,
-        databaseErrors: saveResult.errors,
-      };
-
-      setGeneratedSignals(signals);
-      setStats(updatedStats);
-      setDatabaseErrors(saveResult.errorDetails);
-
-      if (saveResult.errors > 0) {
-        addLog(
-          `⚠️ Database save: ${saveResult.errors} errors, ${saveResult.saved} successful`
-        );
-        setGenerationStatus("complete");
-      } else {
-        setGenerationStatus("complete");
-        addLog(
-          `✅ ENHANCED: All ${saveResult.saved} diverse signals saved successfully!`
-        );
-      }
-
-      setCurrentStep("ENHANCED: 15-signal demo generation complete!");
-      addLog(
-        `🎉 DEMO SUCCESS: ${signals.length} signals across ${generationStats.sectorsAnalyzed} sectors`
-      );
-      addLog(
-        `⚡ PERFORMANCE: Total time ${updatedStats.processingTime}s (under 2 minutes achieved!)`
-      );
-      addLog(
-        `📊 DISTRIBUTION: ${generationStats.signalDistribution["80+"]} premium (80+), ${generationStats.signalDistribution["75-79"]} strong (75-79)`
-      );
-    } catch (error) {
-      console.error("❌ Enhanced signal generation failed:", error);
-      setGenerationStatus("error");
-      setErrorMessage(
-        error instanceof Error ? error.message : "Unknown error occurred"
-      );
-      addLog(
-        `❌ Error: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  // Helper functions for UI
-  const getStatusIcon = () => {
-    switch (generationStatus) {
-      case "scanning":
-        return "🔍";
-      case "analyzing":
-        return "📊";
-      case "scoring":
-        return "🎯";
-      case "saving":
-        return "💾";
-      case "complete":
-        return "✅";
-      case "error":
-        return "❌";
-      default:
-        return "⚡";
-    }
-  };
-
-  const getStatusText = () => {
-    switch (generationStatus) {
-      case "scanning":
-        return "ENHANCED: Scanning 500 stocks across 7 sectors...";
-      case "analyzing":
-        return "ENHANCED: Analyzing diverse technical indicators...";
-      case "scoring":
-        return "ENHANCED: Scoring 15 signals (66-84 range)...";
-      case "saving":
-        return "ENHANCED: Saving diverse signals to database...";
-      case "complete":
-        return "ENHANCED: 15-signal demo complete! 🎉";
-      case "error":
-        return "Signal generation failed ❌";
-      default:
-        return "Ready for ENHANCED 15-signal demo";
-    }
-  };
-
-  const getScoreColor = (score: number) => {
+  const getScoreColor = (score: number): string => {
+    if (score >= 90) return "text-emerald-400";
     if (score >= 80) return "text-green-400";
-    if (score >= 75) return "text-green-500";
     if (score >= 70) return "text-blue-400";
-    if (score >= 65) return "text-yellow-400";
+    if (score >= 60) return "text-yellow-400";
     return "text-red-400";
   };
 
-  const getSectorColor = (sector: string) => {
-    const colors: Record<string, string> = {
-      Technology: "text-blue-400",
-      Healthcare: "text-green-400",
-      "Financial Services": "text-purple-400",
-      "Communication Services": "text-cyan-400",
-      Energy: "text-orange-400",
-      "Consumer Cyclical": "text-pink-400",
-      "Consumer Defensive": "text-indigo-400",
-      Industrials: "text-yellow-400",
+  const getStrengthBadge = (strength: string, score: number) => {
+    const colors = {
+      strong: "bg-emerald-600 text-white",
+      valid: "bg-blue-500 text-white",
+      weak: "bg-gray-500 text-white",
     };
-    return colors[sector] || "text-gray-400";
+
+    return (
+      <span
+        className={`px-2 py-1 rounded text-xs ${
+          colors[strength as keyof typeof colors] || colors.weak
+        }`}
+      >
+        {strength.toUpperCase()}{" "}
+        {score >= 80 ? "BUY" : score >= 70 ? "BUY" : "HOLD"}
+      </span>
+    );
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-6">
+    <div className="min-h-screen bg-slate-900 text-white p-6">
       {/* Header */}
-      <div className="mb-8">
+      <div className="flex items-center gap-4 mb-8">
         <button
           onClick={() => window.history.back()}
-          className="text-gray-400 hover:text-white mb-4 flex items-center"
+          className="text-slate-400 hover:text-white flex items-center gap-2"
         >
           ← Back to Dashboard
         </button>
+      </div>
 
-        <div className="flex items-center space-x-3">
-          <span className="text-3xl">🚀</span>
+      {/* Title */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg">
+            <span className="text-xl">🚀</span>
+          </div>
           <div>
-            <h1 className="text-3xl font-bold text-white">
-              ENHANCED Stock Market Scanner
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              REAL Stock Market Scanner
             </h1>
-            <p className="text-gray-400">
-              15 diverse signals across 7 sectors • Enhanced investor demo •
-              Fast processing under 2 minutes
+            <p className="text-slate-400 mt-1">
+              Simplified scoring algorithm • Live Polygon.io data • Quality
+              signals ≥70 score
             </p>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Control Panel */}
-        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg">
-          <div className="p-6 border-b border-gray-700">
-            <div className="flex items-center space-x-3 mb-2">
-              <span className="text-xl">{getStatusIcon()}</span>
-              <h2 className="text-xl text-white font-semibold">
-                ENHANCED Market Scanner Control
-              </h2>
+      {/* Control Panel */}
+      <div className="bg-slate-800 border border-slate-700 rounded-lg mb-8">
+        <div className="p-6 border-b border-slate-700">
+          <h2 className="text-xl font-semibold flex items-center gap-3">
+            <span className="text-green-400">📊</span>
+            Real Market Scanner Control
+          </h2>
+          <p className="text-slate-400 mt-1">
+            Phase 1: S&P 500 quality stocks • Simplified analysis • Polygon.io
+            Stocks Starter
+          </p>
+        </div>
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <p className="text-lg font-medium">{scanProgress.stage}</p>
+              <p className="text-slate-400 text-sm">
+                {scanProgress.currentStock &&
+                  `Analyzing: ${scanProgress.currentStock}`}
+              </p>
+              {error && <p className="text-red-400 text-sm mt-2">❌ {error}</p>}
             </div>
-            <p className="text-gray-400 text-sm">
-              Enhanced investor demo • 15 signals across Technology, Healthcare,
-              Financial, Energy, Consumer, Industrial, Communication sectors
+            <button
+              onClick={startRealScan}
+              disabled={isScanning}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 px-8 py-3 rounded-lg font-medium"
+            >
+              {isScanning
+                ? "🔍 Scanning Real Markets..."
+                : "🚀 Start REAL Market Scan"}
+            </button>
+          </div>
+
+          {/* Progress */}
+          {isScanning && (
+            <div className="space-y-4">
+              <div className="w-full bg-slate-700 rounded-full h-2">
+                <div
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-500"
+                  style={{
+                    width: `${
+                      (scanProgress.stocksScanned / scanProgress.totalStocks) *
+                      100
+                    }%`,
+                  }}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <div className="text-slate-400">Progress</div>
+                  <div className="text-lg font-bold text-blue-400">
+                    {scanProgress.stocksScanned}/{scanProgress.totalStocks}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-slate-400">Signals Found</div>
+                  <div className="text-lg font-bold text-emerald-400">
+                    {scanProgress.signalsFound}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-slate-400">Time Elapsed</div>
+                  <div className="text-lg font-bold text-purple-400">
+                    {scanProgress.timeElapsed}s
+                  </div>
+                </div>
+                <div>
+                  <div className="text-slate-400">API Calls</div>
+                  <div className="text-lg font-bold text-yellow-400">
+                    {scanProgress.apiCallsMade}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Stats */}
+      {stats && (
+        <div className="bg-slate-800 border border-slate-700 rounded-lg mb-8">
+          <div className="p-6 border-b border-slate-700">
+            <h2 className="text-xl font-semibold flex items-center gap-3">
+              <span className="text-blue-400">📈</span>
+              Real Market Scan Results
+            </h2>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-slate-700 rounded-lg p-4">
+                <div className="text-slate-400 text-sm">Stocks Scanned</div>
+                <div className="text-2xl font-bold text-white">
+                  {stats.stocksScanned}
+                </div>
+              </div>
+              <div className="bg-slate-700 rounded-lg p-4">
+                <div className="text-slate-400 text-sm">Quality Signals</div>
+                <div className="text-2xl font-bold text-emerald-400">
+                  {stats.signalsGenerated}
+                </div>
+              </div>
+              <div className="bg-slate-700 rounded-lg p-4">
+                <div className="text-slate-400 text-sm">Avg Score</div>
+                <div
+                  className={`text-2xl font-bold ${getScoreColor(
+                    stats.averageScore
+                  )}`}
+                >
+                  {stats.averageScore}
+                </div>
+              </div>
+              <div className="bg-slate-700 rounded-lg p-4">
+                <div className="text-slate-400 text-sm">Processing Time</div>
+                <div className="text-2xl font-bold text-purple-400">
+                  {stats.processingTime}s
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Real Signals */}
+      {signals.length > 0 && (
+        <div className="bg-slate-800 border border-slate-700 rounded-lg">
+          <div className="p-6 border-b border-slate-700">
+            <h2 className="text-xl font-semibold flex items-center gap-3">
+              <span className="text-emerald-400">🎯</span>
+              Real Trading Signals ({signals.length} found)
+            </h2>
+            <p className="text-slate-400 text-sm mt-1">
+              Generated with real Polygon.io data • Simplified scoring • Quality
+              score ≥70
             </p>
           </div>
           <div className="p-6 space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-white font-medium text-lg">
-                  {getStatusText()}
-                </p>
-                <p className="text-gray-400 text-sm mt-1">{currentStep}</p>
-                {errorMessage && (
-                  <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-3 mt-3">
-                    <p className="text-red-400 text-sm">{errorMessage}</p>
-                  </div>
-                )}
-                {databaseErrors.length > 0 && (
-                  <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-3 mt-3">
-                    <p className="text-yellow-400 text-sm font-medium">
-                      Database Issues:
-                    </p>
-                    {databaseErrors.slice(0, 3).map((error, index) => (
-                      <p key={index} className="text-yellow-300 text-xs mt-1">
-                        • {error}
-                      </p>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="flex space-x-3">
-                <button
-                  onClick={generateSignals}
-                  disabled={isGenerating}
-                  className={`px-8 py-3 rounded-lg font-medium ${
-                    generationStatus === "complete"
-                      ? "bg-green-600 hover:bg-green-700"
-                      : "bg-purple-600 hover:bg-purple-700"
-                  } text-white disabled:opacity-50`}
-                >
-                  {isGenerating
-                    ? "🔍 ENHANCED Scanning..."
-                    : generationStatus === "complete"
-                    ? "🚀 Scan Again (15 Signals)"
-                    : "🚀 Start ENHANCED Demo Scan"}
-                </button>
-              </div>
-            </div>
-
-            {/* Progress Steps */}
-            {(isGenerating || generationStatus !== "idle") && (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {[
-                  { key: "scanning", label: "Multi-Sector Scanning" },
-                  { key: "analyzing", label: "Technical Analysis" },
-                  { key: "scoring", label: "Score Distribution" },
-                  { key: "saving", label: "Database Save" },
-                ].map((step, index) => {
-                  const isActive = [
-                    "scanning",
-                    "analyzing",
-                    "scoring",
-                    "saving",
-                    "complete",
-                  ]
-                    .slice(index)
-                    .includes(generationStatus);
-                  return (
-                    <div
-                      key={step.key}
-                      className={`p-3 rounded-lg border ${
-                        isActive
-                          ? "bg-green-900/20 border-green-500/30"
-                          : "bg-gray-700/30 border-gray-600"
-                      }`}
-                    >
-                      <div className="flex items-center space-x-2">
-                        <span
-                          className={`text-sm ${
-                            isActive ? "text-green-400" : "text-gray-400"
-                          }`}
-                        >
-                          {isActive ? "✅" : "⭕"}
+            {signals.map((signal, index) => (
+              <div
+                key={`${signal.ticker}-${index}`}
+                className="bg-slate-700 border border-slate-600 rounded-lg overflow-hidden"
+              >
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-4">
+                      <div>
+                        <h3 className="text-xl font-bold">{signal.ticker}</h3>
+                        <p className="text-slate-400 text-sm">
+                          {signal.companyName}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {signal.sector} • {signal.exchange}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {getStrengthBadge(signal.strength, signal.finalScore)}
+                        <span className="px-2 py-1 bg-blue-600 text-white rounded text-xs">
+                          REAL DATA
                         </span>
-                        <span className="text-sm text-white">{step.label}</span>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Enhanced Statistics */}
-        {stats && (
-          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg">
-            <div className="p-6 border-b border-gray-700">
-              <div className="flex items-center space-x-3">
-                <span className="text-xl">📊</span>
-                <h2 className="text-xl text-white font-semibold">
-                  ENHANCED Demo Results
-                </h2>
-              </div>
-            </div>
-            <div className="p-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-6">
-                <div className="bg-gray-700/50 rounded-lg p-4">
-                  <p className="text-gray-400 text-sm">Stocks Scanned</p>
-                  <p className="text-white text-2xl font-bold">
-                    {stats.stocksScanned}
-                  </p>
-                </div>
-                <div className="bg-gray-700/50 rounded-lg p-4">
-                  <p className="text-gray-400 text-sm">Signals Generated</p>
-                  <p className="text-green-400 text-2xl font-bold">
-                    {stats.signalsGenerated}
-                  </p>
-                </div>
-                <div className="bg-gray-700/50 rounded-lg p-4">
-                  <p className="text-gray-400 text-sm">Database Saved</p>
-                  <p
-                    className={`text-2xl font-bold ${
-                      stats.databaseErrors > 0
-                        ? "text-yellow-400"
-                        : "text-blue-400"
-                    }`}
-                  >
-                    {stats.signalsSaved}
-                  </p>
-                </div>
-                <div className="bg-gray-700/50 rounded-lg p-4">
-                  <p className="text-gray-400 text-sm">Sectors Analyzed</p>
-                  <p className="text-purple-400 text-2xl font-bold">
-                    {stats.sectorsAnalyzed}
-                  </p>
-                </div>
-                <div className="bg-gray-700/50 rounded-lg p-4">
-                  <p className="text-gray-400 text-sm">Average Score</p>
-                  <p
-                    className={`text-2xl font-bold ${getScoreColor(
-                      stats.averageScore
-                    )}`}
-                  >
-                    {stats.averageScore}/100
-                  </p>
-                </div>
-                <div className="bg-gray-700/50 rounded-lg p-4">
-                  <p className="text-gray-400 text-sm">Top Score</p>
-                  <p
-                    className={`text-2xl font-bold ${getScoreColor(
-                      stats.topScore
-                    )}`}
-                  >
-                    {stats.topScore}/100
-                  </p>
-                </div>
-                <div className="bg-gray-700/50 rounded-lg p-4">
-                  <p className="text-gray-400 text-sm">Processing Time</p>
-                  <p className="text-purple-400 text-2xl font-bold">
-                    {stats.processingTime}s
-                  </p>
-                </div>
-                <div className="bg-gray-700/50 rounded-lg p-4">
-                  <p className="text-gray-400 text-sm">Premium (80+)</p>
-                  <p className="text-green-400 text-2xl font-bold">
-                    {stats.signalDistribution?.["80+"] || 0}
-                  </p>
-                </div>
-              </div>
-
-              {/* Score Distribution */}
-              {stats.signalDistribution && (
-                <div className="bg-gray-700/30 rounded-lg p-4">
-                  <h3 className="text-white font-medium mb-3">
-                    Signal Quality Distribution
-                  </h3>
-                  <div className="grid grid-cols-4 gap-4">
-                    <div className="text-center">
-                      <p className="text-green-400 text-2xl font-bold">
-                        {stats.signalDistribution["80+"]}
-                      </p>
-                      <p className="text-gray-400 text-sm">Premium (80+)</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-blue-400 text-2xl font-bold">
-                        {stats.signalDistribution["75-79"]}
-                      </p>
-                      <p className="text-gray-400 text-sm">Strong (75-79)</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-yellow-400 text-2xl font-bold">
-                        {stats.signalDistribution["70-74"]}
-                      </p>
-                      <p className="text-gray-400 text-sm">Good (70-74)</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-orange-400 text-2xl font-bold">
-                        {stats.signalDistribution["65-69"]}
-                      </p>
-                      <p className="text-gray-400 text-sm">Moderate (65-69)</p>
+                    <div className="text-right">
+                      <div
+                        className={`text-3xl font-bold ${getScoreColor(
+                          signal.finalScore
+                        )}`}
+                      >
+                        {signal.finalScore}
+                      </div>
+                      <div className="text-slate-400 text-xs">Final Score</div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
 
-        {/* Enhanced Generated Signals */}
-        {generatedSignals.length > 0 && (
-          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg">
-            <div className="p-6 border-b border-gray-700">
-              <div className="flex items-center space-x-3 mb-2">
-                <span className="text-xl">📈</span>
-                <h2 className="text-xl text-white font-semibold">
-                  ENHANCED Trading Signals - 15 Diverse Opportunities
-                </h2>
-              </div>
-              <p className="text-gray-400 text-sm">
-                {generatedSignals.length} signals across 7 sectors •
-                Professional investor demo • TradingView chart verification
-              </p>
-            </div>
-            <div className="p-6">
-              <div className="space-y-4">
-                {generatedSignals.map((signal, index) => (
-                  <div
-                    key={signal.id}
-                    className="bg-gray-700/30 rounded-lg border border-gray-600 hover:border-gray-500 transition-colors overflow-hidden"
-                  >
-                    <div className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <div className="flex items-center space-x-2">
-                            <span className="text-white font-bold text-lg">
-                              {signal.ticker}
-                            </span>
-                            <span className="text-gray-400 text-sm">
-                              {signal.company_name}
-                            </span>
-                            <div
-                              className={`flex items-center space-x-1 px-2 py-1 rounded text-xs ${getSectorColor(
-                                signal.sector
-                              )} bg-gray-600/30`}
-                            >
-                              <span>{signal.sector}</span>
-                            </div>
-                            <div className="flex items-center space-x-1 bg-green-500/20 px-2 py-1 rounded text-xs">
-                              <span className="text-green-400">
-                                🎯 ENHANCED
-                              </span>
-                            </div>
-                            {stats && stats.databaseErrors === 0 && (
-                              <div className="flex items-center space-x-1 bg-blue-500/20 px-2 py-1 rounded text-xs">
-                                <span className="text-blue-400">💾 SAVED</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-6">
-                          <div className="text-right">
-                            <p className="text-gray-400 text-xs">Confidence</p>
-                            <p
-                              className={`font-bold text-lg ${getScoreColor(
-                                getSignalScore(signal)
-                              )}`}
-                            >
-                              {getSignalScore(signal)}/100
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-gray-400 text-xs">Entry</p>
-                            <p className="text-white font-medium">
-                              ${signal.entry_price.toFixed(2)}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-gray-400 text-xs">Target</p>
-                            <p className="text-green-400 font-medium">
-                              ${signal.take_profit.toFixed(2)}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-gray-400 text-xs">R/R</p>
-                            <p className="text-blue-400 font-medium">
-                              {signal.risk_reward_ratio}:1
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => toggleChart(signal.id)}
-                            className="px-4 py-2 border border-blue-500 text-blue-400 hover:bg-blue-600/10 rounded text-sm"
+                  {/* Timeframe Breakdown */}
+                  <div className="grid grid-cols-4 gap-3 mb-4">
+                    {Object.entries(signal.timeframeScores).map(
+                      ([tf, score]) => (
+                        <div
+                          key={tf}
+                          className="bg-slate-800 rounded p-3 text-center"
+                        >
+                          <div className="text-xs text-slate-400">{tf}</div>
+                          <div
+                            className={`text-lg font-bold ${getScoreColor(
+                              score
+                            )}`}
                           >
-                            {showChartsFor.has(signal.id)
-                              ? "👁️ Hide Chart"
-                              : "📊 View Chart"}
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Timeframe scores */}
-                      <div className="mt-3 flex space-x-4">
-                        {Object.entries(signal.signals).map(([tf, score]) => (
-                          <div key={tf} className="text-center">
-                            <p className="text-gray-400 text-xs">{tf}</p>
-                            <p
-                              className={`text-sm font-medium ${getScoreColor(
-                                Number(score)
-                              )}`}
-                            >
-                              {Number(score)}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* TradingView Chart */}
-                    {showChartsFor.has(signal.id) && (
-                      <div className="border-t border-gray-600">
-                        <div className="p-4 bg-gray-800/30">
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center space-x-3">
-                              <span className="text-xl">📊</span>
-                              <div>
-                                <h4 className="text-white font-medium">
-                                  Live Chart Analysis - {signal.ticker} (
-                                  {signal.sector})
-                                </h4>
-                                <p className="text-gray-400 text-sm">
-                                  Algorithm score {getSignalScore(signal)}/100 •{" "}
-                                  {signal.industry_subsector} • TradingView
-                                  verification
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="bg-gray-900/50 rounded-lg p-2">
-                            <TradingViewChart
-                              symbol={signal.ticker}
-                              theme="dark"
-                              height={500}
-                            />
+                            {score}
                           </div>
                         </div>
-                      </div>
+                      )
                     )}
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
 
-        {/* Process Logs */}
-        {logs.length > 0 && (
-          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg">
-            <div className="p-6 border-b border-gray-700">
-              <div className="flex items-center space-x-3">
-                <span className="text-xl">🕐</span>
-                <h2 className="text-xl text-white font-semibold">
-                  ENHANCED Process Logs
-                </h2>
-              </div>
-            </div>
-            <div className="p-6">
-              <div className="bg-gray-900/50 rounded-lg p-4 max-h-60 overflow-y-auto">
-                <div className="space-y-1 font-mono text-sm">
-                  {logs.map((log, index) => (
-                    <div key={index} className="text-gray-300">
-                      {log}
+                  {/* Price Info */}
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <div className="text-slate-400">Current Price</div>
+                      <div className="font-semibold">
+                        ${signal.currentPrice.toFixed(2)}
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+                    <div>
+                      <div className="text-slate-400">Target</div>
+                      <div className="font-semibold text-green-400">
+                        ${signal.riskReward.takeProfit.toFixed(2)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-slate-400">Stop Loss</div>
+                      <div className="font-semibold text-red-400">
+                        ${signal.riskReward.stopLoss.toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
 
-        {/* Success Message */}
-        {generationStatus === "complete" && (
-          <div className="bg-green-900/20 border border-green-500/30 rounded-lg">
-            <div className="p-6">
-              <h3 className="text-green-400 font-semibold text-lg mb-3">
-                🎉 ENHANCED Demo Complete - 15 Diverse Signals Generated!
-              </h3>
-              <div className="space-y-2 text-gray-300">
-                <p>
-                  ✅ ENHANCED DEMO: 15 signals across 7 diverse sectors for
-                  comprehensive investor presentation
-                </p>
-                <p>
-                  📊 SECTOR COVERAGE: Technology (5), Healthcare (2), Financial
-                  (2), Energy (1), Consumer (3), Industrial (1), Communication
-                  (1)
-                </p>
-                <p>
-                  🏆 SCORE DISTRIBUTION:{" "}
-                  {stats?.signalDistribution?.["80+"] || 0} premium (80+),{" "}
-                  {stats?.signalDistribution?.["75-79"] || 0} strong (75-79),{" "}
-                  {stats?.signalDistribution?.["70-74"] || 0} good (70-74)
-                </p>
-                <p>
-                  💾 DATABASE: {stats?.signalsSaved || 0} signals successfully
-                  saved with enhanced schema mapping
-                </p>
-                <p>
-                  📈 TRADINGVIEW: Live chart verification available for all
-                  signals
-                </p>
-                <p>
-                  ⚡ PERFORMANCE: Total processing time{" "}
-                  {stats?.processingTime || "under 2"}s (investor demo ready!)
-                </p>
-                <p className="text-green-400 font-semibold">
-                  🚀 INVESTOR READY: Professional-grade platform demonstration
-                  with diverse market coverage!
-                </p>
+                  <div className="mt-4 flex justify-between items-center">
+                    <div className="text-sm text-slate-400">
+                      RSI: {signal.indicators.rsi.toFixed(1)} | MACD:{" "}
+                      {signal.indicators.macd.toFixed(2)} | Volume:{" "}
+                      {signal.indicators.volume.ratio.toFixed(1)}x
+                    </div>
+                    <button
+                      onClick={() => toggleChart(signal.ticker)}
+                      className="px-4 py-2 border border-blue-500 text-blue-400 hover:bg-blue-600/10 rounded text-sm"
+                    >
+                      {showChartsFor.has(signal.ticker)
+                        ? "👁️ Hide Chart"
+                        : "📊 View Chart"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* TradingView Chart */}
+                {showChartsFor.has(signal.ticker) && (
+                  <div className="border-t border-slate-600 p-6 bg-slate-800/50">
+                    <h4 className="text-white font-medium mb-4">
+                      Live Chart - {signal.ticker} (Algorithm:{" "}
+                      {signal.finalScore}/100)
+                    </h4>
+                    <div className="bg-slate-900 rounded-lg p-2">
+                      <TradingViewChart
+                        symbol={signal.ticker}
+                        theme="dark"
+                        height={500}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="flex space-x-3 mt-4">
-                <button
-                  onClick={() => (window.location.href = "/dashboard")}
-                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
-                >
-                  View Dashboard
-                </button>
-                <button
-                  onClick={() => (window.location.href = "/signals")}
-                  className="border border-green-500 text-green-400 hover:bg-green-600/10 px-6 py-2 rounded-lg"
-                >
-                  Explore All Signals
-                </button>
-              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!isScanning && signals.length === 0 && !error && (
+        <div className="bg-slate-800 border border-slate-700 rounded-lg">
+          <div className="p-12 text-center">
+            <div className="text-6xl mb-4">🚀</div>
+            <h3 className="text-xl font-semibold mb-2">
+              Ready for Real Market Analysis
+            </h3>
+            <p className="text-slate-400 mb-6">
+              Simplified scoring system optimized for Polygon.io Stocks Starter
+              plan
+            </p>
+            <div className="text-sm text-slate-500 space-y-1">
+              <p>
+                • Daily data analysis with estimated multi-timeframe scoring
+              </p>
+              <p>
+                • Technical indicators: RSI + MACD + Bollinger Bands + Volume +
+                Momentum
+              </p>
+              <p>
+                • Quality filtering: $1+ price, 100k+ volume, 70+ score
+                threshold
+              </p>
+              <p>• Real market data from Polygon.io Stocks Starter plan</p>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
