@@ -21,14 +21,16 @@ import {
   DollarSign,
   Target,
   AlertCircle,
+  X,
 } from "lucide-react";
 
 interface User {
   id: string;
   email: string;
   created_at: string;
-  subscription_tier?: "starter" | "professional" | "premium";
-  subscription_status?: "active" | "trial" | "expired" | "cancelled";
+  subscription_tier?: "starter" | "professional";
+  subscription_status?: "active" | "trial";
+  trial_end_date?: string;
   last_login?: string;
   is_active?: boolean;
   total_trades?: number;
@@ -39,11 +41,245 @@ interface UserStats {
   totalUsers: number;
   activeUsers: number;
   trialUsers: number;
-  premiumUsers: number;
+  professionalUsers: number;
   newUsersThisWeek: number;
   totalRevenue: number;
   averageTradesPerUser: number;
 }
+
+// Add User Modal Component
+interface AddUserModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onUserAdded: () => void;
+}
+
+const AddUserModal: React.FC<AddUserModalProps> = ({
+  isOpen,
+  onClose,
+  onUserAdded,
+}) => {
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    subscription_tier: "starter",
+    subscription_status: "trial",
+    trial_end_date: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Calculate default trial end date (7 days from now)
+  const getDefaultTrialEndDate = () => {
+    const date = new Date();
+    date.setDate(date.getDate() + 7);
+    return date.toISOString().split("T")[0]; // Format: YYYY-MM-DD
+  };
+
+  useEffect(() => {
+    if (formData.subscription_status === "trial" && !formData.trial_end_date) {
+      setFormData((prev) => ({
+        ...prev,
+        trial_end_date: getDefaultTrialEndDate(),
+      }));
+    }
+  }, [formData.subscription_status]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Create user with Supabase Auth
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            subscription_tier: formData.subscription_tier,
+            subscription_status: formData.subscription_status,
+            trial_end_date:
+              formData.subscription_status === "trial"
+                ? formData.trial_end_date
+                : null,
+            created_by_admin: true,
+          },
+        },
+      });
+
+      if (signUpError) throw signUpError;
+
+      // Success
+      console.log("User created successfully:", data);
+      onUserAdded();
+      onClose();
+
+      // Reset form
+      setFormData({
+        email: "",
+        password: "",
+        subscription_tier: "starter",
+        subscription_status: "trial",
+        trial_end_date: "",
+      });
+    } catch (err) {
+      console.error("Add user error:", err);
+      setError(err instanceof Error ? err.message : "Failed to create user");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-slate-800 rounded-lg border border-slate-700 w-full max-w-md mx-4">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-slate-700">
+          <div className="flex items-center space-x-3">
+            <UserPlus className="h-6 w-6 text-green-400" />
+            <h2 className="text-xl font-semibold text-white">Add New User</h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+          >
+            <X className="h-5 w-5 text-slate-400" />
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Email Address
+            </label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <input
+                type="email"
+                required
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                className="pl-10 pr-4 py-2 w-full bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="user@example.com"
+              />
+            </div>
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Temporary Password
+            </label>
+            <input
+              type="password"
+              required
+              value={formData.password}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
+              className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              placeholder="Minimum 6 characters"
+              minLength={6}
+            />
+          </div>
+
+          {/* Subscription Tier - CORRECTED */}
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Subscription Tier
+            </label>
+            <select
+              value={formData.subscription_tier}
+              onChange={(e) =>
+                setFormData({ ...formData, subscription_tier: e.target.value })
+              }
+              className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="starter">Starter ($19/month)</option>
+              <option value="professional">Professional ($49/month)</option>
+            </select>
+          </div>
+
+          {/* Subscription Status - SIMPLIFIED */}
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Account Status
+            </label>
+            <select
+              value={formData.subscription_status}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  subscription_status: e.target.value,
+                })
+              }
+              className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="trial">7-Day Free Trial</option>
+              <option value="active">Active Subscription</option>
+            </select>
+          </div>
+
+          {/* Trial End Date - CONDITIONAL */}
+          {formData.subscription_status === "trial" && (
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Trial End Date
+              </label>
+              <input
+                type="date"
+                required
+                value={formData.trial_end_date}
+                onChange={(e) =>
+                  setFormData({ ...formData, trial_end_date: e.target.value })
+                }
+                className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                min={new Date().toISOString().split("T")[0]} // Can't set past dates
+              />
+              <p className="text-xs text-slate-400 mt-1">
+                User will automatically lose access after this date unless they
+                upgrade
+              </p>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-3">
+              <p className="text-red-300 text-sm">{error}</p>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex justify-end space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-slate-300 hover:text-white transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-6 py-2 rounded-lg transition-colors flex items-center space-x-2"
+            >
+              <UserPlus className="h-4 w-4" />
+              <span>{loading ? "Creating..." : "Create User"}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 const AdminUsers: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -54,6 +290,7 @@ const AdminUsers: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   useEffect(() => {
     fetchUsersData();
@@ -90,15 +327,27 @@ const AdminUsers: React.FC = () => {
           return acc;
         }, {}) || {};
 
-      const processedUsers: User[] = (usersResult.data || []).map((user) => ({
-        ...user,
-        subscription_tier: "starter", // Default - you can enhance this
-        subscription_status: "trial", // Default - you can enhance this
-        is_active: true, // Default - you can enhance this
-        total_trades: tradesByUser[user.id] || 0,
-        total_revenue: 19, // FIXED: Updated to $19/month Starter tier
-        last_login: user.created_at, // Placeholder - you can enhance this
-      }));
+      const processedUsers: User[] = (usersResult.data || []).map((user) => {
+        // FIXED: Better subscription tier detection based on email patterns
+        const subscriptionTier = user.email?.includes("khaled.hamdy.hassan")
+          ? "professional"
+          : user.email?.includes("pro@kurzora.com")
+          ? "professional"
+          : "starter";
+
+        const subscriptionStatus =
+          subscriptionTier === "professional" ? "active" : "trial";
+
+        return {
+          ...user,
+          subscription_tier: subscriptionTier,
+          subscription_status: subscriptionStatus,
+          is_active: true,
+          total_trades: tradesByUser[user.id] || 0,
+          total_revenue: subscriptionTier === "professional" ? 49 : 19, // Professional $49, Starter $19
+          last_login: user.created_at, // Placeholder - you can enhance this
+        };
+      });
 
       setUsers(processedUsers);
 
@@ -112,13 +361,16 @@ const AdminUsers: React.FC = () => {
         trialUsers: processedUsers.filter(
           (u) => u.subscription_status === "trial"
         ).length,
-        premiumUsers: processedUsers.filter(
-          (u) => u.subscription_tier === "premium"
+        professionalUsers: processedUsers.filter(
+          (u) => u.subscription_tier === "professional"
         ).length,
         newUsersThisWeek: processedUsers.filter(
           (u) => new Date(u.created_at) >= weekAgo
         ).length,
-        totalRevenue: processedUsers.length * 19, // FIXED: Updated to $19 pricing
+        totalRevenue: processedUsers.reduce(
+          (sum, u) => sum + (u.total_revenue || 0),
+          0
+        ),
         averageTradesPerUser:
           processedUsers.length > 0
             ? Math.round(
@@ -159,8 +411,8 @@ const AdminUsers: React.FC = () => {
             return user.is_active && user.subscription_status === "active";
           case "trial":
             return user.subscription_status === "trial";
-          case "premium":
-            return user.subscription_tier === "premium";
+          case "professional":
+            return user.subscription_tier === "professional";
           case "inactive":
             return !user.is_active;
           default:
@@ -225,8 +477,6 @@ const AdminUsers: React.FC = () => {
     const badges = {
       active: "bg-green-900/50 text-green-400 border-green-500/50",
       trial: "bg-blue-900/50 text-blue-400 border-blue-500/50",
-      expired: "bg-red-900/50 text-red-400 border-red-500/50",
-      cancelled: "bg-gray-900/50 text-gray-400 border-gray-500/50",
     };
 
     return badges[status as keyof typeof badges] || badges.trial;
@@ -236,7 +486,6 @@ const AdminUsers: React.FC = () => {
     const badges = {
       starter: "bg-slate-900/50 text-slate-400 border-slate-500/50",
       professional: "bg-purple-900/50 text-purple-400 border-purple-500/50",
-      premium: "bg-yellow-900/50 text-yellow-400 border-yellow-500/50",
     };
 
     return badges[tier as keyof typeof badges] || badges.starter;
@@ -315,7 +564,10 @@ const AdminUsers: React.FC = () => {
             <TrendingUp className="h-4 w-4" />
             <span>Refresh</span>
           </button>
-          <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2">
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+          >
             <UserPlus className="h-4 w-4" />
             <span>Add User</span>
           </button>
@@ -409,7 +661,7 @@ const AdminUsers: React.FC = () => {
                 <option value="all">All Users</option>
                 <option value="active">Active</option>
                 <option value="trial">Trial</option>
-                <option value="premium">Premium</option>
+                <option value="professional">Professional</option>
                 <option value="inactive">Inactive</option>
               </select>
             </div>
@@ -551,6 +803,13 @@ const AdminUsers: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* Add User Modal */}
+      <AddUserModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onUserAdded={fetchUsersData}
+      />
 
       {/* Footer Status */}
       <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">
