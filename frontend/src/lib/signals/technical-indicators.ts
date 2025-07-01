@@ -1,9 +1,9 @@
 // ===================================================================
-// PROFESSIONAL TECHNICAL INDICATORS - Fixed for Kurzora Integration
+// PROFESSIONAL TECHNICAL INDICATORS - FIXED WITH MISSING METHODS
 // ===================================================================
 // File: src/lib/signals/technical-indicators.ts
-// Size: ~33KB Professional-grade technical analysis calculations
-// Fixed: Import/export conflicts, Polygon.io data format, TradingView accuracy
+// Status: ✅ FIXED - Added all missing methods for SignalProcessor compatibility
+// Size: ~40KB Professional-grade technical analysis calculations
 
 import { IndicatorValues, PolygonTimeframe } from "./scoring-engine";
 
@@ -291,6 +291,7 @@ export class VolumeAnalyzer {
     average: number;
     ratio: number;
     trend: "high" | "medium" | "low";
+    volumeRatio: number; // Added for compatibility
   } | null {
     if (!volumeData || volumeData.length === 0) return null;
 
@@ -323,6 +324,7 @@ export class VolumeAnalyzer {
       average: Math.round(averageVolume),
       ratio: Math.round(ratio * 100) / 100,
       trend,
+      volumeRatio: Math.round(ratio * 100) / 100, // Added for SignalProcessor compatibility
     };
   }
 }
@@ -476,6 +478,39 @@ export class SupportResistanceCalculator {
   }
 }
 
+// ✅ NEW: Momentum Calculator for SignalProcessor compatibility
+export class MomentumCalculator {
+  private period: number;
+
+  constructor(period: number = 14) {
+    this.period = period;
+  }
+
+  // ✅ Professional Momentum Calculation
+  public calculate(prices: number[]): {
+    momentum: number;
+    priceChange: number;
+    changePercent: number;
+  } | null {
+    if (!prices || prices.length < this.period + 1) return null;
+
+    const currentPrice = prices[prices.length - 1];
+    const previousPrice = prices[prices.length - 1 - this.period];
+
+    if (previousPrice === 0) return null;
+
+    const priceChange = currentPrice - previousPrice;
+    const changePercent = (priceChange / previousPrice) * 100;
+    const momentum = changePercent; // Momentum as percentage change
+
+    return {
+      momentum: Math.round(momentum * 100) / 100,
+      priceChange: Math.round(priceChange * 100) / 100,
+      changePercent: Math.round(changePercent * 100) / 100,
+    };
+  }
+}
+
 // ✅ MAIN CLASS: Technical Indicators Engine
 export class TechnicalIndicators {
   private rsiCalculator: RSICalculator;
@@ -485,6 +520,7 @@ export class TechnicalIndicators {
   private ema50Calculator: EMACalculator;
   private volumeAnalyzer: VolumeAnalyzer;
   private srCalculator: SupportResistanceCalculator;
+  private momentumCalculator: MomentumCalculator;
 
   constructor() {
     this.rsiCalculator = new RSICalculator(14);
@@ -494,6 +530,7 @@ export class TechnicalIndicators {
     this.ema50Calculator = new EMACalculator(50);
     this.volumeAnalyzer = new VolumeAnalyzer(20);
     this.srCalculator = new SupportResistanceCalculator(50, 0.02);
+    this.momentumCalculator = new MomentumCalculator(14);
   }
 
   // ✅ MAIN METHOD: Calculate all indicators for a timeframe
@@ -612,6 +649,80 @@ export class TechnicalIndicators {
     }
   }
 
+  // 🚀 NEW: Individual method for RSI (SignalProcessor compatibility)
+  public async calculateRSI(
+    data: PolygonMarketData[]
+  ): Promise<{ value: number } | null> {
+    if (!data || data.length < 15) return null;
+
+    const closes = data.map((d) => d.close);
+    const rsiValue = this.rsiCalculator.calculate(closes);
+
+    if (rsiValue === null) return null;
+
+    return { value: rsiValue };
+  }
+
+  // 🚀 NEW: Individual method for MACD (SignalProcessor compatibility)
+  public async calculateMACD(data: PolygonMarketData[]): Promise<{
+    macd: number;
+    signal: number;
+    histogram: number;
+  } | null> {
+    if (!data || data.length < 26) return null;
+
+    const closes = data.map((d) => d.close);
+    const macdResult = this.macdCalculator.calculate(closes);
+
+    return macdResult;
+  }
+
+  // 🚀 NEW: Individual method for Bollinger Bands (SignalProcessor compatibility)
+  public async calculateBollingerBands(data: PolygonMarketData[]): Promise<{
+    upper: number;
+    middle: number;
+    lower: number;
+    percentB: number;
+    bandwidth: number;
+  } | null> {
+    if (!data || data.length < 20) return null;
+
+    const closes = data.map((d) => d.close);
+    const bbResult = this.bbCalculator.calculate(closes);
+
+    return bbResult;
+  }
+
+  // 🚀 NEW: Individual method for Volume Analysis (SignalProcessor compatibility)
+  public async calculateVolumeAnalysis(data: PolygonMarketData[]): Promise<{
+    current: number;
+    average: number;
+    ratio: number;
+    trend: "high" | "medium" | "low";
+    volumeRatio: number;
+  } | null> {
+    if (!data || data.length === 0) return null;
+
+    const volumes = data.map((d) => d.volume);
+    const volumeResult = this.volumeAnalyzer.analyze(volumes);
+
+    return volumeResult;
+  }
+
+  // 🚀 NEW: Individual method for Momentum (SignalProcessor compatibility)
+  public async calculateMomentum(data: PolygonMarketData[]): Promise<{
+    momentum: number;
+    priceChange: number;
+    changePercent: number;
+  } | null> {
+    if (!data || data.length < 15) return null;
+
+    const closes = data.map((d) => d.close);
+    const momentumResult = this.momentumCalculator.calculate(closes);
+
+    return momentumResult;
+  }
+
   // ✅ HELPER: Validate Polygon.io data format
   public static validatePolygonData(data: any[]): boolean {
     if (!Array.isArray(data) || data.length === 0) return false;
@@ -641,6 +752,7 @@ export class TechnicalIndicators {
     this.ema50Calculator = new EMACalculator(50);
     this.volumeAnalyzer = new VolumeAnalyzer(20);
     this.srCalculator = new SupportResistanceCalculator(50, 0.02);
+    this.momentumCalculator = new MomentumCalculator(14);
   }
 }
 
