@@ -40,6 +40,8 @@ import GDPRCompliance from "./pages/legal/GDPRCompliance";
 import CookieNotice from "./pages/legal/CookieNotice";
 import PolygonTest from "./pages/PolygonTest";
 import SignalsTest from "./pages/SignalsTest";
+// ✅ NEW: Enhanced Signals Test with Database Auto-Save
+import EnhancedSignalsTest from "./pages/EnhancedSignalsTest";
 
 // Create QueryClient with default options
 const queryClient = new QueryClient({
@@ -87,6 +89,12 @@ function App() {
 
                   {/* 🎯 SIGNAL GENERATION TEST PAGE */}
                   <Route path="/signals-test" element={<SignalsTest />} />
+
+                  {/* 🚀 ENHANCED SIGNALS TEST - DATABASE AUTO-SAVE PIPELINE */}
+                  <Route
+                    path="/enhanced-signals-test"
+                    element={<EnhancedSignalsTest />}
+                  />
 
                   {/* 🧪 SUBSCRIPTION TIER TEST PAGE */}
                   <Route
