@@ -340,7 +340,7 @@ export class StockScanner {
     }
   }
 
-  // ✅ PROFESSIONAL: Validate stock with current snapshot
+  // ✅ PROFESSIONAL: Validate stock with previous day snapshot (TESTING MODE)
   private async validateStock(ticker: string): Promise<boolean> {
     try {
       await this.rateLimiter.waitIfNeeded();
@@ -355,17 +355,18 @@ export class StockScanner {
 
       const data: PolygonSnapshotResponse = await response.json();
 
-      if (!data.ticker || !data.ticker.day) {
-        console.warn(`❌ ${ticker}: No current day data`);
+      // 🧪 TESTING MODE: Use previous day data instead of current day
+      if (!data.ticker || !data.ticker.prevDay) {
+        console.warn(`❌ ${ticker}: No previous day data`);
         return false;
       }
 
-      const currentPrice = data.ticker.day.c;
-      const volume = data.ticker.day.v;
+      const currentPrice = data.ticker.prevDay.c;
+      const volume = data.ticker.prevDay.v;
 
       // Validation criteria
       if (currentPrice < 1) {
-        console.warn(`❌ ${ticker}: Price too low ($${currentPrice})`);
+        console.warn(`❌ ${ticker}: Price too low (${currentPrice})`);
         return false;
       }
 
@@ -375,7 +376,7 @@ export class StockScanner {
       }
 
       console.log(
-        `✅ ${ticker}: Validation passed - Price: $${currentPrice}, Volume: ${volume}`
+        `✅ ${ticker}: TESTING MODE - Previous day validation passed - Price: ${currentPrice}, Volume: ${volume}`
       );
       return true;
     } catch (error) {
@@ -452,7 +453,7 @@ export class StockScanner {
     }
   }
 
-  // ✅ PROFESSIONAL: Fetch data for specific timeframe
+  // ✅ PROFESSIONAL: Fetch data for specific timeframe (TESTING MODE - yesterday's data)
   private async fetchTimeframeData(
     ticker: string,
     config: PolygonTimeframe
@@ -460,15 +461,16 @@ export class StockScanner {
     try {
       await this.rateLimiter.waitIfNeeded();
 
-      // Calculate date range based on timeframe
+      // 🧪 TESTING MODE: Use yesterday as end date instead of today
       const endDate = new Date();
+      endDate.setDate(endDate.getDate() - 1); // Go back 1 day
       const startDate = this.calculateStartDate(config, endDate);
 
       const url = this.buildAggregatesUrl(ticker, config, startDate, endDate);
       console.log(
-        `🔍 ${ticker} ${config.name}: Fetching from ${
+        `🔍 ${ticker} ${config.name}: TESTING MODE - Fetching from ${
           startDate.toISOString().split("T")[0]
-        } to ${endDate.toISOString().split("T")[0]}`
+        } to ${endDate.toISOString().split("T")[0]} (yesterday's data)`
       );
 
       const response = await fetch(url);
@@ -503,7 +505,7 @@ export class StockScanner {
         .sort((a, b) => a.timestamp - b.timestamp); // Sort chronologically
 
       console.log(
-        `✅ ${ticker} ${config.name}: ${marketData.length} data points fetched`
+        `✅ ${ticker} ${config.name}: ${marketData.length} data points fetched (TESTING MODE)`
       );
       return marketData;
     } catch (error) {
@@ -512,25 +514,26 @@ export class StockScanner {
     }
   }
 
-  // ✅ HELPER: Calculate start date based on timeframe
+  // ✅ HELPER: Calculate start date based on timeframe (TESTING MODE - shifted back 1 day)
   private calculateStartDate(config: PolygonTimeframe, endDate: Date): Date {
     const startDate = new Date(endDate);
 
     switch (config.name) {
       case "1H":
-        startDate.setDate(startDate.getDate() - 30); // 30 days of hourly data
+        startDate.setDate(startDate.getDate() - 31); // 31 days of hourly data (1 extra day)
         break;
       case "4H":
-        startDate.setDate(startDate.getDate() - 60); // 60 days of 4-hour data
+        startDate.setDate(startDate.getDate() - 61); // 61 days of 4-hour data (1 extra day)
         break;
       case "1D":
-        startDate.setDate(startDate.getDate() - 200); // 200 days of daily data
+        startDate.setDate(startDate.getDate() - 201); // 201 days of daily data (1 extra day)
         break;
       case "1W":
         startDate.setFullYear(startDate.getFullYear() - 2); // 2 years of weekly data
+        startDate.setDate(startDate.getDate() - 7); // 1 extra week
         break;
       default:
-        startDate.setDate(startDate.getDate() - 100);
+        startDate.setDate(startDate.getDate() - 101); // 1 extra day
     }
 
     return startDate;
@@ -595,6 +598,9 @@ export class StockScanner {
 
   // 🚀 ENHANCED: Complete S&P 500 Stock Universe (500 stocks) - INVESTOR DEMO READY
   public static getDefaultStockUniverse(): StockInfo[] {
+    // 🚨 DEBUG CODE - Critical for identifying which file is running
+    console.log("🚨 USING FULL S&P 500 FILE - 575+ STOCKS VERSION");
+
     return [
       // ===================================================================
       // TECHNOLOGY SECTOR (Information Technology) - 120+ companies

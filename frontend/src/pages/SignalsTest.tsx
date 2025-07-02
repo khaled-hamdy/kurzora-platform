@@ -1,7 +1,7 @@
 // ===================================================================
 // SIGNALS TEST WITH ENHANCED FILTERING INTEGRATION
 // ===================================================================
-// File: src/pages/SignalsTest.tsx (Updated with Enhanced Filters)
+// File: src/pages/SignalsTest.tsx (Updated with Enhanced Filters + S&P 500 Debug)
 // Purpose: Integration example showing how to add enhanced filtering
 
 import React, { useState, useEffect, useMemo } from "react";
@@ -287,6 +287,20 @@ const SignalsTest: React.FC = () => {
       signalProcessor.clearResults();
 
       const stockUniverse = StockScanner.getDefaultStockUniverse();
+
+      // 🔍 S&P 500 DEBUG CODE - Critical for identifying stock universe size issue
+      console.log(
+        `🔍 DEBUG: Total stocks in universe: ${stockUniverse.length}`
+      );
+      console.log(
+        `🔍 DEBUG: First 5 stocks:`,
+        stockUniverse.slice(0, 5).map((s) => s.ticker)
+      );
+      console.log(
+        `🔍 DEBUG: Last 5 stocks:`,
+        stockUniverse.slice(-5).map((s) => s.ticker)
+      );
+
       console.log(`📊 Scanning ${stockUniverse.length} stocks for signals`);
 
       const { multiTimeframeData, errors } = await stockScanner.scanStocks(
@@ -524,7 +538,7 @@ const SignalsTest: React.FC = () => {
                 {showEnhancedFilters ? (
                   <EyeOff className="w-4 h-4" />
                 ) : (
-                  <Eye className="w-4 h-4" />
+                  <Eye className="w-4 h-5" />
                 )}
                 <span>Enhanced Filters</span>
               </button>
