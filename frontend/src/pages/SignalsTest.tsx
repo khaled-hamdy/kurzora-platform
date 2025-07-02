@@ -1,9 +1,8 @@
 // ===================================================================
-// ENHANCED SIGNALS TEST WITH INTEGRATED DEBUG SYSTEM
+// SIGNALS TEST WITH ENHANCED FILTERING INTEGRATION
 // ===================================================================
-// File: src/pages/SignalsTest.tsx
-// Purpose: Professional signal processing with built-in API debugging
-// Features: Complete analysis + real-time debug panel + issue resolution
+// File: src/pages/SignalsTest.tsx (Updated with Enhanced Filters)
+// Purpose: Integration example showing how to add enhanced filtering
 
 import React, { useState, useEffect, useMemo } from "react";
 import {
@@ -21,6 +20,9 @@ import {
   XCircle,
   Clock,
   Activity,
+  Settings,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { StockScanner } from "../lib/signals/stock-scanner";
 import {
@@ -30,7 +32,17 @@ import {
 } from "../lib/signals/signal-processor";
 
 // ===================================================================
-// INTERFACES & TYPES
+// NEW IMPORTS - Enhanced Filtering System
+// ===================================================================
+import {
+  EnhancedSignalFilter,
+  EnhancedFilterConfig,
+  FilteringStats,
+} from "../lib/signals/enhanced-filters";
+import EnhancedFiltersPanel from "../components/signals/EnhancedFiltersPanel";
+
+// ===================================================================
+// EXISTING INTERFACES (keeping your current structure)
 // ===================================================================
 
 interface StockResult {
@@ -58,47 +70,15 @@ interface ProcessingStats {
   processingTime: number;
 }
 
-interface DebugResult {
-  testName: string;
-  status: "passed" | "failed" | "warning";
-  message: string;
-  details?: any;
-  timestamp: Date;
-}
-
-interface DebugState {
-  isRunning: boolean;
-  results: DebugResult[];
-  summary: {
-    total: number;
-    passed: number;
-    failed: number;
-    warnings: number;
-  };
-}
-
 // ===================================================================
-// DEBUG CONFIGURATION
-// ===================================================================
-
-const DEBUG_CONFIG = {
-  apiKey: import.meta.env.VITE_POLYGON_API_KEY,
-  baseUrl: "https://api.polygon.io",
-  testTicker: "AAPL",
-  enableDetailedLogging: true,
-  rateLimitDelay: 200, // ms between requests
-};
-
-// ===================================================================
-// MAIN COMPONENT
+// ENHANCED SIGNALS TEST COMPONENT
 // ===================================================================
 
 const SignalsTest: React.FC = () => {
   // ===================================================================
-  // STATE MANAGEMENT
+  // EXISTING STATE (keeping your current structure)
   // ===================================================================
 
-  // Processing States
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStats, setProcessingStats] =
     useState<ProcessingStats | null>(null);
@@ -109,15 +89,25 @@ const SignalsTest: React.FC = () => {
   const [systemHealthy, setSystemHealthy] = useState<boolean | null>(null);
   const [healthMessage, setHealthMessage] = useState<string>("");
 
-  // Debug States
-  const [debugState, setDebugState] = useState<DebugState>({
-    isRunning: false,
-    results: [],
-    summary: { total: 0, passed: 0, failed: 0, warnings: 0 },
-  });
-  const [showDebugPanel, setShowDebugPanel] = useState(false);
+  // ===================================================================
+  // NEW STATE - Enhanced Filtering
+  // ===================================================================
 
-  // Filtering States
+  const [enhancedFilter] = useState(new EnhancedSignalFilter());
+  const [filterConfig, setFilterConfig] = useState<
+    Partial<EnhancedFilterConfig>
+  >({});
+  const [showEnhancedFilters, setShowEnhancedFilters] = useState(false);
+  const [filteredSignals, setFilteredSignals] = useState<ProcessedSignal[]>([]);
+  const [filterStats, setFilterStats] = useState<FilteringStats | null>(null);
+  const [filterRecommendations, setFilterRecommendations] = useState<string[]>(
+    []
+  );
+
+  // ===================================================================
+  // EXISTING BASIC FILTERS (keeping for backward compatibility)
+  // ===================================================================
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<
     "all" | "accepted" | "rejected"
@@ -129,409 +119,135 @@ const SignalsTest: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
 
   // ===================================================================
-  // DEBUG FUNCTIONS
+  // ENHANCED FILTERING LOGIC
   // ===================================================================
 
-  const addDebugResult = (result: DebugResult) => {
-    setDebugState((prev) => {
-      const newResults = [...prev.results, result];
-      const summary = {
-        total: newResults.length,
-        passed: newResults.filter((r) => r.status === "passed").length,
-        failed: newResults.filter((r) => r.status === "failed").length,
-        warnings: newResults.filter((r) => r.status === "warning").length,
-      };
-      return { ...prev, results: newResults, summary };
-    });
-  };
-
-  const clearDebugResults = () => {
-    setDebugState({
-      isRunning: false,
-      results: [],
-      summary: { total: 0, passed: 0, failed: 0, warnings: 0 },
-    });
-  };
-
-  // Debug Test 1: Basic API Connectivity
-  const testBasicConnection = async (): Promise<boolean> => {
-    try {
-      const url = `${DEBUG_CONFIG.baseUrl}/v2/snapshot/locale/us/markets/stocks/tickers/${DEBUG_CONFIG.testTicker}?apikey=${DEBUG_CONFIG.apiKey}`;
-
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        let errorMsg = `API request failed (${response.status})`;
-        if (response.status === 401) errorMsg += " - Invalid API key";
-        else if (response.status === 403)
-          errorMsg += " - Access denied - check plan permissions";
-        else if (response.status === 429) errorMsg += " - Rate limited";
-
-        addDebugResult({
-          testName: "Basic API Connection",
-          status: "failed",
-          message: errorMsg,
-          details: { status: response.status, statusText: response.statusText },
-          timestamp: new Date(),
-        });
-        return false;
-      }
-
-      const data = await response.json();
-
-      if (data.status === "OK" && data.ticker) {
-        addDebugResult({
-          testName: "Basic API Connection",
-          status: "passed",
-          message: `Successfully connected to API. Current ${
-            DEBUG_CONFIG.testTicker
-          } price: $${data.ticker.day?.c || "N/A"}`,
-          details: { price: data.ticker.day?.c, volume: data.ticker.day?.v },
-          timestamp: new Date(),
-        });
-        return true;
-      } else {
-        addDebugResult({
-          testName: "Basic API Connection",
-          status: "failed",
-          message: "Unexpected API response format",
-          details: data,
-          timestamp: new Date(),
-        });
-        return false;
-      }
-    } catch (error) {
-      addDebugResult({
-        testName: "Basic API Connection",
-        status: "failed",
-        message: `Connection error: ${error.message}`,
-        details: { error: error.message },
-        timestamp: new Date(),
-      });
-      return false;
-    }
-  };
-
-  // Debug Test 2: Date Range Validation
-  const testDateRanges = (): boolean => {
-    try {
-      const endDate = new Date();
-      const testRanges = [
-        { name: "1H", days: 30 },
-        { name: "4H", days: 60 },
-        { name: "1D", days: 200 },
-        { name: "1W", years: 2 },
-      ];
-
-      const validRanges = [];
-      const issues = [];
-
-      for (const range of testRanges) {
-        const startDate = new Date(endDate);
-
-        if (range.days) {
-          startDate.setDate(startDate.getDate() - range.days);
-        } else if ((range as any).years) {
-          startDate.setFullYear(startDate.getFullYear() - (range as any).years);
-        }
-
-        const startStr = startDate.toISOString().split("T")[0];
-        const endStr = endDate.toISOString().split("T")[0];
-
-        if (startDate >= endDate) {
-          issues.push(`${range.name}: Invalid date range`);
-        } else if (startDate < new Date("2020-01-01")) {
-          issues.push(`${range.name}: Very old start date (${startStr})`);
-        } else {
-          validRanges.push(`${range.name}: ${startStr} to ${endStr}`);
-        }
-      }
-
-      if (issues.length > 0) {
-        addDebugResult({
-          testName: "Date Range Validation",
-          status: "failed",
-          message: `Date range issues found: ${issues.join(", ")}`,
-          details: { issues, validRanges },
-          timestamp: new Date(),
-        });
-        return false;
-      } else {
-        addDebugResult({
-          testName: "Date Range Validation",
-          status: "passed",
-          message: `All date ranges valid (${validRanges.length} timeframes)`,
-          details: { validRanges },
-          timestamp: new Date(),
-        });
-        return true;
-      }
-    } catch (error) {
-      addDebugResult({
-        testName: "Date Range Validation",
-        status: "failed",
-        message: `Date calculation error: ${error.message}`,
-        details: { error: error.message },
-        timestamp: new Date(),
-      });
-      return false;
-    }
-  };
-
-  // Debug Test 3: Single Timeframe Request
-  const testSingleTimeframe = async (): Promise<boolean> => {
-    try {
-      const endDate = new Date();
-      const startDate = new Date(endDate);
-      startDate.setDate(startDate.getDate() - 30); // 30 days
-
-      const start = startDate.toISOString().split("T")[0];
-      const end = endDate.toISOString().split("T")[0];
-
-      const url = `${DEBUG_CONFIG.baseUrl}/v2/aggs/ticker/${DEBUG_CONFIG.testTicker}/range/1/day/${start}/${end}?adjusted=true&sort=desc&limit=5000&apikey=${DEBUG_CONFIG.apiKey}`;
-
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        addDebugResult({
-          testName: "Single Timeframe (Daily)",
-          status: "failed",
-          message: `Daily data request failed (${response.status})`,
-          details: { url, status: response.status },
-          timestamp: new Date(),
-        });
-        return false;
-      }
-
-      const data = await response.json();
-
-      if (!data.results || data.results.length === 0) {
-        // Check if it's a weekend issue
-        const dayOfWeek = new Date().getDay();
-        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-
-        addDebugResult({
-          testName: "Single Timeframe (Daily)",
-          status: isWeekend ? "warning" : "failed",
-          message: isWeekend
-            ? `No data returned (weekend detected - markets closed)`
-            : `No data returned for ${DEBUG_CONFIG.testTicker} (${start} to ${end})`,
-          details: {
-            dateRange: `${start} to ${end}`,
-            isWeekend,
-            dataStatus: data.status,
-          },
-          timestamp: new Date(),
-        });
-        return false;
-      }
-
-      const firstResult = data.results[0];
-      addDebugResult({
-        testName: "Single Timeframe (Daily)",
-        status: "passed",
-        message: `Successfully retrieved ${data.results.length} daily data points`,
-        details: {
-          dataPoints: data.results.length,
-          dateRange: `${start} to ${end}`,
-          sampleData: {
-            date: new Date(firstResult.t).toISOString().split("T")[0],
-            close: firstResult.c,
-            volume: firstResult.v,
-          },
-        },
-        timestamp: new Date(),
-      });
-      return true;
-    } catch (error) {
-      addDebugResult({
-        testName: "Single Timeframe (Daily)",
-        status: "failed",
-        message: `Request error: ${error.message}`,
-        details: { error: error.message },
-        timestamp: new Date(),
-      });
-      return false;
-    }
-  };
-
-  // Debug Test 4: Multiple Timeframes
-  const testMultipleTimeframes = async (): Promise<boolean> => {
-    const timeframes = [
-      { name: "1D", multiplier: 1, timespan: "day", days: 30 },
-      { name: "1H", multiplier: 1, timespan: "hour", days: 7 },
-      { name: "4H", multiplier: 4, timespan: "hour", days: 14 },
-      { name: "1W", multiplier: 1, timespan: "week", days: 365 },
-    ];
-
-    const results = [];
-
-    for (const tf of timeframes) {
-      try {
-        const endDate = new Date();
-        const startDate = new Date(endDate);
-        startDate.setDate(startDate.getDate() - tf.days);
-
-        const start = startDate.toISOString().split("T")[0];
-        const end = endDate.toISOString().split("T")[0];
-
-        const url = `${DEBUG_CONFIG.baseUrl}/v2/aggs/ticker/${DEBUG_CONFIG.testTicker}/range/${tf.multiplier}/${tf.timespan}/${start}/${end}?adjusted=true&sort=desc&limit=5000&apikey=${DEBUG_CONFIG.apiKey}`;
-
-        const response = await fetch(url);
-
-        if (!response.ok) {
-          results.push({
-            timeframe: tf.name,
-            success: false,
-            error: `HTTP ${response.status}`,
-          });
-          continue;
-        }
-
-        const data = await response.json();
-        const count = data.results?.length || 0;
-
-        if (count > 0) {
-          results.push({ timeframe: tf.name, success: true, count });
-        } else {
-          results.push({
-            timeframe: tf.name,
-            success: false,
-            error: "No data returned",
-          });
-        }
-
-        // Rate limiting delay
-        await new Promise((resolve) =>
-          setTimeout(resolve, DEBUG_CONFIG.rateLimitDelay)
-        );
-      } catch (error) {
-        results.push({
-          timeframe: tf.name,
-          success: false,
-          error: error.message,
-        });
-      }
+  const applyEnhancedFiltering = (signals: ProcessedSignal[]) => {
+    if (Object.keys(filterConfig).length === 0) {
+      // No enhanced filters applied, use original signals
+      setFilteredSignals(signals);
+      setFilterStats(null);
+      setFilterRecommendations([]);
+      return;
     }
 
-    const successful = results.filter((r) => r.success).length;
-    const status =
-      successful > 0
-        ? successful === timeframes.length
-          ? "passed"
-          : "warning"
-        : "failed";
+    console.log(`🔍 Applying enhanced filters to ${signals.length} signals`);
 
-    addDebugResult({
-      testName: "Multiple Timeframes",
-      status,
-      message: `${successful}/${timeframes.length} timeframes working`,
-      details: { results },
-      timestamp: new Date(),
-    });
+    const result = enhancedFilter.filterSignals(signals, filterConfig);
 
-    return successful > 0;
+    setFilteredSignals(result.filteredSignals);
+    setFilterStats(result.filterStats);
+    setFilterRecommendations(result.recommendations);
+
+    console.log(
+      `✅ Enhanced filtering complete: ${result.filteredSignals.length} signals passed`
+    );
   };
 
-  // Debug Test 5: Rate Limiting Check
-  const testRateLimiting = async (): Promise<boolean> => {
-    try {
-      const requests = 5;
-      const promises = [];
-
-      for (let i = 0; i < requests; i++) {
-        const url = `${DEBUG_CONFIG.baseUrl}/v2/snapshot/locale/us/markets/stocks/tickers/${DEBUG_CONFIG.testTicker}?apikey=${DEBUG_CONFIG.apiKey}`;
-        promises.push(fetch(url));
-      }
-
-      const responses = await Promise.all(promises);
-
-      let successCount = 0;
-      let rateLimitedCount = 0;
-      let errorCount = 0;
-
-      responses.forEach((response, i) => {
-        if (response.ok) {
-          successCount++;
-        } else if (response.status === 429) {
-          rateLimitedCount++;
-        } else {
-          errorCount++;
-        }
-      });
-
-      const status = rateLimitedCount > 0 ? "warning" : "passed";
-
-      addDebugResult({
-        testName: "Rate Limiting Check",
-        status,
-        message: `${successCount} successful, ${rateLimitedCount} rate limited, ${errorCount} errors`,
-        details: {
-          successCount,
-          rateLimitedCount,
-          errorCount,
-          totalRequests: requests,
-        },
-        timestamp: new Date(),
-      });
-
-      return true;
-    } catch (error) {
-      addDebugResult({
-        testName: "Rate Limiting Check",
-        status: "failed",
-        message: `Rate limiting test failed: ${error.message}`,
-        details: { error: error.message },
-        timestamp: new Date(),
-      });
-      return false;
-    }
-  };
-
-  // Main Debug Runner
-  const runComprehensiveDebug = async () => {
-    setDebugState((prev) => ({ ...prev, isRunning: true }));
-    clearDebugResults();
-    setShowDebugPanel(true);
-
-    const tests = [
-      { name: "Basic Connection", fn: testBasicConnection },
-      { name: "Date Ranges", fn: testDateRanges },
-      { name: "Single Timeframe", fn: testSingleTimeframe },
-      { name: "Multiple Timeframes", fn: testMultipleTimeframes },
-      { name: "Rate Limiting", fn: testRateLimiting },
-    ];
-
-    for (const test of tests) {
-      try {
-        await test.fn();
-      } catch (error) {
-        addDebugResult({
-          testName: test.name,
-          status: "failed",
-          message: `Test exception: ${error.message}`,
-          details: { error: error.message },
-          timestamp: new Date(),
-        });
-      }
-
-      // Small delay between tests
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    }
-
-    setDebugState((prev) => ({ ...prev, isRunning: false }));
-  };
-
-  // ===================================================================
-  // LIFECYCLE HOOKS
-  // ===================================================================
-
+  // Apply enhanced filtering whenever processedSignals or filterConfig changes
   useEffect(() => {
-    testSystemHealth();
-  }, []);
+    if (processedSignals.length > 0) {
+      applyEnhancedFiltering(processedSignals);
+    }
+  }, [processedSignals, filterConfig]);
 
   // ===================================================================
-  // SYSTEM HEALTH CHECK
+  // COMBINED FILTERING (Enhanced + Basic)
+  // ===================================================================
+
+  const finalFilteredResults = useMemo(() => {
+    // Start with enhanced filtered signals, but convert to StockResult format for compatibility
+    let results: StockResult[] = [];
+
+    if (filteredSignals.length > 0) {
+      // Convert ProcessedSignal[] to StockResult[] for existing UI
+      results = filteredSignals.map((signal) => ({
+        ticker: signal.ticker,
+        score: signal.finalScore,
+        accepted: true,
+        signalStrength: signal.signalStrength,
+        signalType: signal.signalType,
+        companyName: signal.ticker, // Would need additional mapping
+        sector: "Unknown", // Would need additional mapping
+      }));
+    } else {
+      // Fall back to original allResults if no enhanced filtering
+      results = [...allResults];
+    }
+
+    // Apply basic filters for backward compatibility
+    if (searchTerm) {
+      results = results.filter(
+        (r) =>
+          r.ticker.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          r.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          r.sector?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (selectedCategory !== "all") {
+      results = results.filter((r) =>
+        selectedCategory === "accepted" ? r.accepted : !r.accepted
+      );
+    }
+
+    if (scoreRangeFilter !== "all") {
+      switch (scoreRangeFilter) {
+        case "70+":
+          results = results.filter((r) => r.score >= 70);
+          break;
+        case "60-69":
+          results = results.filter((r) => r.score >= 60 && r.score < 70);
+          break;
+        case "50-59":
+          results = results.filter((r) => r.score >= 50 && r.score < 60);
+          break;
+        case "<50":
+          results = results.filter((r) => r.score < 50);
+          break;
+      }
+    }
+
+    // Sort results
+    results.sort((a, b) => {
+      let aVal, bVal;
+
+      switch (sortBy) {
+        case "ticker":
+          aVal = a.ticker;
+          bVal = b.ticker;
+          break;
+        case "sector":
+          aVal = a.sector || "";
+          bVal = b.sector || "";
+          break;
+        case "score":
+        default:
+          aVal = a.score;
+          bVal = b.score;
+          break;
+      }
+
+      if (sortOrder === "desc") {
+        return bVal > aVal ? 1 : -1;
+      } else {
+        return aVal > bVal ? 1 : -1;
+      }
+    });
+
+    return results;
+  }, [
+    filteredSignals,
+    allResults,
+    searchTerm,
+    selectedCategory,
+    scoreRangeFilter,
+    sortBy,
+    sortOrder,
+  ]);
+
+  // ===================================================================
+  // EXISTING METHODS (keeping your current implementation)
   // ===================================================================
 
   const testSystemHealth = async () => {
@@ -552,32 +268,27 @@ const SignalsTest: React.FC = () => {
     }
   };
 
-  // ===================================================================
-  // SIGNAL PROCESSING
-  // ===================================================================
-
   const startRealMarketScan = async () => {
     if (isProcessing) return;
 
     setIsProcessing(true);
     setAllResults([]);
     setProcessedSignals([]);
+    setFilteredSignals([]);
     setProcessingStats(null);
+    setFilterStats(null);
 
     try {
       console.log("🚀 Starting comprehensive market scan...");
       const startTime = Date.now();
 
-      // Initialize systems
       const stockScanner = new StockScanner();
       const signalProcessor = new SignalProcessor();
       signalProcessor.clearResults();
 
-      // Get stock universe (105 stocks)
       const stockUniverse = StockScanner.getDefaultStockUniverse();
       console.log(`📊 Scanning ${stockUniverse.length} stocks for signals`);
 
-      // Scan all stocks
       const { multiTimeframeData, errors } = await stockScanner.scanStocks(
         stockUniverse,
         (progress) => {
@@ -593,7 +304,6 @@ const SignalsTest: React.FC = () => {
         } valid datasets`
       );
 
-      // Process each stock for signals
       const results: StockResult[] = [];
       const processedSignalsList: ProcessedSignal[] = [];
 
@@ -619,7 +329,6 @@ const SignalsTest: React.FC = () => {
               });
               processedSignalsList.push(signal);
             } else {
-              // Get the result from processor's internal tracking
               const processorResults = signalProcessor.getAllResults();
               const result = processorResults.find(
                 (r) => r.ticker === stock.ticker
@@ -657,7 +366,6 @@ const SignalsTest: React.FC = () => {
         }
       }
 
-      // Generate statistics
       const totalTime = Math.floor((Date.now() - startTime) / 1000);
       const stats = generateStats(results, totalTime);
 
@@ -676,10 +384,6 @@ const SignalsTest: React.FC = () => {
       setIsProcessing(false);
     }
   };
-
-  // ===================================================================
-  // UTILITY FUNCTIONS
-  // ===================================================================
 
   const generateStats = (
     results: StockResult[],
@@ -711,86 +415,7 @@ const SignalsTest: React.FC = () => {
   };
 
   // ===================================================================
-  // FILTERED RESULTS
-  // ===================================================================
-
-  const filteredResults = useMemo(() => {
-    let filtered = [...allResults];
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (r) =>
-          r.ticker.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          r.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          r.sector?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Category filter
-    if (selectedCategory !== "all") {
-      filtered = filtered.filter((r) =>
-        selectedCategory === "accepted" ? r.accepted : !r.accepted
-      );
-    }
-
-    // Score range filter
-    if (scoreRangeFilter !== "all") {
-      switch (scoreRangeFilter) {
-        case "70+":
-          filtered = filtered.filter((r) => r.score >= 70);
-          break;
-        case "60-69":
-          filtered = filtered.filter((r) => r.score >= 60 && r.score < 70);
-          break;
-        case "50-59":
-          filtered = filtered.filter((r) => r.score >= 50 && r.score < 60);
-          break;
-        case "<50":
-          filtered = filtered.filter((r) => r.score < 50);
-          break;
-      }
-    }
-
-    // Sort
-    filtered.sort((a, b) => {
-      let aVal, bVal;
-
-      switch (sortBy) {
-        case "ticker":
-          aVal = a.ticker;
-          bVal = b.ticker;
-          break;
-        case "sector":
-          aVal = a.sector || "";
-          bVal = b.sector || "";
-          break;
-        case "score":
-        default:
-          aVal = a.score;
-          bVal = b.score;
-          break;
-      }
-
-      if (sortOrder === "desc") {
-        return bVal > aVal ? 1 : -1;
-      } else {
-        return aVal > bVal ? 1 : -1;
-      }
-    });
-
-    return filtered;
-  }, [
-    allResults,
-    searchTerm,
-    selectedCategory,
-    scoreRangeFilter,
-    sortBy,
-    sortOrder,
-  ]);
-
-  // ===================================================================
-  // HELPER FUNCTIONS
+  // EXISTING HELPER FUNCTIONS (keeping your current implementation)
   // ===================================================================
 
   const getScoreColor = (score: number): string => {
@@ -819,16 +444,13 @@ const SignalsTest: React.FC = () => {
     return signal.replace(/_/g, " ");
   };
 
-  const getDebugStatusIcon = (status: "passed" | "failed" | "warning") => {
-    switch (status) {
-      case "passed":
-        return <CheckCircle className="w-4 h-4 text-emerald-400" />;
-      case "failed":
-        return <XCircle className="w-4 h-4 text-red-400" />;
-      case "warning":
-        return <AlertTriangle className="w-4 h-4 text-amber-400" />;
-    }
-  };
+  // ===================================================================
+  // LIFECYCLE
+  // ===================================================================
+
+  useEffect(() => {
+    testSystemHealth();
+  }, []);
 
   // ===================================================================
   // RENDER COMPONENT
@@ -852,11 +474,11 @@ const SignalsTest: React.FC = () => {
 
             <div className="text-center">
               <h1 className="text-2xl font-bold text-white mb-1">
-                🔬 PROFESSIONAL Stock Signal Generator
+                🔬 ENHANCED Stock Signal Generator
               </h1>
               <p className="text-slate-400 text-sm">
-                Institutional-grade multi-timeframe analysis • TradingView
-                accuracy • Integrated debugging
+                Professional filtering • Custom presets • Advanced criteria •
+                AI-powered insights
               </p>
             </div>
 
@@ -881,36 +503,30 @@ const SignalsTest: React.FC = () => {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-xl font-bold text-white mb-2">
-                🎯 Professional Signal Processing Control
+                🎯 Enhanced Signal Processing Control
               </h2>
               <p className="text-slate-400">
-                Multi-timeframe institutional analysis • TradingView-accurate
-                calculations • All 105 stocks visible
+                Advanced filtering • Professional presets • Custom criteria •
+                Real-time insights
               </p>
             </div>
 
             <div className="flex items-center space-x-4">
-              {/* Debug Button */}
+              {/* Enhanced Filters Toggle */}
               <button
-                onClick={runComprehensiveDebug}
-                disabled={debugState.isRunning}
+                onClick={() => setShowEnhancedFilters(!showEnhancedFilters)}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold transition-all duration-200 ${
-                  debugState.isRunning
-                    ? "bg-amber-600/50 text-amber-200 cursor-wait"
-                    : "bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white shadow-lg hover:shadow-xl"
+                  showEnhancedFilters
+                    ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white"
+                    : "bg-slate-700 hover:bg-slate-600 text-slate-300"
                 }`}
               >
-                {debugState.isRunning ? (
-                  <>
-                    <Activity className="w-4 h-4 animate-pulse" />
-                    <span>Debugging...</span>
-                  </>
+                {showEnhancedFilters ? (
+                  <EyeOff className="w-4 h-4" />
                 ) : (
-                  <>
-                    <Bug className="w-4 h-4" />
-                    <span>🔍 Debug API</span>
-                  </>
+                  <Eye className="w-4 h-4" />
                 )}
+                <span>Enhanced Filters</span>
               </button>
 
               {/* Main Processing Button */}
@@ -933,7 +549,7 @@ const SignalsTest: React.FC = () => {
                 ) : (
                   <>
                     <Play className="w-5 h-5" />
-                    <span>🚀 Start Signal Processing</span>
+                    <span>🚀 Start Enhanced Analysis</span>
                   </>
                 )}
               </button>
@@ -950,104 +566,42 @@ const SignalsTest: React.FC = () => {
           )}
         </div>
 
-        {/* Debug Panel */}
-        {showDebugPanel && (
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700 p-6 mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white flex items-center">
-                <Bug className="w-5 h-5 mr-2" />
-                API Debug Results
-              </h3>
+        {/* Enhanced Filters Panel */}
+        {showEnhancedFilters && (
+          <EnhancedFiltersPanel
+            onFiltersChange={setFilterConfig}
+            currentStats={
+              filterStats
+                ? {
+                    originalCount: filterStats.originalCount,
+                    filteredCount: filterStats.finalCount,
+                    rejectionReasons: filterStats.rejectionReasons,
+                  }
+                : undefined
+            }
+            className="mb-8"
+          />
+        )}
 
-              <div className="flex items-center space-x-4">
-                {/* Debug Summary */}
-                <div className="flex items-center space-x-2 text-sm">
-                  <span className="text-emerald-400">
-                    {debugState.summary.passed} passed
-                  </span>
-                  <span className="text-red-400">
-                    {debugState.summary.failed} failed
-                  </span>
-                  <span className="text-amber-400">
-                    {debugState.summary.warnings} warnings
-                  </span>
-                </div>
-
-                <button
-                  onClick={() => setShowDebugPanel(false)}
-                  className="text-slate-400 hover:text-white"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-
-            {debugState.isRunning && (
-              <div className="bg-slate-700/50 rounded-lg p-4 mb-4">
-                <div className="flex items-center space-x-2 text-amber-400">
-                  <Activity className="w-4 h-4 animate-pulse" />
-                  <span>Running comprehensive API diagnostics...</span>
-                </div>
-              </div>
-            )}
-
-            {debugState.results.length > 0 && (
-              <div className="space-y-3">
-                {debugState.results.map((result, index) => (
-                  <div
-                    key={index}
-                    className={`border rounded-lg p-4 ${
-                      result.status === "passed"
-                        ? "bg-emerald-900/20 border-emerald-600/50"
-                        : result.status === "failed"
-                        ? "bg-red-900/20 border-red-600/50"
-                        : "bg-amber-900/20 border-amber-600/50"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start space-x-3">
-                        {getDebugStatusIcon(result.status)}
-                        <div>
-                          <div className="font-medium text-white">
-                            {result.testName}
-                          </div>
-                          <div className="text-sm text-slate-300 mt-1">
-                            {result.message}
-                          </div>
-                          {result.details && (
-                            <details className="mt-2">
-                              <summary className="text-xs text-slate-400 cursor-pointer hover:text-slate-300">
-                                View Details
-                              </summary>
-                              <pre className="text-xs text-slate-400 mt-1 bg-slate-800/50 p-2 rounded overflow-auto">
-                                {JSON.stringify(result.details, null, 2)}
-                              </pre>
-                            </details>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-xs text-slate-400">
-                        <Clock className="w-3 h-3 inline mr-1" />
-                        {result.timestamp.toLocaleTimeString()}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {debugState.results.length === 0 && !debugState.isRunning && (
-              <div className="text-center py-8 text-slate-400">
-                <Bug className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Click "🔍 Debug API" to run comprehensive diagnostics</p>
-              </div>
-            )}
+        {/* Filter Recommendations */}
+        {filterRecommendations.length > 0 && (
+          <div className="bg-blue-900/20 border border-blue-600/50 rounded-lg p-4 mb-8">
+            <h4 className="font-semibold text-blue-400 mb-2">
+              💡 Filter Insights & Recommendations
+            </h4>
+            <ul className="space-y-1">
+              {filterRecommendations.map((rec, index) => (
+                <li key={index} className="text-sm text-blue-300">
+                  • {rec}
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 
-        {/* Statistics Overview */}
+        {/* Enhanced Statistics Overview */}
         {processingStats && (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
             <div className="bg-slate-800/50 rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-white">
                 {processingStats.totalProcessed}
@@ -1058,7 +612,13 @@ const SignalsTest: React.FC = () => {
               <div className="text-2xl font-bold text-emerald-400">
                 {processingStats.signalsGenerated}
               </div>
-              <div className="text-slate-400 text-sm">Qualified Signals</div>
+              <div className="text-slate-400 text-sm">Base Signals</div>
+            </div>
+            <div className="bg-slate-800/50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-purple-400">
+                {filteredSignals.length}
+              </div>
+              <div className="text-slate-400 text-sm">Filtered Signals</div>
             </div>
             <div className="bg-slate-800/50 rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-blue-400">
@@ -1073,59 +633,29 @@ const SignalsTest: React.FC = () => {
               <div className="text-slate-400 text-sm">Average Score</div>
             </div>
             <div className="bg-slate-800/50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-purple-400">
-                {processingStats.processingTime}s
+              <div className="text-2xl font-bold text-cyan-400">
+                {filterStats
+                  ? Math.round(
+                      (filterStats.finalCount / filterStats.originalCount) * 100
+                    )
+                  : 100}
+                %
               </div>
-              <div className="text-slate-400 text-sm">Processing Time</div>
+              <div className="text-slate-400 text-sm">Filter Pass Rate</div>
             </div>
           </div>
         )}
 
-        {/* Score Distribution */}
-        {processingStats && (
-          <div className="bg-slate-800/50 rounded-lg p-6 mb-8">
-            <h3 className="text-lg font-semibold text-white mb-4">
-              📊 Score Distribution Analysis
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-emerald-400">
-                  {processingStats.scoreDistribution.above70}
-                </div>
-                <div className="text-slate-400 text-sm">70+ (BUY)</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-400">
-                  {processingStats.scoreDistribution.between60_70}
-                </div>
-                <div className="text-slate-400 text-sm">60-69 (WEAK BUY)</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-amber-400">
-                  {processingStats.scoreDistribution.between50_60}
-                </div>
-                <div className="text-slate-400 text-sm">50-59 (NEUTRAL)</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-slate-400">
-                  {processingStats.scoreDistribution.below50}
-                </div>
-                <div className="text-slate-400 text-sm">&lt;50 (WEAK/SELL)</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Filters */}
-        {allResults.length > 0 && (
+        {/* Basic Filters (keeping for backward compatibility) */}
+        {finalFilteredResults.length > 0 && (
           <div className="bg-slate-800/50 rounded-lg p-6 mb-8">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white flex items-center">
                 <Filter className="w-5 h-5 mr-2" />
-                Filters & Search
+                Quick Filters & Search
               </h3>
               <div className="text-slate-400">
-                Showing {filteredResults.length} of {allResults.length} stocks
+                Showing {finalFilteredResults.length} signals
               </div>
             </div>
 
@@ -1148,9 +678,9 @@ const SignalsTest: React.FC = () => {
                 onChange={(e) => setSelectedCategory(e.target.value as any)}
                 className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="all">All Stocks</option>
-                <option value="accepted">Accepted Signals</option>
-                <option value="rejected">Rejected Stocks</option>
+                <option value="all">All Signals</option>
+                <option value="accepted">Accepted Only</option>
+                <option value="rejected">Rejected Only</option>
               </select>
 
               {/* Score Range Filter */}
@@ -1190,8 +720,8 @@ const SignalsTest: React.FC = () => {
           </div>
         )}
 
-        {/* Results Table */}
-        {allResults.length > 0 && (
+        {/* Results Table (keeping your existing table structure) */}
+        {finalFilteredResults.length > 0 && (
           <div className="bg-slate-800/50 rounded-lg border border-slate-700 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -1224,7 +754,7 @@ const SignalsTest: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-700">
-                  {filteredResults.map((result, index) => (
+                  {finalFilteredResults.map((result, index) => (
                     <tr
                       key={result.ticker}
                       className="hover:bg-slate-700/50 transition-colors"
@@ -1283,17 +813,14 @@ const SignalsTest: React.FC = () => {
         )}
 
         {/* No Results */}
-        {allResults.length === 0 && !isProcessing && (
+        {finalFilteredResults.length === 0 && !isProcessing && (
           <div className="text-center py-12">
             <div className="text-slate-400 mb-4">
               <Play className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <p className="text-lg">Ready to scan all 105 stocks</p>
+              <p className="text-lg">Ready for enhanced signal analysis</p>
               <p className="text-sm">
-                Click "🚀 Start Signal Processing" to begin comprehensive
-                analysis
-              </p>
-              <p className="text-sm mt-2">
-                Use "🔍 Debug API" first if you encounter issues
+                Configure enhanced filters and click "🚀 Start Enhanced
+                Analysis"
               </p>
             </div>
           </div>
