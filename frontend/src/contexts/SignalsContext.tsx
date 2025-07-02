@@ -1,4 +1,4 @@
-// src/contexts/SignalsContext.tsx - PRODUCTION SIGNALS PROVIDER
+// src/contexts/SignalsContext.tsx - PRODUCTION SIGNALS PROVIDER - FIXED
 // 🚀 ARCHITECTURE: Clean signals management with Edge Function alert processing
 // 🎯 ALERTS: Handled by Supabase Edge Function for enterprise-grade reliability
 
@@ -15,8 +15,9 @@ import { calculateFinalScore } from "../utils/signalCalculations";
 export interface Signal {
   ticker: string;
   name: string;
-  price: number;
-  change: number;
+  // 🔧 FIXED: Use database field names to match SignalTable expectations
+  current_price: number; // was: price
+  price_change_percent: number; // was: change
   signals: {
     "1H": number;
     "4H": number;
@@ -159,8 +160,9 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
         return {
           ticker: record.ticker,
           name: record.company_name || `${record.ticker} Corporation`,
-          price: record.entry_price || record.current_price || 100,
-          change: record.price_change_percent || 0,
+          // 🔧 FIXED: Use database field names directly (no mapping)
+          current_price: record.current_price || record.entry_price || 100,
+          price_change_percent: record.price_change_percent || 0,
           signals: timeframeSignals,
           sector: record.sector || "Technology",
           market: record.market || "usa",
@@ -212,7 +214,7 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
       console.log(
         `✅ Successfully loaded ${transformedSignals.length} signals (${
           data.filter((d) => d.signals && d.signals["1H"]).length
-        } with real timeframe data)`
+        } with real timeframe data) - PRICE FIELDS: current_price, price_change_percent`
       );
     } catch (err) {
       const errorMessage =

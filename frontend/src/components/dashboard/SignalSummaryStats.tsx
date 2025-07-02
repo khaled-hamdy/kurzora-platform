@@ -33,8 +33,6 @@ const SignalSummaryStats: React.FC<SignalSummaryStatsProps> = ({
 }) => {
   const { t } = useLanguage();
 
-  // ✅ REMOVED: Duplicate calculateFinalScore function - now using centralized one
-
   // Get stocks for each category with their final scores
   const getStocksForCategory = (category: string) => {
     return filteredSignals
@@ -43,9 +41,10 @@ const SignalSummaryStats: React.FC<SignalSummaryStatsProps> = ({
         score: calculateFinalScore(signal.signals),
       }))
       .filter((item) => {
-        if (category === "strong") return item.score >= 90;
-        if (category === "valid") return item.score >= 80 && item.score < 90;
-        if (category === "weak") return item.score >= 70 && item.score < 80;
+        // 🚀 UPDATED: New categorization logic
+        if (category === "strong") return item.score >= 80; // Strong: ≥80%
+        if (category === "valid") return item.score >= 60 && item.score < 80; // Valid: 60-79% (includes 70+ BUY signals!)
+        if (category === "weak") return item.score < 60; // Weak: <60%
         return false;
       });
   };
@@ -59,16 +58,19 @@ const SignalSummaryStats: React.FC<SignalSummaryStatsProps> = ({
     }, 3000);
   };
 
+  // 🚀 UPDATED: New categorization logic matching realistic business thresholds
   const strongSignals = filteredSignals.filter(
-    (s) => calculateFinalScore(s.signals) >= 90
+    (s) => calculateFinalScore(s.signals) >= 80 // Strong: ≥80%
   );
+
   const validSignals = filteredSignals.filter((s) => {
     const score = calculateFinalScore(s.signals);
-    return score >= 80 && score < 90;
+    return score >= 60 && score < 80; // Valid: 60-79% (includes 70+ BUY signals!)
   });
+
   const weakSignals = filteredSignals.filter((s) => {
     const score = calculateFinalScore(s.signals);
-    return score >= 70 && score < 80;
+    return score < 60; // Weak: <60%
   });
 
   return (
@@ -76,12 +78,12 @@ const SignalSummaryStats: React.FC<SignalSummaryStatsProps> = ({
       {/* Add timeframe indicator label */}
       <div className="mb-4 text-center">
         <div className="text-slate-300 text-sm font-medium">
-          {t("signals.summaryReflects")} {timeFilter} {t("signals.only")}
+          Summary reflects weighted final scores (not just {timeFilter} only)
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {/* Strong (90+) */}
+        {/* Strong (≥80%) */}
         <div
           className={`text-center cursor-pointer hover:bg-slate-700/30 rounded-lg p-3 transition-all duration-200 shadow-md hover:shadow-lg ${
             highlightedCategory === "strong"
@@ -102,9 +104,7 @@ const SignalSummaryStats: React.FC<SignalSummaryStatsProps> = ({
           >
             {strongSignals.length}
           </div>
-          <div className="text-slate-400 text-sm">
-            {t("signals.strong")} (90+)
-          </div>
+          <div className="text-slate-400 text-sm">Strong (80%+)</div>
           {highlightedCategory === "strong" &&
             getStocksForCategory("strong").length > 0 && (
               <div className="mt-1 text-xs text-slate-300">
@@ -117,7 +117,7 @@ const SignalSummaryStats: React.FC<SignalSummaryStatsProps> = ({
             )}
         </div>
 
-        {/* Valid (80-89) */}
+        {/* Valid (60-79%) - NOW INCLUDES YOUR 70+ BUY SIGNALS! */}
         <div
           className={`text-center cursor-pointer hover:bg-slate-700/30 rounded-lg p-3 transition-all duration-200 shadow-md hover:shadow-lg ${
             highlightedCategory === "valid"
@@ -138,9 +138,7 @@ const SignalSummaryStats: React.FC<SignalSummaryStatsProps> = ({
           >
             {validSignals.length}
           </div>
-          <div className="text-slate-400 text-sm">
-            {t("signals.valid")} (80-89)
-          </div>
+          <div className="text-slate-400 text-sm">Valid (60-79%)</div>
           {highlightedCategory === "valid" &&
             getStocksForCategory("valid").length > 0 && (
               <div className="mt-1 text-xs text-slate-300">
@@ -153,11 +151,11 @@ const SignalSummaryStats: React.FC<SignalSummaryStatsProps> = ({
             )}
         </div>
 
-        {/* Weak (70-79) */}
+        {/* Weak (<60%) */}
         <div
           className={`text-center cursor-pointer hover:bg-slate-700/30 rounded-lg p-3 transition-all duration-200 shadow-md hover:shadow-lg ${
             highlightedCategory === "weak"
-              ? "animate-pulse bg-slate-600/50 ring-2 ring-yellow-400/50"
+              ? "animate-pulse bg-slate-600/50 ring-2 ring-red-400/50"
               : ""
           }`}
           onClick={() => handleCategoryClick("weak")}
@@ -168,12 +166,10 @@ const SignalSummaryStats: React.FC<SignalSummaryStatsProps> = ({
             }
           }}
         >
-          <div className="text-yellow-400 text-lg font-bold">
+          <div className="text-red-400 text-lg font-bold">
             {weakSignals.length}
           </div>
-          <div className="text-slate-400 text-sm">
-            {t("signals.weak")} (70-79)
-          </div>
+          <div className="text-slate-400 text-sm">Weak (&lt;60%)</div>
           {highlightedCategory === "weak" &&
             getStocksForCategory("weak").length > 0 && (
               <div className="mt-1 text-xs text-slate-300">
@@ -191,9 +187,7 @@ const SignalSummaryStats: React.FC<SignalSummaryStatsProps> = ({
           <div className="text-white text-lg font-bold">
             {filteredSignals.length}
           </div>
-          <div className="text-slate-400 text-sm">
-            {t("signals.totalSignals")}
-          </div>
+          <div className="text-slate-400 text-sm">Total Signals</div>
         </div>
       </div>
     </div>

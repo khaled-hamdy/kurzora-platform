@@ -9,8 +9,9 @@ import { calculateFinalScore } from "../../utils/signalCalculations";
 interface Signal {
   ticker: string;
   name: string;
-  price: number;
-  change: number;
+  // 🚀 FIXED: Updated to match actual database columns
+  current_price: number; // Was: price
+  price_change_percent: number; // Was: change
   signals: {
     "1H": number;
     "4H": number;
@@ -164,6 +165,11 @@ const SignalTable: React.FC<SignalTableProps> = ({
   };
 
   const formatPrice = (price: number, market: string) => {
+    // 🚀 FIXED: Handle null/undefined prices gracefully
+    if (!price || price === 0) {
+      return "N/A";
+    }
+
     if (market === "crypto") {
       if (price >= 1000) {
         return `$${price.toLocaleString()}`;
@@ -319,18 +325,23 @@ const SignalTable: React.FC<SignalTableProps> = ({
                   </div>
                 </div>
 
-                {/* Current Price */}
+                {/* 🚀 FIXED: Current Price using correct database columns */}
                 <div className="text-center">
                   <div className="text-white font-medium text-sm">
-                    {formatPrice(signal.price, signal.market)}
+                    {formatPrice(signal.current_price, signal.market)}
                   </div>
                   <div
                     className={`text-xs ${
-                      signal.change >= 0 ? "text-emerald-400" : "text-red-400"
+                      signal.price_change_percent >= 0
+                        ? "text-emerald-400"
+                        : "text-red-400"
                     }`}
                   >
-                    {signal.change >= 0 ? "+" : ""}
-                    {signal.change.toFixed(2)}%
+                    {signal.price_change_percent >= 0 ? "+" : ""}
+                    {signal.price_change_percent
+                      ? signal.price_change_percent.toFixed(2)
+                      : "0.00"}
+                    %
                   </div>
                 </div>
 

@@ -1,9 +1,9 @@
 // ===================================================================
-// ENHANCED SIGNALS TEST WITH DATABASE AUTO-SAVE
+// ENHANCED SIGNALS TEST WITH DATABASE AUTO-SAVE & REAL PRICES - FIXED
 // ===================================================================
 // File: src/pages/EnhancedSignalsTest.tsx
-// Purpose: Test signal generation with automatic database storage
-// Integration: Complete automation pipeline testing
+// Purpose: Test signal generation with automatic database storage and real price display
+// Integration: Complete automation pipeline testing with price fetching
 
 import React, { useState, useEffect } from "react";
 import {
@@ -21,6 +21,7 @@ import {
   Activity,
   BarChart3,
   Zap,
+  DollarSign,
 } from "lucide-react";
 
 import {
@@ -45,6 +46,7 @@ interface EnhancedProcessingStats {
   databaseSaves: number;
   totalTime: number;
   apiCallsMade: number;
+  pricesUpdated: number; // 🚀 NEW: Track price updates
 }
 
 interface AutoSaveStats {
@@ -89,6 +91,7 @@ const EnhancedSignalsTest: React.FC = () => {
   const [enableAutoSave, setEnableAutoSave] = useState(true);
   const [minScoreForSave, setMinScoreForSave] = useState(70);
   const [enableDetailedLogging, setEnableDetailedLogging] = useState(true);
+  const [fetchRealPrices, setFetchRealPrices] = useState(true); // 🚀 NEW: Real price toggle
 
   // ===================================================================
   // SYSTEM TESTING
@@ -116,7 +119,7 @@ const EnhancedSignalsTest: React.FC = () => {
   };
 
   // ===================================================================
-  // ENHANCED PROCESSING
+  // ENHANCED PROCESSING - FIXED
   // ===================================================================
 
   const startEnhancedProcessing = async () => {
@@ -129,7 +132,9 @@ const EnhancedSignalsTest: React.FC = () => {
     setProgressMessage("Initializing enhanced processing...");
 
     try {
-      console.log("🚀 Starting Enhanced Signal Processing with Auto-Save...");
+      console.log(
+        "🚀 Starting Enhanced Signal Processing with Auto-Save & Real Prices..."
+      );
 
       // Get stock universe
       const stockUniverse = StockScanner.getDefaultStockUniverse();
@@ -137,7 +142,7 @@ const EnhancedSignalsTest: React.FC = () => {
         `📊 Processing ${stockUniverse.length} stocks from modular universe`
       );
 
-      // Process with auto-save
+      // 🔧 FIXED: Remove oldSignalsCutoffHours override - let Enhanced Signal Processor use its correct 0.1 hours default
       const result = await processStocksWithAutoSave(
         stockUniverse,
         {
@@ -145,7 +150,8 @@ const EnhancedSignalsTest: React.FC = () => {
           minScoreForSave,
           enableDetailedLogging,
           clearOldSignals: true,
-          oldSignalsCutoffHours: 24,
+          // ✅ REMOVED: oldSignalsCutoffHours: 24 - this was causing the duplicate filtering issue!
+          fetchRealPrices, // 🚀 NEW: Enable real price fetching
         },
         (progress) => {
           setCurrentProgress(progress);
@@ -164,8 +170,13 @@ const EnhancedSignalsTest: React.FC = () => {
       console.log(
         `📊 Results: ${result.signals.length} signals, ${result.autoSaveResult.signalsSaved} saved to DB`
       );
+      console.log(
+        `💰 Prices Updated: ${result.processingStats.pricesUpdated} stocks with real prices`
+      );
 
-      setProgressMessage("✅ Enhanced processing complete!");
+      setProgressMessage(
+        `✅ Enhanced processing complete! ${result.autoSaveResult.signalsSaved} signals saved with real prices`
+      );
     } catch (error) {
       console.error("❌ Enhanced processing failed:", error);
       setProgressMessage(`❌ Processing failed: ${error.message}`);
@@ -213,6 +224,23 @@ const EnhancedSignalsTest: React.FC = () => {
     }
   };
 
+  // 🚀 NEW: Price formatting utilities
+  const formatPrice = (price: number | undefined): string => {
+    if (!price || price === 0) return "N/A";
+    return `$${price.toFixed(2)}`;
+  };
+
+  const formatPriceChange = (changePercent: number | undefined): string => {
+    if (!changePercent && changePercent !== 0) return "0.00%";
+    const sign = changePercent >= 0 ? "+" : "";
+    return `${sign}${changePercent.toFixed(2)}%`;
+  };
+
+  const getPriceChangeColor = (changePercent: number | undefined): string => {
+    if (!changePercent && changePercent !== 0) return "text-slate-400";
+    return changePercent >= 0 ? "text-emerald-400" : "text-red-400";
+  };
+
   // ===================================================================
   // LIFECYCLE
   // ===================================================================
@@ -247,7 +275,7 @@ const EnhancedSignalsTest: React.FC = () => {
               </h1>
               <p className="text-slate-400 text-sm">
                 Complete automation pipeline • Database auto-save • Real-time
-                testing
+                pricing
               </p>
             </div>
 
@@ -282,7 +310,8 @@ const EnhancedSignalsTest: React.FC = () => {
                 🎯 Enhanced Processing Control
               </h2>
               <p className="text-slate-400">
-                Complete automation pipeline with database auto-save
+                Complete automation pipeline with database auto-save & real
+                prices
               </p>
             </div>
 
@@ -317,8 +346,8 @@ const EnhancedSignalsTest: React.FC = () => {
             </div>
           </div>
 
-          {/* Configuration */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          {/* Configuration - UPDATED */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div className="flex items-center space-x-3">
               <input
                 type="checkbox"
@@ -350,6 +379,23 @@ const EnhancedSignalsTest: React.FC = () => {
                 <option value={70}>70+</option>
                 <option value={80}>80+</option>
               </select>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                id="fetchRealPrices"
+                checked={fetchRealPrices}
+                onChange={(e) => setFetchRealPrices(e.target.checked)}
+                disabled={isProcessing}
+                className="rounded border-slate-600 bg-slate-700 text-blue-600 focus:ring-blue-500"
+              />
+              <label
+                htmlFor="fetchRealPrices"
+                className="text-sm text-slate-300"
+              >
+                🚀 Fetch Real Prices
+              </label>
             </div>
 
             <div className="flex items-center space-x-3">
@@ -430,9 +476,9 @@ const EnhancedSignalsTest: React.FC = () => {
           )}
         </div>
 
-        {/* Results Dashboard */}
+        {/* Results Dashboard - UPDATED WITH PRICE INFO */}
         {(processingStats || autoSaveStats) && (
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-7 gap-4 mb-8">
             {processingStats && (
               <>
                 <div className="bg-slate-800/50 rounded-lg p-4 text-center">
@@ -455,6 +501,13 @@ const EnhancedSignalsTest: React.FC = () => {
                   </div>
                   <div className="text-slate-400 text-sm">Quality Signals</div>
                 </div>
+                {/* 🚀 NEW: Prices Updated stat */}
+                <div className="bg-slate-800/50 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-green-400">
+                    {processingStats.pricesUpdated}
+                  </div>
+                  <div className="text-slate-400 text-sm">Prices Updated</div>
+                </div>
               </>
             )}
 
@@ -468,7 +521,7 @@ const EnhancedSignalsTest: React.FC = () => {
                 </div>
                 <div className="bg-slate-800/50 rounded-lg p-4 text-center">
                   <div className="text-2xl font-bold text-amber-400">
-                    {Math.round(processingStats?.totalTime || 0 / 1000)}s
+                    {Math.round((processingStats?.totalTime || 0) / 1000)}s
                   </div>
                   <div className="text-slate-400 text-sm">Total Time</div>
                 </div>
@@ -510,14 +563,19 @@ const EnhancedSignalsTest: React.FC = () => {
                   <div className="flex justify-between">
                     <span>Quality Filter (≥{minScoreForSave}):</span>
                     <span className="text-white">
-                      {autoSaveStats.signalsSaved +
-                        autoSaveStats.signalsFiltered}
+                      {processingStats?.qualitySignals || 0}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Saved to Database:</span>
                     <span className="text-emerald-400">
                       {autoSaveStats.signalsSaved}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Real Prices Fetched:</span>
+                    <span className="text-green-400">
+                      {processingStats?.pricesUpdated || 0}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -545,13 +603,13 @@ const EnhancedSignalsTest: React.FC = () => {
           </div>
         )}
 
-        {/* Signals Table */}
+        {/* Signals Table - UPDATED WITH PRICE COLUMNS */}
         {processedSignals.length > 0 && (
           <div className="bg-slate-800/50 rounded-lg border border-slate-700 overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-700">
               <h3 className="text-lg font-semibold text-white flex items-center">
                 <BarChart3 className="w-5 h-5 mr-2" />
-                Generated Signals ({processedSignals.length})
+                Generated Signals ({processedSignals.length}) with Real Prices
               </h3>
             </div>
 
@@ -564,6 +622,12 @@ const EnhancedSignalsTest: React.FC = () => {
                     </th>
                     <th className="px-4 py-3 text-left text-white font-semibold">
                       Ticker
+                    </th>
+                    <th className="px-4 py-3 text-center text-white font-semibold">
+                      Current Price
+                    </th>
+                    <th className="px-4 py-3 text-center text-white font-semibold">
+                      Change %
                     </th>
                     <th className="px-4 py-3 text-center text-white font-semibold">
                       Score
@@ -597,6 +661,25 @@ const EnhancedSignalsTest: React.FC = () => {
                         <td className="px-4 py-3">
                           <span className="font-mono font-semibold text-white">
                             {signal.ticker}
+                          </span>
+                        </td>
+                        {/* 🚀 FIXED: Current Price using correct snake_case database columns */}
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex items-center justify-center space-x-1">
+                            <DollarSign className="w-3 h-3 text-green-400" />
+                            <span className="text-white font-mono">
+                              {formatPrice(signal.current_price)}
+                            </span>
+                          </div>
+                        </td>
+                        {/* 🚀 FIXED: Price Change using correct snake_case database columns */}
+                        <td className="px-4 py-3 text-center">
+                          <span
+                            className={`font-mono font-semibold ${getPriceChangeColor(
+                              signal.price_change_percent
+                            )}`}
+                          >
+                            {formatPriceChange(signal.price_change_percent)}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-center">
@@ -648,7 +731,8 @@ const EnhancedSignalsTest: React.FC = () => {
 
             {processedSignals.length > 50 && (
               <div className="px-6 py-4 bg-slate-700/50 text-center text-sm text-slate-400">
-                Showing top 50 of {processedSignals.length} signals
+                Showing top 50 of {processedSignals.length} signals with real
+                prices
               </div>
             )}
           </div>
@@ -661,7 +745,8 @@ const EnhancedSignalsTest: React.FC = () => {
               <Zap className="w-16 h-16 mx-auto mb-4 opacity-50" />
               <p className="text-lg">Ready for enhanced signal processing</p>
               <p className="text-sm">
-                Test the complete automation pipeline with database auto-save
+                Test the complete automation pipeline with database auto-save &
+                real prices
               </p>
             </div>
           </div>

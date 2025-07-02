@@ -355,7 +355,7 @@ const UpgradePrompt: React.FC<{ hiddenCount: number }> = ({ hiddenCount }) => {
   );
 };
 
-// Signal Card Component with Telegram Integration
+// Signal Card Component with Telegram Integration - FIXED FIELD NAMES
 const SignalCard: React.FC<{
   signal: Signal;
   isHighlighted: boolean;
@@ -445,23 +445,29 @@ const SignalCard: React.FC<{
               <div className="flex justify-between items-center">
                 <span className="text-slate-400">Price</span>
                 <span className="text-white font-semibold text-lg">
-                  ${signal.price.toFixed(2)}
+                  $
+                  {signal.current_price
+                    ? signal.current_price.toFixed(2)
+                    : "N/A"}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-slate-400">Change</span>
                 <span
                   className={`font-semibold flex items-center text-lg ${getChangeColor(
-                    signal.change
+                    signal.price_change_percent || 0
                   )}`}
                 >
-                  {signal.change >= 0 ? (
+                  {(signal.price_change_percent || 0) >= 0 ? (
                     <TrendingUp className="h-5 w-5 mr-1" />
                   ) : (
                     <TrendingDown className="h-5 w-5 mr-1" />
                   )}
-                  {signal.change >= 0 ? "+" : ""}
-                  {signal.change.toFixed(2)}%
+                  {(signal.price_change_percent || 0) >= 0 ? "+" : ""}
+                  {signal.price_change_percent
+                    ? signal.price_change_percent.toFixed(2)
+                    : "0.00"}
+                  %
                 </span>
               </div>
             </div>
@@ -758,14 +764,14 @@ const Signals: React.FC = () => {
     );
   }
 
-  // Event handlers
+  // Event handlers - FIXED FIELD NAMES
   const handleViewSignal = (signal: Signal) => {
     const finalScore = calculateFinalScore(signal.signals);
     const signalData = {
       symbol: signal.ticker,
       name: signal.name,
-      price: signal.price,
-      change: signal.change,
+      price: signal.current_price || 0, // 🔧 FIXED: Use current_price instead of price
+      change: signal.price_change_percent || 0, // 🔧 FIXED: Use price_change_percent instead of change
       signalScore: finalScore,
     };
     setSelectedSignal(signalData);

@@ -1,8 +1,8 @@
 // ===================================================================
-// SIGNAL AUTO-SAVE SERVICE - DATABASE INTEGRATION
+// SIGNAL AUTO-SAVE SERVICE - DATABASE INTEGRATION WITH REAL PRICES
 // ===================================================================
 // File: src/lib/signals/signal-auto-save.ts
-// Purpose: Automatically save high-quality trading signals to database
+// Purpose: Automatically save high-quality trading signals to database with real price data
 // Integration: Connects signal generation → database storage → dashboard display
 
 import { createClient } from "@supabase/supabase-js";
@@ -50,6 +50,14 @@ interface AutoSaveConfig {
   maxSignalsPerBatch: number;
 }
 
+// 🚀 NEW: Price data interface
+interface PriceData {
+  currentPrice: number;
+  changePercent: number;
+  volume: number;
+  timestamp: string;
+}
+
 // ===================================================================
 // SIGNAL AUTO-SAVE SERVICE
 // ===================================================================
@@ -90,9 +98,12 @@ export class SignalAutoSaveService {
   }
 
   // ===================================================================
-  // MAIN AUTO-SAVE FUNCTION
+  // MAIN AUTO-SAVE FUNCTIONS
   // ===================================================================
 
+  /**
+   * Auto-save signals without price data (original method)
+   */
   public async autoSaveSignals(
     signals: ProcessedSignal[],
     stockInfo: Record<
@@ -100,10 +111,29 @@ export class SignalAutoSaveService {
       { companyName: string; sector: string; exchange: string }
     >
   ): Promise<AutoSaveResult> {
+    return this.autoSaveSignalsWithPrices(signals, stockInfo, {});
+  }
+
+  /**
+   * Auto-save signals with real price data from Polygon.io
+   */
+  public async autoSaveSignalsWithPrices(
+    signals: ProcessedSignal[],
+    stockInfo: Record<
+      string,
+      { companyName: string; sector: string; exchange: string }
+    >,
+    priceData: Record<string, PriceData> = {}
+  ): Promise<AutoSaveResult> {
     const startTime = Date.now();
 
     if (this.config.enableLogging) {
       console.log(`🔄 Starting auto-save for ${signals.length} signals...`);
+      if (Object.keys(priceData).length > 0) {
+        console.log(
+          `💰 Real prices available for ${Object.keys(priceData).length} stocks`
+        );
+      }
     }
 
     try {
@@ -127,10 +157,11 @@ export class SignalAutoSaveService {
         };
       }
 
-      // Step 2: Convert to database format
+      // Step 2: Convert to database format with price data
       const databaseSignals = await this.convertToDbFormat(
         filteredSignals,
-        stockInfo
+        stockInfo,
+        priceData
       );
 
       // Step 3: Remove duplicates if enabled
@@ -153,8 +184,10 @@ export class SignalAutoSaveService {
       const processingTime = Date.now() - startTime;
 
       if (this.config.enableLogging) {
+        const priceInfo =
+          Object.keys(priceData).length > 0 ? " with real prices" : "";
         console.log(
-          `🎉 Auto-save complete: ${saveResult.signalsSaved} signals saved in ${processingTime}ms`
+          `🎉 Auto-save complete: ${saveResult.signalsSaved} signals saved${priceInfo} in ${processingTime}ms`
         );
         if (saveResult.errors.length > 0) {
           console.warn(
@@ -261,10 +294,32 @@ export class SignalAutoSaveService {
     stockInfo: Record<
       string,
       { companyName: string; sector: string; exchange: string }
-    >
+    >,
+    priceData: Record<string, PriceData> = {}
   ): Promise<DatabaseSignal[]> {
     return signals.map((signal) => {
       const stock = stockInfo[signal.ticker];
+      const prices = priceData[signal.ticker]; // Get real price data if available
+
+      // 🚀 FIXED: Use real prices if available, otherwise use existing fallback logic
+      let currentPrice = signal.currentPrice || signal.entryPrice || 0;
+      let priceChangePercent = signal.priceChangePercent || 0;
+
+      // Override with real prices if available
+      if (prices && prices.currentPrice) {
+        currentPrice = prices.currentPrice;
+        priceChangePercent = prices.changePercent || 0;
+
+        if (this.config.enableLogging) {
+          console.log(
+            `💰 ${signal.ticker}: Real price $${prices.currentPrice.toFixed(
+              2
+            )} (${
+              prices.changePercent >= 0 ? "+" : ""
+            }${prices.changePercent.toFixed(2)}%)`
+          );
+        }
+      }
 
       return {
         ticker: signal.ticker,
@@ -273,15 +328,12 @@ export class SignalAutoSaveService {
           signal.confidenceScore || signal.finalScore
         ),
         final_score: signal.finalScore,
-        entry_price: this.roundToDecimals(signal.entryPrice || 0, 4),
-        current_price: this.roundToDecimals(
-          signal.currentPrice || signal.entryPrice || 0,
-          4
-        ),
-        price_change_percent: this.roundToDecimals(
-          signal.priceChangePercent || 0,
-          4
-        ),
+        entry_price: this.roundToDecimals(signal.entryPrice || currentPrice, 4),
+
+        // 🚀 FIXED: Use real prices instead of always falling back to 0
+        current_price: this.roundToDecimals(currentPrice, 4),
+        price_change_percent: this.roundToDecimals(priceChangePercent, 4),
+
         sector: stock?.sector || "Unknown",
         market: this.determineMarket(signal.ticker, stock?.exchange),
         signal_strength: signal.signalStrength || SignalStrength.NEUTRAL,

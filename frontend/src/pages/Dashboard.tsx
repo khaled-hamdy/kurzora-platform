@@ -1,4 +1,4 @@
-// Complete Dashboard.tsx with Fixed Recent Trades
+// Complete Dashboard.tsx with Fixed Categorization Logic
 // src/pages/Dashboard.tsx
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
@@ -88,17 +88,26 @@ const Dashboard: React.FC = () => {
     error: portfolioError,
   } = usePortfolioSummary();
 
-  // ✅ CALCULATE REAL SIGNAL STATISTICS FROM DATABASE
+  // ✅ CALCULATE REAL SIGNAL STATISTICS FROM DATABASE - UPDATED CATEGORIZATION
   const todaysSignals = signals.length; // Total signals available
 
-  // Count signals by quality (based on 1D scores)
+  // 🚀 FIXED: Updated categorization logic to match realistic business thresholds
+  // Strong: ≥80% (High confidence signals)
   const strongSignals = signals.filter(
-    (signal) => signal.signals["1D"] >= 90
+    (signal) => calculateFinalScore(signal.signals) >= 80
   ).length;
-  const validSignals = signals.filter(
-    (signal) => signal.signals["1D"] >= 80 && signal.signals["1D"] < 90
+
+  // Valid: 60-79% (Actionable signals - includes 70+ BUY signals)
+  const validSignals = signals.filter((signal) => {
+    const score = calculateFinalScore(signal.signals);
+    return score >= 60 && score < 80;
+  }).length;
+
+  // 🚀 UPDATED: Active signals = Strong + Valid (60+ threshold for actionable trading)
+  // But use 70+ as the real "actionable" threshold for active count
+  const activeSignals = signals.filter(
+    (signal) => calculateFinalScore(signal.signals) >= 70
   ).length;
-  const activeSignals = strongSignals + validSignals; // Total tradeable signals (80+)
 
   // Calculate average signal score (weighted)
   const avgSignalScore =
@@ -126,7 +135,7 @@ const Dashboard: React.FC = () => {
         })
       : null;
 
-  // ✅ REAL ALERTS = High priority signals (90+ score) + positions near target
+  // ✅ UPDATED: Real alerts = Strong signals (80+ score) + premium signals that need attention
   const alertsCount = strongSignals; // Premium signals that need attention
 
   // Helper functions for portfolio display
@@ -268,7 +277,7 @@ const Dashboard: React.FC = () => {
           </p>
         </div>
 
-        {/* ✅ ROW 1: SIGNAL METRICS - REAL DATA */}
+        {/* ✅ ROW 1: SIGNAL METRICS - REAL DATA WITH FIXED CATEGORIZATION */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card className="bg-slate-900/50 backdrop-blur-sm border-blue-800/30 hover:bg-slate-900/70 transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -282,7 +291,7 @@ const Dashboard: React.FC = () => {
                 {todaysSignals}
               </div>
               <p className="text-xs text-slate-400">
-                {strongSignals} Strong, {validSignals} Valid
+                {strongSignals} Strong (80+), {validSignals} Valid (60-79)
               </p>
             </CardContent>
           </Card>
@@ -299,7 +308,7 @@ const Dashboard: React.FC = () => {
                 {activeSignals}
               </div>
               <p className="text-xs text-slate-400">
-                {newSignalsLastHour} new since last hour
+                {newSignalsLastHour} new since last hour (70+ threshold)
               </p>
             </CardContent>
           </Card>
@@ -504,7 +513,7 @@ const Dashboard: React.FC = () => {
                     </div>
                     <div className="text-xs text-emerald-400">
                       {bestSignal
-                        ? `Score: ${bestSignal.signals["1D"]}`
+                        ? `Score: ${calculateFinalScore(bestSignal.signals)}`
                         : "No data"}
                     </div>
                   </div>
@@ -526,7 +535,7 @@ const Dashboard: React.FC = () => {
                       {activeSignals}
                     </div>
                     <div className="text-xs text-slate-400">
-                      signals in play
+                      signals ≥70% in play
                     </div>
                   </div>
                 </div>
@@ -548,7 +557,9 @@ const Dashboard: React.FC = () => {
                     </div>
                     <div className="text-xs text-amber-400">
                       {signals[0]
-                        ? `Score: ${signals[0].signals["1D"]} • 15 min ago`
+                        ? `Score: ${calculateFinalScore(
+                            signals[0].signals
+                          )} • 15 min ago`
                         : "No data"}
                     </div>
                   </div>
@@ -570,7 +581,7 @@ const Dashboard: React.FC = () => {
                       {alertsCount}
                     </div>
                     <div className="text-xs text-red-400">
-                      premium signals (90%+)
+                      strong signals (80%+)
                     </div>
                   </div>
                 </div>
