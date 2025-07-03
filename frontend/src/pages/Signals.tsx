@@ -35,6 +35,7 @@ import {
   Crown,
   Zap,
   MessageSquare,
+  AlertCircle,
 } from "lucide-react";
 import { useToast } from "../hooks/use-toast";
 import SignalModal from "../components/signals/SignalModal";
@@ -106,25 +107,129 @@ const SignalTelegramIndicator: React.FC<{
   );
 };
 
-// TradingView Chart Component
+// ENHANCED TRADINGVIEW CHART COMPONENT - FIXED AND FUTURE-PROOF
+// Comprehensive exchange mapping for international markets
+const EXCHANGE_MAPPING = {
+  // US Markets - NASDAQ
+  AAPL: "NASDAQ:AAPL",
+  MSFT: "NASDAQ:MSFT",
+  GOOGL: "NASDAQ:GOOGL",
+  AMZN: "NASDAQ:AMZN",
+  TSLA: "NASDAQ:TSLA",
+  META: "NASDAQ:META",
+  NVDA: "NASDAQ:NVDA",
+  HON: "NASDAQ:HON", // Honeywell
+
+  // US Markets - NYSE (Major ones that commonly cause issues)
+  C: "NYSE:C", // Citigroup - THIS FIXES THE "C" ISSUE!
+  JPM: "NYSE:JPM", // JPMorgan Chase
+  BAC: "NYSE:BAC", // Bank of America
+  WMT: "NYSE:WMT", // Walmart
+  JNJ: "NYSE:JNJ", // Johnson & Johnson
+  PG: "NYSE:PG", // Procter & Gamble
+  XOM: "NYSE:XOM", // Exxon Mobil
+  CVX: "NYSE:CVX", // Chevron
+  KO: "NYSE:KO", // Coca-Cola
+  PFE: "NYSE:PFE", // Pfizer
+  ABBV: "NYSE:ABBV", // AbbVie
+  MRK: "NYSE:MRK", // Merck
+  T: "NYSE:T", // AT&T
+  VZ: "NYSE:VZ", // Verizon
+  DIS: "NYSE:DIS", // Disney
+  MA: "NYSE:MA", // Mastercard
+  V: "NYSE:V", // Visa
+  HD: "NYSE:HD", // Home Depot
+  UNH: "NYSE:UNH", // UnitedHealth
+  AXP: "NYSE:AXP", // American Express
+  TXN: "NASDAQ:TXN", // Texas Instruments
+
+  // International Markets - Future expansion ready
+  ASML: "NASDAQ:ASML", // ASML (ADR)
+  SAP: "NYSE:SAP", // SAP (ADR)
+  NVO: "NYSE:NVO", // Novo Nordisk (ADR)
+};
+
+// Auto-detect exchange based on patterns and mapping
+const detectExchange = (symbol) => {
+  const upperSymbol = symbol.toUpperCase();
+
+  // Check explicit mapping first (most reliable)
+  if (EXCHANGE_MAPPING[upperSymbol]) {
+    return EXCHANGE_MAPPING[upperSymbol];
+  }
+
+  // For unmapped US stocks, use fallback logic
+  const nyseSingleLetters = ["C", "F", "T", "V"];
+  if (nyseSingleLetters.includes(upperSymbol)) {
+    return `NYSE:${upperSymbol}`;
+  }
+
+  // Default fallback options in order of preference
+  return [
+    `NASDAQ:${upperSymbol}`,
+    `NYSE:${upperSymbol}`,
+    upperSymbol, // TradingView auto-detect
+  ];
+};
+
+// Enhanced TradingView Chart Component
 const TradingViewChart: React.FC<{
   symbol: string;
   theme?: string;
   height?: number;
 }> = ({ symbol, theme = "dark", height = 400 }) => {
-  const containerId = `tradingview_${symbol}_${Date.now()}`;
+  const containerRef = useRef<HTMLDivElement>(null);
+  const scriptRef = useRef<HTMLScriptElement | null>(null);
+  const [currentSymbol, setCurrentSymbol] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [fallbackIndex, setFallbackIndex] = useState(0);
 
-  useEffect(() => {
+  // Generate unique container ID to prevent conflicts
+  const containerId = `tradingview_${symbol}_${Date.now()}_${Math.random()
+    .toString(36)
+    .substr(2, 9)}`;
+
+  // Cleanup function to prevent duplication
+  const cleanup = () => {
+    if (containerRef.current) {
+      // Remove all child elements safely
+      while (containerRef.current.firstChild) {
+        containerRef.current.removeChild(containerRef.current.firstChild);
+      }
+    }
+
+    if (scriptRef.current && scriptRef.current.parentNode) {
+      scriptRef.current.parentNode.removeChild(scriptRef.current);
+      scriptRef.current = null;
+    }
+  };
+
+  // Load TradingView widget with proper error handling
+  const loadWidget = (symbolToTry: string) => {
+    if (!containerRef.current) return;
+
+    cleanup(); // Clean up previous widget first
+
+    setLoading(true);
+    setError(null);
+
+    console.log(
+      `🎯 Loading TradingView chart for ${symbol} with exchange: ${symbolToTry}`
+    );
+
     const script = document.createElement("script");
     script.src =
       "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
     script.type = "text/javascript";
     script.async = true;
-    script.innerHTML = JSON.stringify({
+    scriptRef.current = script;
+
+    const config = {
       autosize: false,
       width: "100%",
       height: height,
-      symbol: `NASDAQ:${symbol}`,
+      symbol: symbolToTry,
       interval: "1H",
       timezone: "Etc/UTC",
       theme: theme,
@@ -145,32 +250,160 @@ const TradingViewChart: React.FC<{
       popup_width: "1000",
       popup_height: "650",
       no_referral_id: true,
-    });
-
-    const container = document.getElementById(containerId);
-    if (container) {
-      container.appendChild(script);
-    }
-
-    return () => {
-      const container = document.getElementById(containerId);
-      if (container) {
-        container.innerHTML = "";
-      }
     };
-  }, [symbol, theme, height, containerId]);
+
+    script.innerHTML = JSON.stringify(config);
+
+    // Handle script load with timeout for reliability
+    const timeout = setTimeout(() => {
+      console.warn(`⏰ TradingView widget timeout for symbol: ${symbolToTry}`);
+      tryNextFallback();
+    }, 10000); // 10 second timeout
+
+    script.onload = () => {
+      clearTimeout(timeout);
+      setLoading(false);
+      setCurrentSymbol(symbolToTry);
+      console.log(
+        `✅ TradingView widget loaded successfully for: ${symbolToTry}`
+      );
+    };
+
+    script.onerror = () => {
+      clearTimeout(timeout);
+      console.error(`❌ TradingView script error for symbol: ${symbolToTry}`);
+      tryNextFallback();
+    };
+
+    containerRef.current.appendChild(script);
+  };
+
+  // Try next fallback option if current fails
+  const tryNextFallback = () => {
+    const symbolOptions = detectExchange(symbol);
+    const optionsArray = Array.isArray(symbolOptions)
+      ? symbolOptions
+      : [symbolOptions];
+
+    if (fallbackIndex < optionsArray.length - 1) {
+      const nextIndex = fallbackIndex + 1;
+      setFallbackIndex(nextIndex);
+      console.log(
+        `🔄 Trying fallback ${nextIndex + 1}/${optionsArray.length}: ${
+          optionsArray[nextIndex]
+        }`
+      );
+      loadWidget(optionsArray[nextIndex]);
+    } else {
+      // All options exhausted
+      setError(`Unable to load chart for symbol: ${symbol}`);
+      setLoading(false);
+      console.error(`❌ All fallback options exhausted for symbol: ${symbol}`);
+    }
+  };
+
+  // Effect to load widget when symbol changes
+  useEffect(() => {
+    if (!symbol) return;
+
+    setFallbackIndex(0);
+    const symbolOptions = detectExchange(symbol);
+    const firstOption = Array.isArray(symbolOptions)
+      ? symbolOptions[0]
+      : symbolOptions;
+
+    loadWidget(firstOption);
+
+    // Cleanup on unmount
+    return cleanup;
+  }, [symbol, theme, height]);
+
+  // Retry function for manual retry
+  const retry = () => {
+    setFallbackIndex(0);
+    setError(null);
+    const symbolOptions = detectExchange(symbol);
+    const firstOption = Array.isArray(symbolOptions)
+      ? symbolOptions[0]
+      : symbolOptions;
+    loadWidget(firstOption);
+  };
+
+  // Error state UI
+  if (error) {
+    return (
+      <div className="w-full">
+        <div className="bg-slate-800/50 border border-slate-600 rounded-lg p-6 text-center">
+          <AlertCircle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-white mb-2">
+            Chart Unavailable
+          </h3>
+          <p className="text-slate-400 mb-4">{error}</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              onClick={retry}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center"
+            >
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Retry Chart
+            </button>
+            <a
+              href={`https://www.tradingview.com/symbols/${symbol}/`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg"
+            >
+              View on TradingView
+            </a>
+          </div>
+        </div>
+        <div className="mt-2">
+          <a
+            href={`https://www.tradingview.com/symbols/${symbol}/`}
+            rel="noopener nofollow"
+            target="_blank"
+            className="text-xs text-gray-500 hover:text-gray-400"
+          >
+            <span className="text-blue-400">{symbol} Chart</span> by TradingView
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
-      <div id={containerId}></div>
+      {loading && (
+        <div className="bg-slate-800/50 border border-slate-600 rounded-lg p-6 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto mb-4"></div>
+          <p className="text-slate-400">Loading chart for {symbol}...</p>
+          {fallbackIndex > 0 && (
+            <p className="text-xs text-slate-500 mt-2">
+              Trying alternative exchange... ({fallbackIndex + 1}/3)
+            </p>
+          )}
+        </div>
+      )}
+
+      <div
+        ref={containerRef}
+        className={loading ? "hidden" : "block"}
+        style={{ minHeight: `${height}px` }}
+      />
+
       <div className="mt-2">
         <a
-          href={`https://www.tradingview.com/symbols/NASDAQ-${symbol}/`}
+          href={`https://www.tradingview.com/symbols/${
+            currentSymbol || symbol
+          }/`}
           rel="noopener nofollow"
           target="_blank"
           className="text-xs text-gray-500 hover:text-gray-400"
         >
           <span className="text-blue-400">{symbol} Chart</span> by TradingView
+          {currentSymbol && currentSymbol !== symbol && (
+            <span className="text-slate-500"> ({currentSymbol})</span>
+          )}
         </a>
       </div>
     </div>
@@ -949,7 +1182,7 @@ const Signals: React.FC = () => {
                   />
                 </div>
 
-                {/* TradingView Chart */}
+                {/* Enhanced TradingView Chart */}
                 {showChartsFor.has(signal.ticker) && (
                   <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700 border-t-2 border-t-blue-500">
                     <CardContent className="p-6">
