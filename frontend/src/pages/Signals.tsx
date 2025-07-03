@@ -158,6 +158,57 @@ const getTimeContext = (
   }
 };
 
+// ENHANCED MARKET FILTERING UTILITY
+// Filter signals by market (Global vs USA)
+const filterSignalsByMarket = (
+  signals: Signal[],
+  marketFilter: string
+): Signal[] => {
+  if (marketFilter === "global") {
+    // Show all signals regardless of market
+    return signals;
+  }
+
+  if (marketFilter === "usa") {
+    // Show only US market signals
+    // US markets typically include: NYSE, NASDAQ, AMEX
+    // We can identify US stocks by:
+    // 1. Market field containing 'US', 'NYSE', 'NASDAQ', 'AMEX'
+    // 2. Or by common US stock patterns (most are 1-5 letter symbols)
+    return signals.filter((signal) => {
+      // Check if signal has explicit market information
+      if (signal.market) {
+        const market = signal.market.toLowerCase();
+        return (
+          market.includes("us") ||
+          market.includes("nyse") ||
+          market.includes("nasdaq") ||
+          market.includes("amex") ||
+          market === "stocks"
+        ); // Many US stocks are marked as 'stocks'
+      }
+
+      // Fallback: Most US stocks have simple ticker patterns
+      // This is a reasonable assumption for US markets
+      const ticker = signal.ticker.toUpperCase();
+
+      // US stocks are typically:
+      // - 1-5 characters
+      // - Alphabetic only (no numbers or special chars)
+      // - Not crypto patterns (no $ or long names)
+      const isUSPattern =
+        /^[A-Z]{1,5}$/.test(ticker) &&
+        !ticker.includes("$") &&
+        ticker.length <= 5;
+
+      return isUSPattern;
+    });
+  }
+
+  // Default: show all signals
+  return signals;
+};
+
 // Test component to verify alert settings hook
 const TestAlertSettings = () => {
   const {
@@ -948,13 +999,34 @@ const Signals: React.FC = () => {
     marketFilter,
   ]);
 
-  // Apply filters - MOVED BEFORE EARLY RETURNS
-  const baseFilteredSignals = filterSignalsByFinalScore(
-    realSignals,
-    scoreThreshold,
-    sectorFilter,
-    marketFilter
-  );
+  // ENHANCED FILTERING WITH MARKET FILTER FIX
+  const baseFilteredSignals = React.useMemo(() => {
+    console.log(`🔍 Filtering signals:`, {
+      totalSignals: realSignals.length,
+      scoreThreshold: scoreThreshold[0],
+      sectorFilter,
+      marketFilter,
+    });
+
+    // First apply score and sector filters
+    let filtered = filterSignalsByFinalScore(
+      realSignals,
+      scoreThreshold,
+      sectorFilter,
+      "global" // Always use "global" for the existing function
+    );
+
+    console.log(`📊 After score/sector filter: ${filtered.length} signals`);
+
+    // Then apply market filter separately
+    filtered = filterSignalsByMarket(filtered, marketFilter);
+
+    console.log(
+      `🌍 After market filter (${marketFilter}): ${filtered.length} signals`
+    );
+
+    return filtered;
+  }, [realSignals, scoreThreshold, sectorFilter, marketFilter]);
 
   // Apply subscription limits - FRESH vs POSITION filtering
   const { filteredSignals, hiddenSignalsCount } = React.useMemo(() => {
@@ -1224,6 +1296,7 @@ const Signals: React.FC = () => {
                   </button>
                 )}
               </div>
+              {/* FIXED MARKET FILTER - ONLY GLOBAL AND USA */}
               <div>
                 <label className="text-slate-300 text-sm font-medium mb-2 block">
                   Market
@@ -1233,10 +1306,8 @@ const Signals: React.FC = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-700 border-slate-600">
-                    <SelectItem value="global">Global</SelectItem>
-                    <SelectItem value="us">US Markets</SelectItem>
-                    <SelectItem value="crypto">Crypto</SelectItem>
-                    <SelectItem value="forex">Forex</SelectItem>
+                    <SelectItem value="global">🌍 Global</SelectItem>
+                    <SelectItem value="usa">🇺🇸 USA</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1258,6 +1329,8 @@ const Signals: React.FC = () => {
                     🌍{" "}
                     {marketFilter === "global"
                       ? "Global Markets"
+                      : marketFilter === "usa"
+                      ? "USA Markets"
                       : marketFilter}
                   </span>
                 </div>
