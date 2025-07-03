@@ -108,72 +108,10 @@ const SignalTelegramIndicator: React.FC<{
   );
 };
 
-// ENHANCED TRADINGVIEW CHART COMPONENT - FIXED AND FUTURE-PROOF
-// Comprehensive exchange mapping for international markets
-const EXCHANGE_MAPPING = {
-  // US Markets - NASDAQ
-  AAPL: "NASDAQ:AAPL",
-  MSFT: "NASDAQ:MSFT",
-  GOOGL: "NASDAQ:GOOGL",
-  AMZN: "NASDAQ:AMZN",
-  TSLA: "NASDAQ:TSLA",
-  META: "NASDAQ:META",
-  NVDA: "NASDAQ:NVDA",
-  HON: "NASDAQ:HON", // Honeywell
+// FUTURE-PROOF TRADINGVIEW CHART COMPONENT - AUTO-DETECTION
+// No more manual exchange mapping - TradingView handles it automatically!
 
-  // US Markets - NYSE (Major ones that commonly cause issues)
-  C: "NYSE:C", // Citigroup - THIS FIXES THE "C" ISSUE!
-  JPM: "NYSE:JPM", // JPMorgan Chase
-  BAC: "NYSE:BAC", // Bank of America
-  WMT: "NYSE:WMT", // Walmart
-  JNJ: "NYSE:JNJ", // Johnson & Johnson
-  PG: "NYSE:PG", // Procter & Gamble
-  XOM: "NYSE:XOM", // Exxon Mobil
-  CVX: "NYSE:CVX", // Chevron
-  KO: "NYSE:KO", // Coca-Cola
-  PFE: "NYSE:PFE", // Pfizer
-  ABBV: "NYSE:ABBV", // AbbVie
-  MRK: "NYSE:MRK", // Merck
-  T: "NYSE:T", // AT&T
-  VZ: "NYSE:VZ", // Verizon
-  DIS: "NYSE:DIS", // Disney
-  MA: "NYSE:MA", // Mastercard
-  V: "NYSE:V", // Visa
-  HD: "NYSE:HD", // Home Depot
-  UNH: "NYSE:UNH", // UnitedHealth
-  AXP: "NYSE:AXP", // American Express
-  TXN: "NASDAQ:TXN", // Texas Instruments
-
-  // International Markets - Future expansion ready
-  ASML: "NASDAQ:ASML", // ASML (ADR)
-  SAP: "NYSE:SAP", // SAP (ADR)
-  NVO: "NYSE:NVO", // Novo Nordisk (ADR)
-};
-
-// Auto-detect exchange based on patterns and mapping
-const detectExchange = (symbol) => {
-  const upperSymbol = symbol.toUpperCase();
-
-  // Check explicit mapping first (most reliable)
-  if (EXCHANGE_MAPPING[upperSymbol]) {
-    return EXCHANGE_MAPPING[upperSymbol];
-  }
-
-  // For unmapped US stocks, use fallback logic
-  const nyseSingleLetters = ["C", "F", "T", "V"];
-  if (nyseSingleLetters.includes(upperSymbol)) {
-    return `NYSE:${upperSymbol}`;
-  }
-
-  // Default fallback options in order of preference
-  return [
-    `NASDAQ:${upperSymbol}`,
-    `NYSE:${upperSymbol}`,
-    upperSymbol, // TradingView auto-detect
-  ];
-};
-
-// Enhanced TradingView Chart Component
+// Enhanced TradingView Chart Component with Auto-Detection
 const TradingViewChart: React.FC<{
   symbol: string;
   theme?: string;
@@ -190,6 +128,20 @@ const TradingViewChart: React.FC<{
   const containerId = `tradingview_${symbol}_${Date.now()}_${Math.random()
     .toString(36)
     .substr(2, 9)}`;
+
+  // Smart symbol detection with TradingView auto-detection + fallbacks
+  const getSymbolOptions = (symbol) => {
+    const upperSymbol = symbol.toUpperCase();
+
+    // Return multiple options for TradingView to try
+    // TradingView is smart enough to find the right exchange
+    return [
+      upperSymbol, // Auto-detection (TradingView finds the exchange)
+      `NASDAQ:${upperSymbol}`, // Explicit NASDAQ (for tech stocks)
+      `NYSE:${upperSymbol}`, // Explicit NYSE (for traditional companies)
+      `AMEX:${upperSymbol}`, // American Stock Exchange (for some smaller companies)
+    ];
+  };
 
   // Cleanup function to prevent duplication
   const cleanup = () => {
@@ -216,7 +168,7 @@ const TradingViewChart: React.FC<{
     setError(null);
 
     console.log(
-      `🎯 Loading TradingView chart for ${symbol} with exchange: ${symbolToTry}`
+      `🎯 TradingView Auto-Detection: Trying symbol "${symbolToTry}" for ${symbol}`
     );
 
     const script = document.createElement("script");
@@ -230,7 +182,7 @@ const TradingViewChart: React.FC<{
       autosize: false,
       width: "100%",
       height: height,
-      symbol: symbolToTry,
+      symbol: symbolToTry, // Let TradingView auto-detect or use explicit exchange
       interval: "1H",
       timezone: "Etc/UTC",
       theme: theme,
@@ -259,15 +211,27 @@ const TradingViewChart: React.FC<{
     const timeout = setTimeout(() => {
       console.warn(`⏰ TradingView widget timeout for symbol: ${symbolToTry}`);
       tryNextFallback();
-    }, 10000); // 10 second timeout
+    }, 8000); // 8 second timeout
 
     script.onload = () => {
       clearTimeout(timeout);
-      setLoading(false);
-      setCurrentSymbol(symbolToTry);
-      console.log(
-        `✅ TradingView widget loaded successfully for: ${symbolToTry}`
-      );
+      // Give TradingView a moment to render and check for errors
+      setTimeout(() => {
+        const iframe = containerRef.current?.querySelector("iframe");
+        if (iframe) {
+          setLoading(false);
+          setCurrentSymbol(symbolToTry);
+          console.log(
+            `✅ TradingView widget loaded successfully: ${symbolToTry}`
+          );
+        } else {
+          // No iframe means the widget failed to load
+          console.warn(
+            `❌ TradingView widget failed to render: ${symbolToTry}`
+          );
+          tryNextFallback();
+        }
+      }, 2000); // Give TradingView 2 seconds to render
     };
 
     script.onerror = () => {
@@ -281,25 +245,22 @@ const TradingViewChart: React.FC<{
 
   // Try next fallback option if current fails
   const tryNextFallback = () => {
-    const symbolOptions = detectExchange(symbol);
-    const optionsArray = Array.isArray(symbolOptions)
-      ? symbolOptions
-      : [symbolOptions];
+    const symbolOptions = getSymbolOptions(symbol);
 
-    if (fallbackIndex < optionsArray.length - 1) {
+    if (fallbackIndex < symbolOptions.length - 1) {
       const nextIndex = fallbackIndex + 1;
       setFallbackIndex(nextIndex);
       console.log(
-        `🔄 Trying fallback ${nextIndex + 1}/${optionsArray.length}: ${
-          optionsArray[nextIndex]
+        `🔄 Trying fallback ${nextIndex + 1}/${symbolOptions.length}: ${
+          symbolOptions[nextIndex]
         }`
       );
-      loadWidget(optionsArray[nextIndex]);
+      loadWidget(symbolOptions[nextIndex]);
     } else {
       // All options exhausted
-      setError(`Unable to load chart for symbol: ${symbol}`);
+      setError(`Chart not available for ${symbol}`);
       setLoading(false);
-      console.error(`❌ All fallback options exhausted for symbol: ${symbol}`);
+      console.error(`❌ All symbol options exhausted for: ${symbol}`);
     }
   };
 
@@ -308,10 +269,8 @@ const TradingViewChart: React.FC<{
     if (!symbol) return;
 
     setFallbackIndex(0);
-    const symbolOptions = detectExchange(symbol);
-    const firstOption = Array.isArray(symbolOptions)
-      ? symbolOptions[0]
-      : symbolOptions;
+    const symbolOptions = getSymbolOptions(symbol);
+    const firstOption = symbolOptions[0]; // Start with auto-detection
 
     loadWidget(firstOption);
 
@@ -323,11 +282,8 @@ const TradingViewChart: React.FC<{
   const retry = () => {
     setFallbackIndex(0);
     setError(null);
-    const symbolOptions = detectExchange(symbol);
-    const firstOption = Array.isArray(symbolOptions)
-      ? symbolOptions[0]
-      : symbolOptions;
-    loadWidget(firstOption);
+    const symbolOptions = getSymbolOptions(symbol);
+    loadWidget(symbolOptions[0]);
   };
 
   // Error state UI
@@ -380,7 +336,7 @@ const TradingViewChart: React.FC<{
           <p className="text-slate-400">Loading chart for {symbol}...</p>
           {fallbackIndex > 0 && (
             <p className="text-xs text-slate-500 mt-2">
-              Trying alternative exchange... ({fallbackIndex + 1}/3)
+              Trying alternative format... ({fallbackIndex + 1}/4)
             </p>
           )}
         </div>
@@ -403,7 +359,7 @@ const TradingViewChart: React.FC<{
         >
           <span className="text-blue-400">{symbol} Chart</span> by TradingView
           {currentSymbol && currentSymbol !== symbol && (
-            <span className="text-slate-500"> ({currentSymbol})</span>
+            <span className="text-slate-500"> (Found as: {currentSymbol})</span>
           )}
         </a>
       </div>
