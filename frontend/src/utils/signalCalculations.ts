@@ -59,21 +59,40 @@ export const filterSignals = (
   });
 };
 
-// ✅ PRESERVE: Final score filtering for Signals page (working perfectly)
+// 🔧 FIXED: Final score filtering for Signals page with case-insensitive sector matching
 export const filterSignalsByFinalScore = (
   signals: Signal[],
   scoreThreshold: number[],
   sectorFilter: string,
   marketFilter: string
 ): Signal[] => {
+  console.log(
+    `🔍 Filtering signals - Sector: ${sectorFilter}, Market: ${marketFilter}, Threshold: ${scoreThreshold[0]}%`
+  );
+
   return signals.filter((signal) => {
     // Use the final calculated score instead of individual timeframe scores
     const finalScore = calculateFinalScore(signal.signals);
     const meetsThreshold = finalScore >= scoreThreshold[0];
+
+    // 🔧 FIXED: Case-insensitive sector filtering with partial matching
     const meetsSector =
-      sectorFilter === "all" || signal.sector === sectorFilter;
+      sectorFilter === "all" ||
+      (signal.sector &&
+        signal.sector.toLowerCase().includes(sectorFilter.toLowerCase()));
+
+    // 🔧 IMPROVED: Case-insensitive market filtering with partial matching
     const meetsMarket =
-      marketFilter === "global" || signal.market === marketFilter;
+      marketFilter === "global" ||
+      (signal.market &&
+        signal.market.toLowerCase().includes(marketFilter.toLowerCase()));
+
+    // Debug logging for troubleshooting
+    if (sectorFilter !== "all") {
+      console.log(
+        `📊 ${signal.ticker}: sector="${signal.sector}" includes "${sectorFilter}"? ${meetsSector}`
+      );
+    }
 
     return meetsThreshold && meetsSector && meetsMarket;
   });

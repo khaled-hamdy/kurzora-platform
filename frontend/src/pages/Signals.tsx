@@ -46,6 +46,7 @@ import {
   calculateFinalScore,
 } from "../utils/signalCalculations";
 import { Signal } from "../types/signal";
+import { useSectorData } from "../hooks/useSectorData";
 
 // Test component to verify alert settings hook
 const TestAlertSettings = () => {
@@ -809,6 +810,14 @@ const Signals: React.FC = () => {
     refresh,
   } = useSignalsPageData();
 
+  // Dynamic sector data from Polygon.io
+  const {
+    sectors: availableSectors,
+    loading: sectorsLoading,
+    error: sectorsError,
+    refresh: refreshSectors,
+  } = useSectorData();
+
   // URL parameter detection
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -1107,20 +1116,39 @@ const Signals: React.FC = () => {
               </div>
               <div>
                 <label className="text-slate-300 text-sm font-medium mb-2 block">
-                  Sector
+                  Sector{" "}
+                  {sectorsLoading && (
+                    <span className="text-xs text-slate-500">(Loading...)</span>
+                  )}
                 </label>
                 <Select value={sectorFilter} onValueChange={setSectorFilter}>
                   <SelectTrigger className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-700 border-slate-600">
-                    <SelectItem value="all">All Sectors</SelectItem>
-                    <SelectItem value="technology">Technology</SelectItem>
-                    <SelectItem value="finance">Finance</SelectItem>
-                    <SelectItem value="healthcare">Healthcare</SelectItem>
-                    <SelectItem value="energy">Energy</SelectItem>
+                    <SelectItem value="all">🌐 All Sectors</SelectItem>
+                    {availableSectors.map((sector) => (
+                      <SelectItem key={sector.value} value={sector.value}>
+                        {sector.icon} {sector.name}
+                      </SelectItem>
+                    ))}
+                    {sectorsError && (
+                      <SelectItem value="refresh" disabled>
+                        <span className="text-amber-400">
+                          ⚠️ Error loading sectors
+                        </span>
+                      </SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
+                {sectorsError && (
+                  <button
+                    onClick={refreshSectors}
+                    className="text-xs text-blue-400 hover:text-blue-300 mt-1"
+                  >
+                    🔄 Retry loading sectors
+                  </button>
+                )}
               </div>
               <div>
                 <label className="text-slate-300 text-sm font-medium mb-2 block">
@@ -1146,7 +1174,11 @@ const Signals: React.FC = () => {
                 <div className="flex items-center space-x-4 text-slate-400">
                   <span>📊 Score: {scoreThreshold[0]}%+</span>
                   <span>
-                    🏢 {sectorFilter === "all" ? "All Sectors" : sectorFilter}
+                    🏢{" "}
+                    {sectorFilter === "all"
+                      ? "All Sectors"
+                      : availableSectors.find((s) => s.value === sectorFilter)
+                          ?.name || sectorFilter}
                   </span>
                   <span>
                     🌍{" "}
@@ -1155,7 +1187,14 @@ const Signals: React.FC = () => {
                       : marketFilter}
                   </span>
                 </div>
-                <span className="text-emerald-400">Filters Active</span>
+                <div className="flex items-center space-x-2">
+                  <span className="text-emerald-400">Filters Active</span>
+                  {sectorsLoading && (
+                    <span className="text-blue-400 text-xs">
+                      📡 Loading sectors from Polygon.io...
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </CardContent>

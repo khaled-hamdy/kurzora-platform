@@ -28,6 +28,30 @@ interface SignalHeatmapProps {
   onOpenSignalModal?: (signal: any) => void;
 }
 
+// 🚀 CASE-INSENSITIVE SECTOR MATCHING FUNCTION
+const normalizeSectorName = (sectorName: string): string => {
+  return sectorName.toLowerCase().replace(/\s+/g, " ").trim();
+};
+
+const sectorMatches = (signalSector: string, filterSector: string): boolean => {
+  if (filterSector === "all") return true;
+
+  // Handle both the filter key and the actual sector name
+  const normalizedSignalSector = normalizeSectorName(signalSector);
+  const normalizedFilterSector = normalizeSectorName(filterSector);
+
+  // Try exact match first
+  if (normalizedSignalSector === normalizedFilterSector) {
+    return true;
+  }
+
+  // Try partial matches for flexibility
+  return (
+    normalizedSignalSector.includes(normalizedFilterSector) ||
+    normalizedFilterSector.includes(normalizedSignalSector)
+  );
+};
+
 // ✅ NEW: Dashboard Upgrade Prompt Component
 const DashboardUpgradePrompt: React.FC<{ hiddenCount: number }> = ({
   hiddenCount,
@@ -202,16 +226,30 @@ const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
     }
   };
 
-  // ✅ STEP 1: Apply consistent final score filtering (unified with Signals page)
+  // ✅ STEP 1: Apply consistent final score filtering (unified with Signals page) - FIXED SECTOR MATCHING
   const baseFilteredSignals = React.useMemo(() => {
     return signals.filter((signal) => {
       // 🚀 NEW: Use final calculated score instead of individual timeframe scores
       const finalScore = calculateFinalScore(signal.signals);
       const meetsThreshold = finalScore >= scoreThreshold[0];
-      const meetsSector =
-        sectorFilter === "all" || signal.sector === sectorFilter;
+
+      // 🚀 FIXED: Use case-insensitive sector matching instead of direct string comparison
+      const meetsSector = sectorMatches(signal.sector || "", sectorFilter);
+
       const meetsMarket =
         marketFilter === "global" || signal.market === marketFilter;
+
+      // Debug logging to help troubleshoot filtering
+      if (sectorFilter !== "all") {
+        console.log(`🔍 Signal ${signal.ticker} filtering:`, {
+          sector: signal.sector,
+          sectorFilter,
+          meetsSector,
+          finalScore,
+          meetsThreshold,
+          meetsMarket,
+        });
+      }
 
       return meetsThreshold && meetsSector && meetsMarket;
     });

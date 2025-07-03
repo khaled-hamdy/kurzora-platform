@@ -1,6 +1,7 @@
-// 🌍 MARKET CONFIGURATION
-// This defines all the markets your platform supports with proper flags and labels
+// Dynamic Filter Configuration with Real Database Sectors
+// File: src/config/filterConfig.ts
 
+// 🌍 MARKET CONFIGURATION (unchanged)
 export const MARKET_CONFIG = {
   global: {
     label: "Global",
@@ -46,10 +47,154 @@ export const MARKET_CONFIG = {
   },
 };
 
-// 🏢 SECTOR CONFIGURATION
-// This defines all the sectors your platform tracks with proper icons and descriptions
+// 🎨 SECTOR ICON AND COLOR MAPPING
+// Maps database sector names to UI elements
+const SECTOR_MAPPING = {
+  technology: {
+    icon: "💻",
+    color: "bg-blue-600",
+    description: "Software, hardware, and tech services",
+  },
+  "financial services": {
+    icon: "🏦",
+    color: "bg-green-600",
+    description: "Banks, insurance, and financial services",
+  },
+  financial: {
+    icon: "🏦",
+    color: "bg-green-600",
+    description: "Banks, insurance, and financial services",
+  },
+  industrials: {
+    icon: "🏭",
+    color: "bg-gray-600",
+    description: "Manufacturing and industrial companies",
+  },
+  "basic materials": {
+    icon: "🏗️",
+    color: "bg-amber-600",
+    description: "Mining, chemicals, and raw materials",
+  },
+  materials: {
+    icon: "🏗️",
+    color: "bg-amber-600",
+    description: "Mining, chemicals, and raw materials",
+  },
+  "consumer cyclical": {
+    icon: "🛍️",
+    color: "bg-purple-600",
+    description: "Retail and consumer discretionary",
+  },
+  "consumer defensive": {
+    icon: "🥫",
+    color: "bg-emerald-600",
+    description: "Food, beverages, and staples",
+  },
+  "real estate": {
+    icon: "🏠",
+    color: "bg-red-600",
+    description: "REITs and real estate companies",
+  },
+  healthcare: {
+    icon: "🏥",
+    color: "bg-pink-600",
+    description: "Pharmaceuticals and medical devices",
+  },
+  energy: {
+    icon: "⚡",
+    color: "bg-yellow-600",
+    description: "Oil, gas, and energy companies",
+  },
+  utilities: {
+    icon: "💡",
+    color: "bg-cyan-600",
+    description: "Electric, gas, and water utilities",
+  },
+  communication: {
+    icon: "📱",
+    color: "bg-indigo-600",
+    description: "Telecommunications and media",
+  },
+  crypto: {
+    icon: "₿",
+    color: "bg-orange-600",
+    description: "Cryptocurrency and blockchain",
+  },
+};
 
-export const SECTOR_CONFIG = {
+// 🔄 DYNAMIC SECTOR CONFIGURATION
+// Interface for sector config to maintain type safety
+export interface SectorConfig {
+  label: string;
+  icon: string;
+  description: string;
+  color: string;
+}
+
+// Generate filter value from sector name
+const createSectorKey = (sectorName: string): string => {
+  return sectorName.toLowerCase().replace(/\s+/g, " ").trim();
+};
+
+// Get UI elements for a sector
+const getSectorUIElements = (
+  sectorName: string
+): { icon: string; color: string; description: string } => {
+  const normalizedName = sectorName.toLowerCase().trim();
+
+  // Try exact match first
+  if (SECTOR_MAPPING[normalizedName as keyof typeof SECTOR_MAPPING]) {
+    return SECTOR_MAPPING[normalizedName as keyof typeof SECTOR_MAPPING];
+  }
+
+  // Try partial matches for flexibility
+  for (const [key, value] of Object.entries(SECTOR_MAPPING)) {
+    if (normalizedName.includes(key) || key.includes(normalizedName)) {
+      return value;
+    }
+  }
+
+  // Default fallback
+  return { icon: "🏢", color: "bg-slate-600", description: sectorName };
+};
+
+// Generate dynamic sector configuration
+export const generateDynamicSectorConfig = (
+  realSectors: string[]
+): Record<string, SectorConfig> => {
+  console.log("🔧 Generating dynamic sector config from:", realSectors);
+
+  // Start with "All Sectors" option
+  const config: Record<string, SectorConfig> = {
+    all: {
+      label: "All Sectors",
+      icon: "📊",
+      description: "All industry sectors",
+      color: "bg-slate-600",
+    },
+  };
+
+  // Add real sectors from database
+  realSectors.forEach((sectorName) => {
+    if (sectorName && sectorName.trim()) {
+      const key = createSectorKey(sectorName);
+      const uiElements = getSectorUIElements(sectorName);
+
+      config[key] = {
+        label: sectorName,
+        icon: uiElements.icon,
+        description: uiElements.description,
+        color: uiElements.color,
+      };
+    }
+  });
+
+  console.log("✅ Generated sector config:", Object.keys(config));
+  return config;
+};
+
+// 🔧 FALLBACK SECTOR CONFIGURATION (for when dynamic loading fails)
+export const FALLBACK_SECTOR_CONFIG = {
   all: {
     label: "All Sectors",
     icon: "📊",
@@ -62,41 +207,48 @@ export const SECTOR_CONFIG = {
     description: "Software, hardware, and tech services",
     color: "bg-blue-600",
   },
-  finance: {
-    label: "Finance",
+  "financial services": {
+    label: "Financial Services",
     icon: "🏦",
     description: "Banks, insurance, and financial services",
     color: "bg-green-600",
   },
-  healthcare: {
-    label: "Healthcare",
-    icon: "🏥",
-    description: "Pharmaceuticals, medical devices, and health services",
-    color: "bg-red-600",
+  industrials: {
+    label: "Industrials",
+    icon: "🏭",
+    description: "Manufacturing and industrial companies",
+    color: "bg-gray-600",
   },
-  energy: {
-    label: "Energy",
-    icon: "⚡",
-    description: "Oil, gas, renewable energy, and utilities",
-    color: "bg-yellow-600",
+  "basic materials": {
+    label: "Basic Materials",
+    icon: "🏗️",
+    description: "Mining, chemicals, and raw materials",
+    color: "bg-amber-600",
   },
-  consumer: {
-    label: "Consumer",
-    icon: "🛒",
-    description: "Retail, consumer goods, and services",
+  "consumer cyclical": {
+    label: "Consumer Cyclical",
+    icon: "🛍️",
+    description: "Retail and consumer discretionary",
     color: "bg-purple-600",
   },
-  crypto: {
-    label: "Crypto",
-    icon: "₿",
-    description: "Cryptocurrency and blockchain companies",
-    color: "bg-orange-600",
+  "consumer defensive": {
+    label: "Consumer Defensive",
+    icon: "🥫",
+    description: "Food, beverages, and staples",
+    color: "bg-emerald-600",
+  },
+  "real estate": {
+    label: "Real Estate",
+    icon: "🏠",
+    description: "REITs and real estate companies",
+    color: "bg-red-600",
   },
 };
 
-// ⏰ TIMEFRAME CONFIGURATION
-// This defines the different chart timeframes available
+// 📊 DEFAULT EXPORT (maintains backward compatibility)
+export const SECTOR_CONFIG = FALLBACK_SECTOR_CONFIG;
 
+// ⏰ TIMEFRAME CONFIGURATION (unchanged)
 export const TIMEFRAME_CONFIG = {
   "1H": {
     label: "1 Hour",
@@ -120,9 +272,7 @@ export const TIMEFRAME_CONFIG = {
   },
 };
 
-// 🎯 SCORE THRESHOLDS
-// This defines the score ranges and their meanings
-
+// 🎯 SCORE THRESHOLDS (unchanged)
 export const SCORE_CONFIG = {
   ranges: {
     strong: { min: 90, max: 100, label: "Strong", color: "bg-green-500" },
@@ -135,19 +285,36 @@ export const SCORE_CONFIG = {
   maximumThreshold: 100,
 };
 
-// 🔧 HELPER FUNCTIONS
-// Utility functions to work with the configurations
-
+// 🔧 HELPER FUNCTIONS (enhanced for dynamic sectors)
 export const getMarketLabel = (marketKey: string): string => {
   return (
     MARKET_CONFIG[marketKey as keyof typeof MARKET_CONFIG]?.label || marketKey
   );
 };
 
-export const getSectorLabel = (sectorKey: string): string => {
-  return (
-    SECTOR_CONFIG[sectorKey as keyof typeof SECTOR_CONFIG]?.label || sectorKey
-  );
+export const getSectorLabel = (
+  sectorKey: string,
+  dynamicConfig?: Record<string, SectorConfig>
+): string => {
+  // Use dynamic config if provided, otherwise fall back to static config
+  const configToUse = dynamicConfig || SECTOR_CONFIG;
+  return configToUse[sectorKey]?.label || sectorKey;
+};
+
+export const getSectorIcon = (
+  sectorKey: string,
+  dynamicConfig?: Record<string, SectorConfig>
+): string => {
+  const configToUse = dynamicConfig || SECTOR_CONFIG;
+  return configToUse[sectorKey]?.icon || "🏢";
+};
+
+export const getSectorColor = (
+  sectorKey: string,
+  dynamicConfig?: Record<string, SectorConfig>
+): string => {
+  const configToUse = dynamicConfig || SECTOR_CONFIG;
+  return configToUse[sectorKey]?.color || "bg-slate-600";
 };
 
 export const getScoreColor = (score: number): string => {
@@ -164,11 +331,9 @@ export const getScoreLabel = (score: number): string => {
   return SCORE_CONFIG.ranges.poor.label;
 };
 
-// 📋 TYPE DEFINITIONS
-// TypeScript types for better development experience
-
+// 📋 TYPE DEFINITIONS (enhanced)
 export type MarketKey = keyof typeof MARKET_CONFIG;
-export type SectorKey = keyof typeof SECTOR_CONFIG;
+export type SectorKey = string; // Now dynamic, so can't be keyof
 export type TimeframeKey = keyof typeof TIMEFRAME_CONFIG;
 
 export interface FilterOptions {
@@ -177,3 +342,17 @@ export interface FilterOptions {
   timeframe: TimeframeKey;
   scoreThreshold: number[];
 }
+
+// 🚀 HOOK FOR DYNAMIC SECTOR CONFIG
+// This integrates with useSectorData to provide real-time sector configuration
+export const useDynamicSectorConfig = () => {
+  // This would integrate with your useSectorData hook
+  // For now, it returns the fallback config
+  // In the enhanced version, it would return generateDynamicSectorConfig(realSectors)
+
+  // TODO: Integrate with useSectorData hook
+  // const { sectors } = useSectorData();
+  // return generateDynamicSectorConfig(sectors.map(s => s.name));
+
+  return FALLBACK_SECTOR_CONFIG;
+};

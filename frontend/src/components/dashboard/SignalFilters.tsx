@@ -1,5 +1,5 @@
 import React from "react";
-import { Filter, Calendar, Globe } from "lucide-react";
+import { Filter, Calendar, Globe, RefreshCw } from "lucide-react";
 import { Button } from "../ui/button";
 import { Slider } from "../ui/slider";
 import {
@@ -12,9 +12,11 @@ import {
 import { Label } from "../ui/label";
 import {
   MARKET_CONFIG,
-  SECTOR_CONFIG,
   TIMEFRAME_CONFIG,
+  generateDynamicSectorConfig,
+  FALLBACK_SECTOR_CONFIG,
 } from "../../config/filterConfig";
+import { useSectorData } from "../../hooks/useSectorData";
 
 interface SignalFiltersProps {
   timeFilter: string;
@@ -26,7 +28,7 @@ interface SignalFiltersProps {
   marketFilter: string;
   setMarketFilter: (value: string) => void;
   language: string;
-  onFiltersChange?: () => void; // NEW: Callback to trigger data refresh
+  onFiltersChange?: () => void; // Callback to trigger data refresh
 }
 
 const SignalFilters: React.FC<SignalFiltersProps> = ({
@@ -43,9 +45,36 @@ const SignalFilters: React.FC<SignalFiltersProps> = ({
 }) => {
   const timeframes = ["1H", "4H", "1D", "1W"];
 
+  // 🚀 DYNAMIC SECTOR DATA
+  const {
+    sectors: availableSectors,
+    loading: sectorsLoading,
+    error: sectorsError,
+    refresh: refreshSectors,
+  } = useSectorData();
+
+  // Generate dynamic sector configuration
+  const sectorConfig = React.useMemo(() => {
+    if (availableSectors && availableSectors.length > 0) {
+      // Create sector names array from the sector data
+      const sectorNames = availableSectors.map((sector) => sector.name);
+      return generateDynamicSectorConfig(sectorNames);
+    }
+    return FALLBACK_SECTOR_CONFIG;
+  }, [availableSectors]);
+
+  // Debug logging
+  console.log("🔍 Dashboard SignalFilters - Dynamic sector state:", {
+    availableSectors: availableSectors?.length || 0,
+    sectorsLoading,
+    sectorsError,
+    sectorConfigKeys: Object.keys(sectorConfig),
+    currentSector: sectorFilter,
+  });
+
   // ENHANCED: Market filter handler with data refresh
   const handleMarketChange = (value: string) => {
-    console.log("🌍 Market filter changed to:", value);
+    console.log("🌍 Dashboard Market filter changed to:", value);
     setMarketFilter(value);
     // Trigger data refresh after filter change
     if (onFiltersChange) {
@@ -55,7 +84,7 @@ const SignalFilters: React.FC<SignalFiltersProps> = ({
 
   // ENHANCED: Sector filter handler with data refresh
   const handleSectorChange = (value: string) => {
-    console.log("🏢 Sector filter changed to:", value);
+    console.log("🏢 Dashboard Sector filter changed to:", value);
     setSectorFilter(value);
     // Trigger data refresh after filter change
     if (onFiltersChange) {
@@ -65,7 +94,7 @@ const SignalFilters: React.FC<SignalFiltersProps> = ({
 
   // ENHANCED: Score threshold handler with data refresh
   const handleScoreChange = (value: number[]) => {
-    console.log("📊 Score threshold changed to:", value[0]);
+    console.log("📊 Dashboard Score threshold changed to:", value[0]);
     setScoreThreshold(value);
     // Trigger data refresh after filter change
     if (onFiltersChange) {
@@ -75,7 +104,7 @@ const SignalFilters: React.FC<SignalFiltersProps> = ({
 
   // ENHANCED: Timeframe handler with data refresh
   const handleTimeframeChange = (period: string) => {
-    console.log("⏰ Timeframe changed to:", period);
+    console.log("⏰ Dashboard Timeframe changed to:", period);
     setTimeFilter(period);
     // Trigger data refresh after filter change
     if (onFiltersChange) {
@@ -149,7 +178,7 @@ const SignalFilters: React.FC<SignalFiltersProps> = ({
           </Select>
         </div>
 
-        {/* Sector Filter - Enhanced with config - OPEN FOR EVERYONE */}
+        {/* 🚀 DYNAMIC SECTOR FILTER */}
         <div className="space-y-3">
           <div className="flex items-center space-x-2">
             <Filter className="h-4 w-4 text-slate-400" />
@@ -159,6 +188,11 @@ const SignalFilters: React.FC<SignalFiltersProps> = ({
                 : language === "de"
                 ? "Sektor"
                 : "Sector"}
+              {sectorsLoading && (
+                <span className="text-xs text-slate-500 ml-1">
+                  (Loading...)
+                </span>
+              )}
             </Label>
           </div>
           <Select value={sectorFilter} onValueChange={handleSectorChange}>
@@ -166,7 +200,7 @@ const SignalFilters: React.FC<SignalFiltersProps> = ({
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-slate-700 border-slate-600 rounded-lg shadow-xl z-50">
-              {Object.entries(SECTOR_CONFIG).map(([key, config]) => (
+              {Object.entries(sectorConfig).map(([key, config]) => (
                 <SelectItem
                   key={key}
                   value={key}
@@ -175,8 +209,24 @@ const SignalFilters: React.FC<SignalFiltersProps> = ({
                   {config.icon} {config.label}
                 </SelectItem>
               ))}
+              {sectorsError && (
+                <SelectItem value="error" disabled>
+                  <span className="text-amber-400">
+                    ⚠️ Error loading sectors
+                  </span>
+                </SelectItem>
+              )}
             </SelectContent>
           </Select>
+          {sectorsError && (
+            <button
+              onClick={refreshSectors}
+              className="text-xs text-blue-400 hover:text-blue-300 flex items-center space-x-1 mt-1"
+            >
+              <RefreshCw className="h-3 w-3" />
+              <span>Retry loading sectors</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -211,21 +261,23 @@ const SignalFilters: React.FC<SignalFiltersProps> = ({
         </div>
       </div>
 
-      {/* BONUS: Filter Status Indicator */}
+      {/* ENHANCED: Filter Status Indicator with Dynamic Sectors */}
       <div className="flex items-center justify-between text-xs text-slate-400 border-t border-slate-700/50 pt-3">
         <div className="flex items-center space-x-4">
           <span>
             🌍{" "}
             {MARKET_CONFIG[marketFilter as keyof typeof MARKET_CONFIG]?.label}
           </span>
-          <span>
-            🏢{" "}
-            {SECTOR_CONFIG[sectorFilter as keyof typeof SECTOR_CONFIG]?.label}
-          </span>
+          <span>🏢 {sectorConfig[sectorFilter]?.label || sectorFilter}</span>
           <span>📊 Min: {scoreThreshold[0]}%</span>
           <span>⏰ {timeFilter}</span>
         </div>
-        <div className="text-emerald-400">Filters Active</div>
+        <div className="flex items-center space-x-2">
+          <span className="text-emerald-400">Dashboard Filters Active</span>
+          {sectorsLoading && (
+            <span className="text-blue-400 text-xs">📡 Loading sectors...</span>
+          )}
+        </div>
       </div>
     </div>
   );
