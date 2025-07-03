@@ -52,6 +52,53 @@ const sectorMatches = (signalSector: string, filterSector: string): boolean => {
   );
 };
 
+// 🚀 EXCHANGE-TO-COUNTRY MARKET MATCHING FUNCTION
+const marketMatches = (signalMarket: string, filterMarket: string): boolean => {
+  if (filterMarket === "global") return true;
+
+  // Handle case where signal.market might be null/undefined
+  if (!signalMarket) return filterMarket === "global";
+
+  const normalizedSignalMarket = signalMarket.toLowerCase().trim();
+  const normalizedFilterMarket = filterMarket.toLowerCase().trim();
+
+  // 🚀 USA Exchange Mapping
+  if (normalizedFilterMarket === "usa") {
+    const usaExchanges = [
+      "nasdaq",
+      "nyse",
+      "amex",
+      "otc",
+      "pink",
+      "usa",
+      "us",
+      "united states",
+    ];
+
+    return usaExchanges.some(
+      (exchange) =>
+        normalizedSignalMarket === exchange ||
+        normalizedSignalMarket.includes(exchange)
+    );
+  }
+
+  // Direct country match
+  if (normalizedSignalMarket === normalizedFilterMarket) {
+    return true;
+  }
+
+  // 🚀 Future: Add other country mappings here
+  // Saudi Arabia: TADAWUL
+  // UAE: DFM, ADX
+  // etc.
+
+  // Fallback: partial match
+  return (
+    normalizedSignalMarket.includes(normalizedFilterMarket) ||
+    normalizedFilterMarket.includes(normalizedSignalMarket)
+  );
+};
+
 // ✅ NEW: Dashboard Upgrade Prompt Component
 const DashboardUpgradePrompt: React.FC<{ hiddenCount: number }> = ({
   hiddenCount,
@@ -226,7 +273,7 @@ const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
     }
   };
 
-  // ✅ STEP 1: Apply consistent final score filtering (unified with Signals page) - FIXED SECTOR MATCHING
+  // ✅ STEP 1: Apply consistent final score filtering (unified with Signals page) - FIXED SECTOR & MARKET MATCHING
   const baseFilteredSignals = React.useMemo(() => {
     return signals.filter((signal) => {
       // 🚀 NEW: Use final calculated score instead of individual timeframe scores
@@ -236,18 +283,20 @@ const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
       // 🚀 FIXED: Use case-insensitive sector matching instead of direct string comparison
       const meetsSector = sectorMatches(signal.sector || "", sectorFilter);
 
-      const meetsMarket =
-        marketFilter === "global" || signal.market === marketFilter;
+      // 🚀 FIXED: Use exchange-to-country market matching instead of direct string comparison
+      const meetsMarket = marketMatches(signal.market || "", marketFilter);
 
-      // Debug logging to help troubleshoot filtering
-      if (sectorFilter !== "all") {
+      // Debug logging when filters are active
+      if (sectorFilter !== "all" || marketFilter !== "global") {
         console.log(`🔍 Signal ${signal.ticker} filtering:`, {
           sector: signal.sector,
           sectorFilter,
           meetsSector,
+          market: signal.market,
+          marketFilter,
+          meetsMarket,
           finalScore,
           meetsThreshold,
-          meetsMarket,
         });
       }
 

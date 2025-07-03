@@ -45,6 +45,12 @@ const SignalFilters: React.FC<SignalFiltersProps> = ({
 }) => {
   const timeframes = ["1H", "4H", "1D", "1W"];
 
+  // 🚀 DASHBOARD-SPECIFIC: Simplified market options (Global + USA only)
+  const dashboardMarkets = {
+    global: MARKET_CONFIG.global,
+    usa: MARKET_CONFIG.usa,
+  };
+
   // 🚀 DYNAMIC SECTOR DATA
   const {
     sectors: availableSectors,
@@ -148,7 +154,7 @@ const SignalFilters: React.FC<SignalFiltersProps> = ({
           </div>
         </div>
 
-        {/* Market Filter - Enhanced with config */}
+        {/* Market Filter - SIMPLIFIED: Global + USA Only */}
         <div className="space-y-3">
           <div className="flex items-center space-x-2">
             <Globe className="h-4 w-4 text-slate-400" />
@@ -165,7 +171,7 @@ const SignalFilters: React.FC<SignalFiltersProps> = ({
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-slate-700 border-slate-600 rounded-lg shadow-xl z-50">
-              {Object.entries(MARKET_CONFIG).map(([key, config]) => (
+              {Object.entries(dashboardMarkets).map(([key, config]) => (
                 <SelectItem
                   key={key}
                   value={key}
@@ -266,7 +272,8 @@ const SignalFilters: React.FC<SignalFiltersProps> = ({
         <div className="flex items-center space-x-4">
           <span>
             🌍{" "}
-            {MARKET_CONFIG[marketFilter as keyof typeof MARKET_CONFIG]?.label}
+            {dashboardMarkets[marketFilter as keyof typeof dashboardMarkets]
+              ?.label || marketFilter}
           </span>
           <span>🏢 {sectorConfig[sectorFilter]?.label || sectorFilter}</span>
           <span>📊 Min: {scoreThreshold[0]}%</span>
