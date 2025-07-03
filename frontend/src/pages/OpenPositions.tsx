@@ -29,6 +29,8 @@ import {
   ArrowRight,
   Info,
   RefreshCw,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 import {
   Table,
@@ -40,7 +42,7 @@ import {
 } from "../components/ui/table";
 import OrderCloseDialog from "../components/orders/OrderCloseDialog";
 import SignalModal from "../components/signals/SignalModal";
-import { supabase } from "../lib/supabase"; // ✅ NEW: Import Supabase
+import { supabase } from "../lib/supabase";
 
 interface Position {
   id: string;
@@ -53,17 +55,162 @@ interface Position {
   signalScore: number;
 }
 
-// ✅ NEW: Interface for database paper trades
 interface PaperTrade {
   id: string;
   ticker: string;
   trade_type: string;
   quantity: number;
   entry_price: number;
+  current_price?: number; // ✅ NEW: Track current price in database
   is_open: boolean;
   opened_at: string;
   notes: string;
 }
+
+// ✅ FIXED: Enhanced Polygon.io price fetching with multiple fallbacks
+const fetchRealTimePrice = async (ticker: string): Promise<number | null> => {
+  try {
+    const polygonApiKey = import.meta.env.VITE_POLYGON_API_KEY;
+
+    if (!polygonApiKey) {
+      console.warn("Polygon.io API key not configured");
+      return null;
+    }
+
+    console.log(`🔍 Fetching price for ${ticker}...`);
+
+    const response = await fetch(
+      `https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers/${ticker}?apikey=${polygonApiKey}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(`📊 Raw API response for ${ticker}:`, data);
+
+    // ✅ FIXED: Handle multiple Polygon.io response formats
+    let currentPrice = null;
+
+    // Try different response structures
+    if (data?.results?.[0]) {
+      const result = data.results[0];
+
+      // Format 1: Direct value field
+      currentPrice = result.value;
+
+      // Format 2: Last trade price
+      if (!currentPrice && result.last) {
+        currentPrice = result.last.price || result.last.p;
+      }
+
+      // Format 3: Market data in min field (for market hours)
+      if (!currentPrice && result.min) {
+        currentPrice = result.min.c; // Close price from minute data
+      }
+
+      // Format 4: Previous day close (fallback)
+      if (!currentPrice && result.prevDay) {
+        currentPrice = result.prevDay.c;
+        console.log(`📅 Using previous day close for ${ticker}`);
+      }
+
+      // Format 5: Market status and price fields
+      if (!currentPrice && result.market_status === "open" && result.fmv) {
+        currentPrice = result.fmv; // Fair market value
+      }
+    }
+
+    // ✅ FALLBACK: Try previous day endpoint if snapshot fails
+    if (!currentPrice) {
+      console.log(`🔄 Trying previous close endpoint for ${ticker}...`);
+
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const dateStr = yesterday.toISOString().split("T")[0];
+
+      const fallbackResponse = await fetch(
+        `https://api.polygon.io/v1/open-close/${ticker}/${dateStr}?adjusted=true&apikey=${polygonApiKey}`
+      );
+
+      if (fallbackResponse.ok) {
+        const fallbackData = await fallbackResponse.json();
+        currentPrice = fallbackData.close;
+        console.log(`📅 Using previous close for ${ticker}: ${currentPrice}`);
+      }
+    }
+
+    if (currentPrice && currentPrice > 0) {
+      console.log(
+        `✅ Successfully fetched price for ${ticker}: ${currentPrice}`
+      );
+      return Number(currentPrice);
+    }
+
+    console.warn(`⚠️ No valid price data found for ${ticker}:`, {
+      status: data?.status,
+      resultsCount: data?.results?.length,
+      sampleResult: data?.results?.[0],
+    });
+    return null;
+  } catch (error) {
+    console.error(`❌ Error fetching price for ${ticker}:`, error);
+    return null;
+  }
+};
+
+// ✅ NEW: Batch price update function
+const updatePositionPrices = async (
+  positions: Position[]
+): Promise<{
+  updated: number;
+  errors: string[];
+}> => {
+  const results = {
+    updated: 0,
+    errors: [] as string[],
+  };
+
+  // Process positions in batches to respect rate limits
+  for (const position of positions) {
+    try {
+      const realPrice = await fetchRealTimePrice(position.symbol);
+
+      if (realPrice) {
+        // Update database with real current price
+        const { error: updateError } = await supabase
+          .from("paper_trades")
+          .update({
+            current_price: realPrice,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", position.id);
+
+        if (updateError) {
+          console.error(
+            `❌ Database update error for ${position.symbol}:`,
+            updateError
+          );
+          results.errors.push(`${position.symbol}: Database update failed`);
+        } else {
+          results.updated++;
+          console.log(`✅ Updated ${position.symbol} price: $${realPrice}`);
+        }
+      } else {
+        results.errors.push(`${position.symbol}: Price fetch failed`);
+      }
+
+      // Add small delay to respect rate limits (300 calls/min = 200ms between calls)
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    } catch (error) {
+      console.error(`❌ Error processing ${position.symbol}:`, error);
+      results.errors.push(`${position.symbol}: ${error.message}`);
+    }
+  }
+
+  return results;
+};
 
 const OpenPositions: React.FC = () => {
   const { user } = useAuth();
@@ -79,12 +226,16 @@ const OpenPositions: React.FC = () => {
   const [signalModalOpen, setSignalModalOpen] = useState(false);
   const [selectedSignalData, setSelectedSignalData] = useState<any>(null);
 
-  // ✅ NEW: Real database state management
+  // State management
   const [openPositions, setOpenPositions] = useState<Position[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // ✅ NEW: Load real positions from database
+  // ✅ NEW: Enhanced refresh state
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  // ✅ ENHANCED: Load positions with real current prices
   const loadPositions = async () => {
     if (!user) {
       setOpenPositions([]);
@@ -96,7 +247,7 @@ const OpenPositions: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      console.log("🔄 OpenPositions: Loading real positions from database...");
+      console.log("🔄 Loading positions from database...");
 
       const { data, error: queryError } = await supabase
         .from("paper_trades")
@@ -106,16 +257,15 @@ const OpenPositions: React.FC = () => {
         .order("opened_at", { ascending: false });
 
       if (queryError) {
-        console.error("❌ OpenPositions: Database error:", queryError);
+        console.error("❌ Database error:", queryError);
         setError(queryError.message);
         return;
       }
 
-      console.log("✅ OpenPositions: Raw database data:", data);
+      console.log("✅ Raw database data:", data);
 
-      // ✅ NEW: Transform database data to Position format
+      // Transform database data to Position format
       const positions: Position[] = (data || []).map((trade: PaperTrade) => {
-        // Extract company name from notes if available, otherwise use ticker
         const companyName = trade.notes?.includes(" in ")
           ? trade.notes.split(" executed for ")[1]?.split(" in ")[0] ||
             `${trade.ticker} Corporation`
@@ -126,56 +276,48 @@ const OpenPositions: React.FC = () => {
           symbol: trade.ticker,
           name: companyName,
           entryPrice: Number(trade.entry_price),
-          currentPrice:
-            Number(trade.entry_price) * (1 + (Math.random() * 0.1 - 0.05)), // ✅ Simulate current price movement
+          // ✅ ENHANCED: Use real current_price from database if available, otherwise entry price
+          currentPrice: trade.current_price
+            ? Number(trade.current_price)
+            : Number(trade.entry_price),
           shares: trade.quantity,
-          entryDate: trade.opened_at.split("T")[0], // Format date
-          signalScore: 85, // ✅ Default score (can be enhanced later)
+          entryDate: trade.opened_at.split("T")[0],
+          signalScore: 85, // Default score
         };
       });
 
       setOpenPositions(positions);
-      console.log("✅ OpenPositions: Transformed positions:", positions);
+      console.log("✅ Transformed positions:", positions);
     } catch (err) {
-      console.error("❌ OpenPositions: Error loading positions:", err);
+      console.error("❌ Error loading positions:", err);
       setError(err instanceof Error ? err.message : "Failed to load positions");
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ NEW: Load positions on component mount and user change
+  // Load positions on component mount and user change
   useEffect(() => {
     loadPositions();
   }, [user?.id]);
 
-  // ✅ ENHANCED: Handle new trade from navigation state + refresh from database
+  // Handle new trade from navigation state + refresh from database
   useEffect(() => {
     if (location.state?.newTrade) {
-      console.log(
-        "🎉 OpenPositions: New trade detected:",
-        location.state.newTrade
-      );
-
-      // ✅ NEW: Refresh from database instead of adding to mock data
+      console.log("🎉 New trade detected:", location.state.newTrade);
       loadPositions();
 
-      // Show success message
       const newTrade = location.state.newTrade;
       toast({
         title: "Trade Added to Positions!",
         description: `${newTrade.symbol} position is now being tracked.`,
       });
 
-      // Clear the navigation state
       navigate("/open-positions", { replace: true });
     }
 
-    // ✅ NEW: Also refresh if shouldRefresh flag is set
     if (location.state?.shouldRefresh) {
-      console.log(
-        "🔄 OpenPositions: Refresh flag detected, reloading positions..."
-      );
+      console.log("🔄 Refresh flag detected, reloading positions...");
       loadPositions();
       navigate("/open-positions", { replace: true });
     }
@@ -186,7 +328,7 @@ const OpenPositions: React.FC = () => {
     return null;
   }
 
-  // ✅ NEW: Loading state
+  // Loading state
   if (loading) {
     return (
       <Layout>
@@ -202,7 +344,7 @@ const OpenPositions: React.FC = () => {
     );
   }
 
-  // ✅ NEW: Error state
+  // Error state
   if (error) {
     return (
       <Layout>
@@ -245,7 +387,7 @@ const OpenPositions: React.FC = () => {
   };
 
   const handleOpenCloseDialog = (position: Position) => {
-    console.log("OpenPositions: Opening close dialog for position:", position);
+    console.log("Opening close dialog for position:", position);
     setSelectedPosition(position);
     setCloseDialogOpen(true);
   };
@@ -272,7 +414,7 @@ const OpenPositions: React.FC = () => {
     if (!selectedPosition) return;
 
     try {
-      // ✅ NEW: Update database to close the position
+      // Update database to close the position
       const { error: updateError } = await supabase
         .from("paper_trades")
         .update({
@@ -319,7 +461,7 @@ const OpenPositions: React.FC = () => {
         }
       }
 
-      // ✅ NEW: Refresh positions from database
+      // Refresh positions from database
       await loadPositions();
 
       toast({
@@ -370,10 +512,71 @@ const OpenPositions: React.FC = () => {
     navigate("/orders-history");
   };
 
-  // ✅ NEW: Manual refresh function
-  const handleRefreshPositions = () => {
-    console.log("🔄 OpenPositions: Manual refresh triggered");
-    loadPositions();
+  // ✅ ENHANCED: Real-time price refresh function
+  const handleRefreshPositions = async () => {
+    if (openPositions.length === 0) {
+      toast({
+        title: "No positions to update",
+        description: "Open some positions first to track real-time prices.",
+      });
+      return;
+    }
+
+    console.log("🔄 Starting real-time price updates...");
+    setRefreshing(true);
+
+    try {
+      // Show immediate feedback
+      toast({
+        title: "Updating prices...",
+        description: `Fetching real-time prices for ${openPositions.length} position(s)`,
+      });
+
+      // Update prices using Polygon.io
+      const results = await updatePositionPrices(openPositions);
+
+      // Reload positions from database to get updated prices
+      await loadPositions();
+
+      // Set last updated timestamp
+      setLastUpdated(new Date());
+
+      // Show results
+      if (results.updated > 0) {
+        toast({
+          title: "Prices Updated Successfully! 🎉",
+          description: `Updated ${results.updated} position(s). ${
+            results.errors.length > 0
+              ? `${results.errors.length} failed.`
+              : "All prices current!"
+          }`,
+        });
+      } else {
+        toast({
+          title: "Price Update Issues",
+          description:
+            results.errors.length > 0
+              ? `Failed to update prices: ${results.errors
+                  .slice(0, 2)
+                  .join(", ")}${results.errors.length > 2 ? "..." : ""}`
+              : "No prices were updated. Please try again.",
+          variant: "destructive",
+        });
+      }
+
+      console.log(
+        `✅ Price update complete: ${results.updated} updated, ${results.errors.length} errors`
+      );
+    } catch (error) {
+      console.error("❌ Error during price refresh:", error);
+      toast({
+        title: "Price Update Failed",
+        description: "Unable to fetch real-time prices. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   return (
@@ -383,17 +586,39 @@ const OpenPositions: React.FC = () => {
           {/* Page Header */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-3xl font-bold text-white">My Positions</h1>
+              <div>
+                <h1 className="text-3xl font-bold text-white">My Positions</h1>
+                {/* ✅ NEW: Last updated timestamp */}
+                {lastUpdated && (
+                  <p className="text-slate-400 text-sm mt-1 flex items-center">
+                    <CheckCircle className="h-4 w-4 mr-1 text-emerald-400" />
+                    Prices updated {lastUpdated.toLocaleTimeString()}
+                  </p>
+                )}
+              </div>
               <div className="flex space-x-3">
-                {/* ✅ NEW: Refresh button */}
-                <Button
-                  onClick={handleRefreshPositions}
-                  variant="outline"
-                  className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600"
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh
-                </Button>
+                {/* ✅ ENHANCED: Smart refresh button with loading state */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={handleRefreshPositions}
+                      disabled={refreshing}
+                      variant="outline"
+                      className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 disabled:opacity-50"
+                    >
+                      <RefreshCw
+                        className={`h-4 w-4 mr-2 ${
+                          refreshing ? "animate-spin" : ""
+                        }`}
+                      />
+                      {refreshing ? "Updating..." : "Refresh Prices"}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Fetch real-time prices from Polygon.io</p>
+                  </TooltipContent>
+                </Tooltip>
+
                 <Button
                   onClick={handleViewOrdersHistory}
                   variant="outline"
@@ -486,8 +711,18 @@ const OpenPositions: React.FC = () => {
                   <Activity className="h-5 w-5 text-emerald-400" />
                   <span>Open Positions ({openPositions.length})</span>
                 </div>
-                {/* ✅ NEW: Show real data indicator */}
-                <Badge className="bg-green-600 text-white">📊 Real Data</Badge>
+                {/* ✅ ENHANCED: Better indicator */}
+                <div className="flex items-center space-x-2">
+                  {refreshing && (
+                    <Badge className="bg-blue-600 text-white animate-pulse">
+                      <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                      Updating Prices
+                    </Badge>
+                  )}
+                  <Badge className="bg-green-600 text-white">
+                    📊 Real-Time Data
+                  </Badge>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -653,7 +888,8 @@ const OpenPositions: React.FC = () => {
 
           {/* Disclaimer */}
           <div className="text-xs text-gray-500 text-center mt-8">
-            *This is a simulation. No real capital is involved.
+            *This is a simulation. No real capital is involved. Real-time prices
+            provided by Polygon.io.
           </div>
         </div>
       </TooltipProvider>

@@ -1,4 +1,4 @@
-// Fixed usePortfolioSummary hook - Recent Trades now shows ALL recent activity
+// Fixed usePortfolioSummary hook - Proper Portfolio Value + $25K Starting Balance
 // src/hooks/usePortfolioSummary.ts
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
@@ -9,31 +9,36 @@ interface RecentTrade {
   pnl: number;
   date: string;
   profit_loss_percentage?: number;
-  isOpen: boolean; // NEW: Track if position is open or closed
+  isOpen: boolean; // Track if position is open or closed
 }
 
 interface PortfolioSummary {
-  totalValue: number;
-  totalPnL: number;
-  totalPnLPercent: number;
-  winRate: number;
-  activePositions: number;
-  totalTrades: number;
-  recentTrades: RecentTrade[]; // Shows ALL recent activity (open + closed)
+  totalValue: number; // Total account value (cash + open positions)
+  availableCash: number; // NEW: Cash available for trading
+  totalPnL: number; // Total profit/loss from all trades
+  totalPnLPercent: number; // P&L percentage vs starting balance
+  winRate: number; // Success rate from closed trades
+  activePositions: number; // Number of open positions
+  totalTrades: number; // Total number of trades executed
+  recentTrades: RecentTrade[]; // Recent trading activity
   isLoading: boolean;
   error: string | null;
 }
 
+// ✅ UPGRADED: Starting balance increased to $25,000 (industry best practice)
+const STARTING_BALANCE = 25000; // $25K virtual money for proper portfolio management
+
 export const usePortfolioSummary = (): PortfolioSummary => {
   const { user } = useAuth();
   const [summary, setSummary] = useState<PortfolioSummary>({
-    totalValue: 0,
+    totalValue: STARTING_BALANCE, // Start with $25K
+    availableCash: STARTING_BALANCE, // All cash initially
     totalPnL: 0,
     totalPnLPercent: 0,
     winRate: 0,
     activePositions: 0,
     totalTrades: 0,
-    recentTrades: [], // Shows most recent trading activity
+    recentTrades: [],
     isLoading: true,
     error: null,
   });
@@ -54,39 +59,46 @@ export const usePortfolioSummary = (): PortfolioSummary => {
 
         if (error) throw error;
 
-        // Calculate metrics
+        // Separate open and closed trades
         const openTrades = trades?.filter((trade) => trade.is_open) || [];
         const closedTrades = trades?.filter((trade) => !trade.is_open) || [];
 
-        // Portfolio Value (sum of current market values for open positions)
-        const totalValue = openTrades.reduce((sum, trade) => {
+        // 💰 CALCULATE OPEN POSITIONS VALUE (current market value of stocks owned)
+        const openPositionsValue = openTrades.reduce((sum, trade) => {
           const currentPrice = trade.current_price || trade.entry_price;
           const currentValue = currentPrice * trade.quantity;
           return sum + currentValue;
         }, 0);
 
-        // Total P&L (open + closed)
+        // 📈 CALCULATE TOTAL P&L (profit/loss from all trading activity)
+
+        // Unrealized P&L (from open positions)
         const openPnL = openTrades.reduce((sum, trade) => {
           const currentPrice = trade.current_price || trade.entry_price;
           const pnl = (currentPrice - trade.entry_price) * trade.quantity;
           return sum + pnl;
         }, 0);
 
+        // Realized P&L (from closed positions)
         const closedPnL = closedTrades.reduce((sum, trade) => {
           return sum + (trade.profit_loss || 0);
         }, 0);
 
         const totalPnL = openPnL + closedPnL;
 
-        // Calculate total investment for percentage
-        const totalInvestment =
-          trades?.reduce((sum, trade) => {
-            return sum + trade.entry_price * trade.quantity;
-          }, 0) || 1;
+        // 🏦 CALCULATE PORTFOLIO VALUE (total account value)
+        // Portfolio Value = Starting Balance + Total P&L
+        // This represents the total value of the user's account
+        const totalValue = STARTING_BALANCE + totalPnL;
 
-        const totalPnLPercent = (totalPnL / totalInvestment) * 100;
+        // 💵 CALCULATE AVAILABLE CASH (money available for new trades)
+        // Available Cash = Total Portfolio Value - Open Positions Value
+        const availableCash = totalValue - openPositionsValue;
 
-        // Win Rate (only from closed trades)
+        // 📊 CALCULATE P&L PERCENTAGE (vs starting balance)
+        const totalPnLPercent = (totalPnL / STARTING_BALANCE) * 100;
+
+        // 🎯 CALCULATE WIN RATE (only from closed trades)
         const winningTrades = closedTrades.filter(
           (trade) => (trade.profit_loss || 0) > 0
         ).length;
@@ -95,7 +107,7 @@ export const usePortfolioSummary = (): PortfolioSummary => {
             ? (winningTrades / closedTrades.length) * 100
             : 0;
 
-        // 🎯 FIXED: Recent Trades now shows ALL recent activity (last 3 trades regardless of status)
+        // 📋 PREPARE RECENT TRADES (last 3 trades regardless of status)
         const recentTrades = (trades || []).slice(0, 3).map((trade) => {
           let pnl: number;
           let date: string;
@@ -131,20 +143,33 @@ export const usePortfolioSummary = (): PortfolioSummary => {
               ((trade.current_price || trade.entry_price - trade.entry_price) /
                 trade.entry_price) *
                 100,
-            isOpen: trade.is_open, // Track if this is an open or closed position
+            isOpen: trade.is_open,
           };
         });
 
+        // ✅ UPDATE STATE WITH CORRECTED CALCULATIONS
         setSummary({
-          totalValue,
-          totalPnL,
-          totalPnLPercent,
-          winRate,
-          activePositions: openTrades.length,
-          totalTrades: trades?.length || 0,
-          recentTrades, // ✅ Now includes your latest trades (2222.SR, AMZN, etc.)
+          totalValue, // $25,000 + $38,836 = $63,836 (total account value)
+          availableCash, // $63,836 - $0 = $63,836 (available for trading)
+          totalPnL, // +$38,836 (unchanged - your trading profit)
+          totalPnLPercent, // 155.3% return on $25K starting balance
+          winRate, // 100% (unchanged - perfect win rate!)
+          activePositions: openTrades.length, // 0 (no open positions)
+          totalTrades: trades?.length || 0, // Total trades executed
+          recentTrades, // Recent trading activity
           isLoading: false,
           error: null,
+        });
+
+        // 🎉 LOG SUCCESS (for debugging)
+        console.log("Portfolio Summary Calculated:", {
+          startingBalance: STARTING_BALANCE,
+          totalPnL,
+          totalValue,
+          availableCash,
+          openPositions: openTrades.length,
+          closedTrades: closedTrades.length,
+          winRate: `${winRate.toFixed(1)}%`,
         });
       } catch (error) {
         console.error("Error fetching portfolio summary:", error);
@@ -170,7 +195,7 @@ export const usePortfolioSummary = (): PortfolioSummary => {
           filter: `user_id=eq.${user.id}`,
         },
         () => {
-          console.log("Portfolio data changed - refreshing Recent Trades");
+          console.log("Portfolio data changed - refreshing summary");
           fetchPortfolioSummary();
         }
       )
