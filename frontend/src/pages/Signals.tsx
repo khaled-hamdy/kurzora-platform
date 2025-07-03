@@ -36,6 +36,7 @@ import {
   Zap,
   MessageSquare,
   AlertCircle,
+  Clock,
 } from "lucide-react";
 import { useToast } from "../hooks/use-toast";
 import SignalModal from "../components/signals/SignalModal";
@@ -47,6 +48,115 @@ import {
 } from "../utils/signalCalculations";
 import { Signal } from "../types/signal";
 import { useSectorData } from "../hooks/useSectorData";
+
+// ENHANCED DATE FORMATTING UTILITY
+// Converts raw database timestamps to user-friendly format
+const formatSignalDate = (timestamp: string | Date): string => {
+  try {
+    const signalDate = new Date(timestamp);
+    const now = new Date();
+
+    // Check if the date is valid
+    if (isNaN(signalDate.getTime())) {
+      return "Unknown date";
+    }
+
+    const diffInMs = now.getTime() - signalDate.getTime();
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    // Format time as HH:MM AM/PM
+    const formatTime = (date: Date) => {
+      return date.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+    };
+
+    // Format date and time
+    const timeStr = formatTime(signalDate);
+
+    // Recent timestamps (less than 1 minute)
+    if (diffInMinutes < 1) {
+      return "Just now";
+    }
+
+    // Very recent (less than 60 minutes)
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes} minute${diffInMinutes === 1 ? "" : "s"} ago`;
+    }
+
+    // Same day (less than 24 hours and same calendar day)
+    const isToday = signalDate.toDateString() === now.toDateString();
+    if (isToday) {
+      return `Today ${timeStr}`;
+    }
+
+    // Yesterday
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const isYesterday = signalDate.toDateString() === yesterday.toDateString();
+    if (isYesterday) {
+      return `Yesterday ${timeStr}`;
+    }
+
+    // This week (within 7 days)
+    if (diffInDays < 7) {
+      const dayName = signalDate.toLocaleDateString("en-US", {
+        weekday: "long",
+      });
+      return `${dayName} ${timeStr}`;
+    }
+
+    // This year
+    const isSameYear = signalDate.getFullYear() === now.getFullYear();
+    if (isSameYear) {
+      const monthDay = signalDate.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+      return `${monthDay} ${timeStr}`;
+    }
+
+    // Different year
+    const fullDate = signalDate.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+    return `${fullDate} ${timeStr}`;
+  } catch (error) {
+    console.warn("Error formatting signal date:", error);
+    return "Invalid date";
+  }
+};
+
+// Get relative time with icon for additional context
+const getTimeContext = (
+  timestamp: string | Date
+): { icon: string; context: string } => {
+  try {
+    const signalDate = new Date(timestamp);
+    const now = new Date();
+    const diffInMinutes = Math.floor(
+      (now.getTime() - signalDate.getTime()) / (1000 * 60)
+    );
+
+    if (diffInMinutes < 5) {
+      return { icon: "🔥", context: "Fresh signal" };
+    } else if (diffInMinutes < 30) {
+      return { icon: "⚡", context: "Recent signal" };
+    } else if (diffInMinutes < 120) {
+      return { icon: "📊", context: "Active signal" };
+    } else {
+      return { icon: "📈", context: "Signal" };
+    }
+  } catch (error) {
+    return { icon: "📊", context: "Signal" };
+  }
+};
 
 // Test component to verify alert settings hook
 const TestAlertSettings = () => {
@@ -545,7 +655,7 @@ const UpgradePrompt: React.FC<{ hiddenCount: number }> = ({ hiddenCount }) => {
   );
 };
 
-// Signal Card Component with Telegram Integration - FIXED FIELD NAMES
+// ENHANCED SIGNAL CARD COMPONENT - WITH PROPER DATE FORMATTING
 const SignalCard: React.FC<{
   signal: Signal;
   isHighlighted: boolean;
@@ -564,6 +674,7 @@ const SignalCard: React.FC<{
   showChart,
 }) => {
   const finalScore = calculateFinalScore(signal.signals);
+  const timeContext = getTimeContext(signal.timestamp);
 
   const getScoreColor = (score: number) => {
     if (score >= 90) return "bg-emerald-600";
@@ -615,9 +726,16 @@ const SignalCard: React.FC<{
                   ticker={signal.ticker}
                 />
 
-                <p className="text-xs text-slate-500 mt-1">
-                  {signal.timestamp}
-                </p>
+                {/* FIXED: FORMATTED SIGNAL DATE WITH CONTEXT */}
+                <div className="flex items-center space-x-2 mt-2">
+                  <Clock className="h-3 w-3 text-slate-500" />
+                  <span className="text-xs text-slate-500">
+                    {timeContext.icon} {formatSignalDate(signal.timestamp)}
+                  </span>
+                  <Badge className="bg-slate-700 text-slate-400 text-xs px-2 py-0.5">
+                    {timeContext.context}
+                  </Badge>
+                </div>
               </div>
               <div className="text-center">
                 <p className="text-slate-400 text-sm mb-1">Final Score</p>
