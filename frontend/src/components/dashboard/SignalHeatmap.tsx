@@ -178,7 +178,8 @@ const DashboardSubscriptionIndicator: React.FC = () => {
 const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
   const { language } = useLanguage();
   const [timeFilter, setTimeFilter] = useState("1D");
-  const [scoreThreshold, setScoreThreshold] = useState([70]);
+  // 🔧 FIXED: Changed initial scoreThreshold from [70] to [30] to match new database query
+  const [scoreThreshold, setScoreThreshold] = useState([30]);
   const [sectorFilter, setSectorFilter] = useState("all");
   const [marketFilter, setMarketFilter] = useState("global");
   const [highlightedCategory, setHighlightedCategory] = useState<string | null>(
@@ -232,7 +233,11 @@ const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
 
   // UPDATED: Enhanced handleViewSignal to support Execute functionality
   const handleViewSignal = (signal: Signal, timeframe: string) => {
-    const finalScore = calculateFinalScore(signal.signals);
+    // 🔧 FIXED: Use database score instead of recalculating
+    const finalScore =
+      (signal as any).confidence_score ||
+      (signal as any).final_score ||
+      calculateFinalScore(signal.signals);
 
     // Check if this is an "execute" action
     if (timeframe === "execute") {
@@ -273,11 +278,14 @@ const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
     }
   };
 
-  // ✅ STEP 1: Apply consistent final score filtering (unified with Signals page) - FIXED SECTOR & MARKET MATCHING
+  // ✅ STEP 1: Apply consistent final score filtering - 🔧 FIXED DATABASE SCORE BUG
   const baseFilteredSignals = React.useMemo(() => {
     return signals.filter((signal) => {
-      // 🚀 NEW: Use final calculated score instead of individual timeframe scores
-      const finalScore = calculateFinalScore(signal.signals);
+      // 🔧 FIXED: Use database score instead of recalculating (fixes 45-47 signals showing when slider = 70%)
+      const finalScore =
+        (signal as any).confidence_score ||
+        (signal as any).final_score ||
+        calculateFinalScore(signal.signals);
       const meetsThreshold = finalScore >= scoreThreshold[0];
 
       // 🚀 FIXED: Use case-insensitive sector matching instead of direct string comparison

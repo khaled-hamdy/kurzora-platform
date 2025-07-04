@@ -139,14 +139,14 @@ const SignalFilters: React.FC<SignalFiltersProps> = ({
               value={scoreThreshold}
               onValueChange={handleScoreChange}
               max={100}
-              min={60}
+              min={30} // 🔧 FIXED: Changed from 60 to 30 to enable low-score filtering
               step={5}
               className="w-full [&_[role=slider]]:h-6 [&_[role=slider]]:w-6 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-2 [&_[role=slider]]:border-white [&_[role=slider]]:shadow-lg [&_.slider-track]:h-3 [&_.slider-range]:h-3 [&_.slider-range]:bg-emerald-500"
             />
           </div>
           {/* Score range indicator */}
           <div className="flex justify-between text-xs text-slate-400 px-2">
-            <span>60</span>
+            <span>30</span> {/* Updated to show new minimum */}
             <span className="text-emerald-400 font-medium">
               {scoreThreshold[0]}
             </span>

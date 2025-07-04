@@ -77,14 +77,14 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
       setError(null);
       console.log("🔄 Fetching signals from database...");
 
-      // ✅ Get all active signals (not just ones with timeframe data)
+      // ✅ 🔧 FIXED: Load signals from 30% instead of 70% to enable proper filtering
       const { data, error: queryError } = await supabase
         .from("trading_signals")
         .select("*")
         .eq("status", "active")
-        .gte("confidence_score", 70)
+        .gte("confidence_score", 30) // CHANGED FROM 70 TO 30
         .order("confidence_score", { ascending: false })
-        .limit(20);
+        .limit(50); // INCREASED LIMIT to get more signals for filtering
 
       if (queryError) {
         throw new Error(`Database query failed: ${queryError.message}`);
@@ -214,7 +214,7 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
       console.log(
         `✅ Successfully loaded ${transformedSignals.length} signals (${
           data.filter((d) => d.signals && d.signals["1H"]).length
-        } with real timeframe data) - PRICE FIELDS: current_price, price_change_percent`
+        } with real timeframe data) - NOW LOADING SIGNALS FROM 30% AND UP FOR PROPER FILTERING`
       );
     } catch (err) {
       const errorMessage =
