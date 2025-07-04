@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { Loader2, ArrowLeft, X } from "lucide-react";
+import { Loader2, CreditCard, Lock, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  Elements,
+  CardElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
+
+// 🔧 FIXED: Load Stripe with Vite-compatible environment variable
+const stripePromise = loadStripe(
+  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "pk_test_51234567890"
+); // 🎯 CRITICAL FIX: Changed from process.env to import.meta.env for Vite
 
 const planDetails = {
   starter: {
@@ -26,13 +38,34 @@ interface SignupFormProps {
   };
 }
 
-const SignupForm: React.FC<SignupFormProps> = ({
+// 🎯 STRIPE CARD STYLING
+const cardElementOptions = {
+  style: {
+    base: {
+      fontSize: "16px",
+      color: "#ffffff",
+      fontFamily: "Inter, system-ui, sans-serif",
+      "::placeholder": {
+        color: "#94a3b8",
+      },
+      backgroundColor: "transparent",
+    },
+    invalid: {
+      color: "#ef4444",
+    },
+  },
+  hidePostalCode: false,
+};
+
+// 🔧 MAIN SIGNUP FORM COMPONENT (with Stripe)
+const SignupFormContent: React.FC<SignupFormProps> = ({
   onSwitchToLogin,
   selectedPlan,
 }) => {
-  console.log("🔧 DEBUG: SignupForm component rendered");
-
   const { signUp, loading } = useAuth();
+  const stripe = useStripe();
+  const elements = useElements();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -42,6 +75,8 @@ const SignupForm: React.FC<SignupFormProps> = ({
   const [planInfo, setPlanInfo] = useState(selectedPlan || null);
   const [error, setError] = useState<string | null>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [cardComplete, setCardComplete] = useState(false);
+  const [cardError, setCardError] = useState<string | null>(null);
 
   // Plan selection logic
   useEffect(() => {
@@ -86,29 +121,20 @@ const SignupForm: React.FC<SignupFormProps> = ({
     }
   }, [selectedPlan]);
 
-  // Create test payment method for development
-  const createTestPaymentMethod = () => {
-    // For development: Use Stripe test card numbers
-    // In production, this would be replaced with real Stripe Elements
-    const testPaymentMethods = {
-      visa: "pm_card_visa_" + Date.now(),
-      mastercard: "pm_card_mastercard_" + Date.now(),
-      // These simulate real payment method IDs for development
-    };
-
-    return testPaymentMethods.visa;
+  // Handle card element changes
+  const handleCardChange = (event: any) => {
+    setCardComplete(event.complete);
+    setCardError(event.error ? event.error.message : null);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     console.log("🚀 FORM SUBMIT TRIGGERED!");
     e.preventDefault();
-    console.log("📝 Form data:", formData);
-    console.log("💳 Plan info:", planInfo);
     setError(null);
+    setCardError(null);
 
     // Basic validation
     if (formData.password !== formData.confirmPassword) {
-      console.log("❌ Password mismatch error");
       setError("Passwords do not match");
       toast.error("Passwords do not match");
       return;
@@ -120,18 +146,81 @@ const SignupForm: React.FC<SignupFormProps> = ({
       return;
     }
 
+    // 🔧 FIXED: Validate Stripe elements for paid plans
+    if (planInfo && planInfo.id !== "starter") {
+      if (!stripe || !elements) {
+        setError("Stripe is not loaded. Please refresh and try again.");
+        return;
+      }
+
+      const cardElement = elements.getElement(CardElement);
+      if (!cardElement) {
+        setError(
+          "Credit card element not found. Please refresh and try again."
+        );
+        return;
+      }
+
+      if (!cardComplete) {
+        setError("Please complete your credit card information.");
+        return;
+      }
+    }
+
     console.log("✅ All validations passed, proceeding with signup...");
 
     try {
       setIsProcessingPayment(true);
-      console.log("🚀 Starting user signup process...");
-      console.log("🚀 SIGNUP PAYLOAD:", {
-        email: formData.email,
-        name: formData.name,
-        planInfo: planInfo,
-      });
 
-      // 🎯 FIXED: Pass planInfo directly to signUp function
+      let paymentMethodId = null;
+
+      // 🔧 FIXED: Create payment method for paid plans
+      if (planInfo && planInfo.id !== "starter" && stripe && elements) {
+        console.log("💳 Creating payment method for paid plan...");
+
+        const cardElement = elements.getElement(CardElement);
+        if (!cardElement) {
+          throw new Error("Credit card element not found");
+        }
+
+        const { error: paymentMethodError, paymentMethod } =
+          await stripe.createPaymentMethod({
+            type: "card",
+            card: cardElement,
+            billing_details: {
+              name: formData.name,
+              email: formData.email,
+            },
+          });
+
+        if (paymentMethodError) {
+          throw new Error(paymentMethodError.message);
+        }
+
+        paymentMethodId = paymentMethod.id;
+        console.log("✅ Payment method created:", paymentMethodId);
+
+        // Store payment method for backend processing
+        if (planInfo) {
+          localStorage.setItem(
+            "pendingSubscription",
+            JSON.stringify({
+              planId: planInfo.id,
+              paymentMethodId: paymentMethodId,
+              billingCycle: planInfo.billingCycle || "monthly",
+            })
+          );
+        }
+      }
+
+      console.log("🚀 Starting user signup process...");
+
+      // 🎯 FIXED: Pass planInfo directly to signUp function with better logging
+      console.log(
+        "🎯 CRITICAL DEBUG: About to call signUp with planInfo:",
+        planInfo
+      );
+
       const signUpResult = await signUp(
         formData.email,
         formData.password,
@@ -145,122 +234,24 @@ const SignupForm: React.FC<SignupFormProps> = ({
 
       console.log("✅ User signup successful!");
 
-      // Store plan info for later processing (backend still needs this)
+      // Store plan info for persistence (double backup)
       if (planInfo) {
         localStorage.setItem("selectedPlan", JSON.stringify(planInfo));
+        console.log("💾 BACKUP: Stored plan info in localStorage:", planInfo);
       }
 
-      // 🔗 CRITICAL: Call backend subscription processing
-      if (planInfo) {
-        console.log("🔗 CALLING BACKEND: Subscription processing...");
-
-        // Create development test payment method
-        const testPaymentMethodId = createTestPaymentMethod();
-
-        const payload = {
-          userId: "temp-user-id", // In production, this would be the actual user ID
-          userEmail: formData.email,
-          userName: formData.name,
-          planId: planInfo.id,
-          paymentMethodId: testPaymentMethodId, // Test payment method for development
-        };
-
-        console.log("🔗 BACKEND PAYLOAD:", payload);
-
-        try {
-          // First check if backend is running
-          console.log("🔗 TESTING: Backend health check...");
-          const healthCheck = await fetch("http://localhost:3001/health");
-          if (!healthCheck.ok) {
-            throw new Error(
-              `Backend health check failed: ${healthCheck.status}`
-            );
-          }
-          console.log("✅ Backend health check passed");
-
-          // Call subscription processing with new payload format
-          const response = await fetch(
-            "http://localhost:3001/api/subscription/process",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(payload),
-            }
-          );
-
-          console.log("🔗 RESPONSE STATUS:", response.status);
-
-          if (response.ok) {
-            const result = await response.json();
-            console.log("✅ SUCCESS:", result);
-
-            if (result.success) {
-              console.log("✅ Stripe customer created:", result.customerId);
-              toast.success(
-                `✅ ${planInfo.name} account created! Customer: ${result.customerId}`
-              );
-            } else {
-              throw new Error(result.error || "Subscription processing failed");
-            }
-          } else {
-            const errorText = await response.text();
-            console.log("❌ BACKEND ERROR:", response.status, errorText);
-
-            // Handle development payment method errors gracefully
-            if (errorText.includes("Failed to attach payment method")) {
-              console.log(
-                "⚠️ Payment attachment failed (expected in development)"
-              );
-              toast.success(
-                `✅ ${planInfo.name} account created! Payment setup will be completed later.`
-              );
-            } else {
-              throw new Error(
-                `Backend error: ${response.status} - ${errorText}`
-              );
-            }
-          }
-        } catch (backendError) {
-          console.error("❌ Backend call failed:", backendError);
-
-          const errorMessage = (backendError as Error).message;
-
-          // Handle specific development errors gracefully
-          if (errorMessage.includes("Failed to attach payment method")) {
-            console.log(
-              "⚠️ Payment method attachment failed - continuing with user creation"
-            );
-            toast.success(
-              `✅ ${planInfo.name} account created! Payment setup pending.`
-            );
-          } else if (
-            backendError instanceof TypeError &&
-            errorMessage.includes("fetch")
-          ) {
-            toast.error(
-              "❌ Backend server not running! Please start: npm run dev in backend folder"
-            );
-            alert(
-              "❌ BACKEND NOT RUNNING!\n\nPlease run:\ncd ~/Desktop/kurzora/kurzora-platform/backend\nnpm run dev"
-            );
-          } else {
-            toast.error(
-              "Account created but couldn't process subscription: " +
-                errorMessage
-            );
-          }
-        }
+      // Success message
+      if (planInfo && planInfo.id !== "starter") {
+        toast.success(
+          `✅ ${planInfo.name} account created with 7-day trial! Welcome to Kurzora!`
+        );
       } else {
-        console.log("⚠️ No plan info, skipping subscription processing");
-        toast.success("Account created successfully!");
+        toast.success("✅ Account created successfully! Welcome to Kurzora!");
       }
 
-      // Success redirect
-      setTimeout(() => {
-        window.location.href = "/dashboard";
-      }, 2000);
+      // Immediate redirect to homepage with success indicator
+      console.log("🔄 Redirecting to homepage...");
+      window.location.replace("/?signup=success");
     } catch (error) {
       const errorMessage =
         error instanceof Error
@@ -285,21 +276,31 @@ const SignupForm: React.FC<SignupFormProps> = ({
     if (isProcessingPayment) return "Creating your account...";
     if (loading) return "Setting up your profile...";
     if (planInfo) {
-      console.log("🔧 BUTTON DEBUG: Plan info for button text:", planInfo);
-      return `Start ${planInfo.name} Plan ($${planInfo.price}/month)`;
+      if (planInfo.id === "starter") {
+        return `Start ${planInfo.name} Plan (Free)`;
+      } else {
+        return `Start ${planInfo.name} Plan ($${planInfo.price}/month)`;
+      }
     }
     return "Create Account";
   };
 
-  // Debug current state
-  console.log("🔧 DEBUG: Current planInfo state:", planInfo);
-  console.log("🔧 DEBUG: selectedPlan prop:", selectedPlan);
-  console.log("🔧 DEBUG: Button disabled:", loading || isProcessingPayment);
-  console.log("🔧 DEBUG: Loading:", loading);
-  console.log("🔧 DEBUG: Processing payment:", isProcessingPayment);
+  // Only show card element for paid plans
+  const showCardElement = planInfo && planInfo.id !== "starter";
 
   return (
     <div className="w-full max-w-md mx-auto bg-slate-900/50 backdrop-blur-sm border border-blue-800/30 rounded-lg p-6">
+      {/* Back Button */}
+      <div className="mb-4">
+        <button
+          onClick={() => (window.location.href = "/")}
+          className="flex items-center text-slate-400 hover:text-white transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Homepage
+        </button>
+      </div>
+
       {/* Header */}
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-white mb-2">Create account</h2>
@@ -312,7 +313,16 @@ const SignupForm: React.FC<SignupFormProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-white font-medium">{planInfo.name} Plan</h3>
-              <p className="text-blue-400">${planInfo.price}/month</p>
+              <p className="text-blue-400">
+                {planInfo.id === "starter"
+                  ? "Free"
+                  : `$${planInfo.price}/month`}
+              </p>
+              {planInfo.id !== "starter" && (
+                <p className="text-xs text-slate-400">
+                  7-day free trial included
+                </p>
+              )}
             </div>
             <div className="text-sm text-slate-400">
               {planInfo.billingCycle}
@@ -362,7 +372,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
           />
         </div>
 
-        {/* Password Field */}
+        {/* Password Fields */}
         <div>
           <label className="block text-sm font-medium text-slate-300 mb-2">
             Password
@@ -378,7 +388,6 @@ const SignupForm: React.FC<SignupFormProps> = ({
           />
         </div>
 
-        {/* Confirm Password Field */}
         <div>
           <label className="block text-sm font-medium text-slate-300 mb-2">
             Confirm Password
@@ -394,10 +403,35 @@ const SignupForm: React.FC<SignupFormProps> = ({
           />
         </div>
 
+        {/* 🔧 FIXED: Credit Card Section for Paid Plans */}
+        {showCardElement && (
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              <CreditCard className="inline w-4 h-4 mr-2" />
+              Credit Card Information
+            </label>
+            <div className="p-3 bg-slate-800/50 border border-blue-800/30 rounded-lg">
+              <CardElement
+                options={cardElementOptions}
+                onChange={handleCardChange}
+              />
+            </div>
+            {cardError && (
+              <p className="text-sm text-red-400 mt-1">{cardError}</p>
+            )}
+            <div className="flex items-center text-xs text-slate-400 mt-2">
+              <Lock className="w-3 h-3 mr-1" />
+              <span>Secured by Stripe. No charges during 7-day trial.</span>
+            </div>
+          </div>
+        )}
+
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={loading || isProcessingPayment}
+          disabled={
+            loading || isProcessingPayment || (showCardElement && !cardComplete)
+          }
           className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium text-white transition-all"
         >
           {loading || isProcessingPayment ? (
@@ -422,6 +456,15 @@ const SignupForm: React.FC<SignupFormProps> = ({
         </button>
       </div>
     </div>
+  );
+};
+
+// 🔧 WRAPPER COMPONENT WITH STRIPE PROVIDER
+const SignupForm: React.FC<SignupFormProps> = (props) => {
+  return (
+    <Elements stripe={stripePromise}>
+      <SignupFormContent {...props} />
+    </Elements>
   );
 };
 

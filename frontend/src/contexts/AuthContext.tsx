@@ -65,56 +65,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const isRedirecting = useRef(false);
   const mounted = useRef(true);
 
-  // 🎯 FIXED: Simplified and reliable plan tier determination
+  // 🎯 FIXED: Robust plan tier determination with multiple sources
   const determineSubscriptionTier = useCallback(
-    (planInfo: any): "starter" | "professional" => {
-      console.log(
-        "🎯 PLAN LOGIC: Determining subscription tier for:",
-        planInfo
-      );
+    (planInfo: any, userEmail?: string): "starter" | "professional" => {
+      console.log("🎯 PLAN LOGIC START: Determining subscription tier");
+      console.log("🎯 PLAN LOGIC: Input planInfo:", planInfo);
+      console.log("🎯 PLAN LOGIC: User email:", userEmail);
 
-      // Method 1: PRIORITIZE direct plan info from signup flow (MOST IMPORTANT)
+      // Method 1: Direct planInfo parameter (HIGHEST PRIORITY)
       if (planInfo?.id) {
         const planId = planInfo.id.toLowerCase().trim();
-        console.log(
-          "🎯 PLAN LOGIC: Using direct plan info - planInfo.id:",
-          planId
-        );
+        console.log("🎯 PLAN LOGIC: Method 1 - Direct planInfo.id:", planId);
 
-        if (planId === "starter") {
-          console.log("✅ PLAN LOGIC: STARTER plan explicitly selected");
-          return "starter";
-        } else if (planId === "professional") {
-          console.log("✅ PLAN LOGIC: PROFESSIONAL plan explicitly selected");
+        if (planId === "professional") {
+          console.log("✅ PLAN LOGIC: PROFESSIONAL plan from direct planInfo");
           return "professional";
-        } else {
-          console.warn(
-            "⚠️ PLAN LOGIC: Unknown plan ID:",
-            planId,
-            "- defaulting to starter"
-          );
-          return "starter"; // Changed default to starter for unknown plans
+        } else if (planId === "starter") {
+          console.log("✅ PLAN LOGIC: STARTER plan from direct planInfo");
+          return "starter";
         }
       }
 
-      // Method 2: Check localStorage as fallback (only if no direct plan info)
+      // Method 2: Check pendingPlanInfo.current (backup)
+      if (pendingPlanInfo.current?.id) {
+        const planId = pendingPlanInfo.current.id.toLowerCase().trim();
+        console.log(
+          "🎯 PLAN LOGIC: Method 2 - pendingPlanInfo.current.id:",
+          planId
+        );
+
+        if (planId === "professional") {
+          console.log("✅ PLAN LOGIC: PROFESSIONAL plan from pendingPlanInfo");
+          return "professional";
+        } else if (planId === "starter") {
+          console.log("✅ PLAN LOGIC: STARTER plan from pendingPlanInfo");
+          return "starter";
+        }
+      }
+
+      // Method 3: Check localStorage selectedPlan (second backup)
       try {
         const selectedPlanStr = localStorage.getItem("selectedPlan");
         if (selectedPlanStr) {
           const selectedPlan = JSON.parse(selectedPlanStr);
           console.log(
-            "🎯 PLAN LOGIC: Using localStorage fallback:",
+            "🎯 PLAN LOGIC: Method 3 - localStorage selectedPlan:",
             selectedPlan
           );
 
           if (selectedPlan?.id) {
             const planId = selectedPlan.id.toLowerCase().trim();
-            if (planId === "starter") {
-              console.log("✅ PLAN LOGIC: STARTER plan from localStorage");
-              return "starter";
-            } else if (planId === "professional") {
+            if (planId === "professional") {
               console.log("✅ PLAN LOGIC: PROFESSIONAL plan from localStorage");
               return "professional";
+            } else if (planId === "starter") {
+              console.log("✅ PLAN LOGIC: STARTER plan from localStorage");
+              return "starter";
             }
           }
         }
@@ -122,31 +128,69 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         console.warn("⚠️ PLAN LOGIC: localStorage parsing error:", error);
       }
 
-      // Method 3: Check URL parameters as additional fallback
+      // Method 4: Check URL parameters (third backup)
       try {
         const urlParams = new URLSearchParams(window.location.search);
         const planFromUrl = urlParams.get("plan");
         if (planFromUrl) {
           const planId = planFromUrl.toLowerCase().trim();
-          console.log("🎯 PLAN LOGIC: Using URL parameter fallback:", planId);
+          console.log("🎯 PLAN LOGIC: Method 4 - URL parameter:", planId);
 
-          if (planId === "starter") {
-            console.log("✅ PLAN LOGIC: STARTER plan from URL");
-            return "starter";
-          } else if (planId === "professional") {
+          if (planId === "professional") {
             console.log("✅ PLAN LOGIC: PROFESSIONAL plan from URL");
             return "professional";
+          } else if (planId === "starter") {
+            console.log("✅ PLAN LOGIC: STARTER plan from URL");
+            return "starter";
           }
         }
       } catch (error) {
         console.warn("⚠️ PLAN LOGIC: URL parsing error:", error);
       }
 
-      // Method 4: SIMPLE default (only when no plan info exists anywhere)
-      console.log(
-        "🎯 PLAN LOGIC: No explicit plan found - using default STARTER"
+      // Method 5: Check pendingSubscription in localStorage (fourth backup)
+      try {
+        const pendingSubscriptionStr = localStorage.getItem(
+          "pendingSubscription"
+        );
+        if (pendingSubscriptionStr) {
+          const pendingSubscription = JSON.parse(pendingSubscriptionStr);
+          console.log(
+            "🎯 PLAN LOGIC: Method 5 - pendingSubscription:",
+            pendingSubscription
+          );
+
+          if (pendingSubscription?.planId) {
+            const planId = pendingSubscription.planId.toLowerCase().trim();
+            if (planId === "professional") {
+              console.log(
+                "✅ PLAN LOGIC: PROFESSIONAL plan from pendingSubscription"
+              );
+              return "professional";
+            } else if (planId === "starter") {
+              console.log(
+                "✅ PLAN LOGIC: STARTER plan from pendingSubscription"
+              );
+              return "starter";
+            }
+          }
+        }
+      } catch (error) {
+        console.warn(
+          "⚠️ PLAN LOGIC: pendingSubscription parsing error:",
+          error
+        );
+      }
+
+      // 🚨 FINAL FALLBACK: Use starter as default BUT log warning
+      console.warn("⚠️ PLAN LOGIC: NO PLAN INFO FOUND - using default starter");
+      console.warn("🔍 PLAN LOGIC DEBUG: planInfo was:", planInfo);
+      console.warn(
+        "🔍 PLAN LOGIC DEBUG: pendingPlanInfo.current was:",
+        pendingPlanInfo.current
       );
-      return "starter"; // Changed default to starter for better user experience
+
+      return "starter";
     },
     []
   );
@@ -212,64 +256,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           user.email
         );
 
-        // 🔍 ENHANCED DEBUG: Check pendingPlanInfo state
+        // 🔍 ENHANCED DEBUG: Check ALL plan info sources
         console.log(
           "🔍 CREATE PROFILE DEBUG: pendingPlanInfo.current =",
           pendingPlanInfo.current
         );
-        console.log(
-          "🔍 CREATE PROFILE DEBUG: pendingPlanInfo type:",
-          typeof pendingPlanInfo.current
-        );
 
-        if (pendingPlanInfo.current) {
-          console.log(
-            "🔍 CREATE PROFILE DEBUG: pendingPlanInfo.current.id =",
-            pendingPlanInfo.current.id
-          );
-          console.log(
-            "🔍 CREATE PROFILE DEBUG: pendingPlanInfo.current.name =",
-            pendingPlanInfo.current.name
-          );
-        }
-
-        // Check localStorage as backup
+        // Check localStorage backup
         try {
           const selectedPlan = localStorage.getItem("selectedPlan");
+          const pendingSubscription = localStorage.getItem(
+            "pendingSubscription"
+          );
           console.log(
             "🔍 CREATE PROFILE DEBUG: localStorage selectedPlan =",
             selectedPlan
           );
-          if (selectedPlan) {
-            const parsed = JSON.parse(selectedPlan);
-            console.log(
-              "🔍 CREATE PROFILE DEBUG: parsed localStorage =",
-              parsed
-            );
-          }
+          console.log(
+            "🔍 CREATE PROFILE DEBUG: localStorage pendingSubscription =",
+            pendingSubscription
+          );
         } catch (e) {
           console.log("🔍 CREATE PROFILE DEBUG: localStorage error =", e);
         }
 
-        // 🎯 FIXED: Use simplified plan determination
+        // 🎯 FIXED: Pass user email to improve debugging
         console.log(
           "🔍 CREATE PROFILE DEBUG: About to call determineSubscriptionTier..."
         );
-        const subscriptionTier = determineSubscriptionTier(
-          pendingPlanInfo.current
+
+        // 🔧 FIXED: Use let instead of const to allow reassignment
+        let subscriptionTier = determineSubscriptionTier(
+          pendingPlanInfo.current,
+          user.email
         );
         console.log(
           "🔍 CREATE PROFILE DEBUG: Final tier decision:",
           subscriptionTier
         );
 
+        // 🚨 ADDITIONAL VALIDATION: Double-check the result
+        if (
+          subscriptionTier !== "professional" &&
+          subscriptionTier !== "starter"
+        ) {
+          console.error(
+            "🚨 INVALID TIER DETECTED:",
+            subscriptionTier,
+            "- forcing to starter"
+          );
+          subscriptionTier = "starter"; // ✅ NOW WORKS: Can reassign let variable
+        }
+
         console.log(
           "🎯 FINAL DECISION: Creating user with tier:",
           subscriptionTier
-        );
-        console.log(
-          "🎯 CONTEXT: pendingPlanInfo.current =",
-          pendingPlanInfo.current
         );
 
         const profileData = {
@@ -283,7 +324,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           starting_balance: 10000.0,
           current_balance: 10000.0,
           risk_percentage: 2.0,
-          // 🔧 PERMANENT FIX: Proper notification settings based on tier
           notification_settings: {
             email_alerts_enabled: true,
             telegram_alerts_enabled: subscriptionTier === "professional",
@@ -324,13 +364,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             "✅ VERIFICATION: Notification settings:",
             data.notification_settings
           );
-          console.log("🔍 CREATE PROFILE DEBUG: Database insertion successful");
+
+          // 🚨 FINAL VERIFICATION: Log the actual database result
+          if (data.subscription_tier !== subscriptionTier) {
+            console.error("🚨 DATABASE MISMATCH:", {
+              expected: subscriptionTier,
+              actual: data.subscription_tier,
+              planInfo: pendingPlanInfo.current,
+            });
+          } else {
+            console.log(
+              "✅ VERIFICATION PASSED: Database tier matches expected tier"
+            );
+          }
+
           if (mounted.current) {
             setUserProfile(data);
           }
         }
 
-        // Clear pending plan info after use
+        // Clear pending plan info after use (but keep localStorage for debugging)
         console.log(
           "🔍 CREATE PROFILE DEBUG: Clearing pendingPlanInfo.current"
         );
@@ -342,7 +395,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         );
       }
     },
-    [determineSubscriptionTier, pendingPlanInfo]
+    [determineSubscriptionTier]
   );
 
   useEffect(() => {
@@ -582,7 +635,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         // Clear pending subscription from localStorage
         localStorage.removeItem("pendingSubscription");
-        localStorage.removeItem("selectedPlan");
         console.log("🧹 Mac AuthContext: Cleared pending subscription data");
 
         // Refresh user profile to get updated subscription data
@@ -650,34 +702,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       console.log("🔍 SIGNUP DEBUG: planInfo.id:", planInfo?.id);
       setLoading(true);
 
-      // 🎯 FIXED: Store plan info with better validation
+      // 🎯 FIXED: Store plan info with multiple backup methods
       if (planInfo) {
         // Validate plan info structure
         if (!planInfo.id || !planInfo.name || !planInfo.price) {
           console.warn("⚠️ SIGNUP: Invalid plan info structure:", planInfo);
         } else {
+          // Store in memory
           pendingPlanInfo.current = planInfo;
-          console.log("💾 SIGNUP: Stored valid plan info:", planInfo);
+          console.log("💾 SIGNUP: Stored plan info in memory:", planInfo);
+
+          // Store in localStorage as backup
+          localStorage.setItem("selectedPlan", JSON.stringify(planInfo));
+          console.log("💾 SIGNUP: Stored plan info in localStorage backup");
+
+          // 🔍 VERIFICATION: Check that storage worked
           console.log(
             "🔍 SIGNUP DEBUG: pendingPlanInfo.current after storage:",
             pendingPlanInfo.current
+          );
+
+          const verifyLocalStorage = localStorage.getItem("selectedPlan");
+          console.log(
+            "🔍 SIGNUP DEBUG: localStorage verification:",
+            verifyLocalStorage
           );
         }
       } else {
         console.log(
           "ℹ️ SIGNUP: No plan info provided - will use default logic"
         );
-      }
-
-      // ADDITIONAL DEBUG: Check what's in localStorage
-      try {
-        const selectedPlan = localStorage.getItem("selectedPlan");
-        console.log(
-          "🔍 SIGNUP DEBUG: localStorage selectedPlan:",
-          selectedPlan
-        );
-      } catch (e) {
-        console.log("🔍 SIGNUP DEBUG: localStorage error:", e);
       }
 
       // Step 1: Create user account in Supabase Auth
