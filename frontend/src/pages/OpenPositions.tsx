@@ -67,7 +67,7 @@ interface PaperTrade {
   notes: string;
 }
 
-// ✅ FIXED: Enhanced Polygon.io price fetching with multiple fallbacks
+// ✅ FIXED: Accurate real-time price fetching with proper endpoints
 const fetchRealTimePrice = async (ticker: string): Promise<number | null> => {
   try {
     const polygonApiKey = import.meta.env.VITE_POLYGON_API_KEY;
@@ -77,82 +77,88 @@ const fetchRealTimePrice = async (ticker: string): Promise<number | null> => {
       return null;
     }
 
-    console.log(`🔍 Fetching price for ${ticker}...`);
+    console.log(`🔍 Fetching real-time price for ${ticker}...`);
 
-    const response = await fetch(
-      `https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers/${ticker}?apikey=${polygonApiKey}`
+    // ✅ SOLUTION 1: Use last trade endpoint for most accurate current price
+    const lastTradeResponse = await fetch(
+      `https://api.polygon.io/v2/last/trade/${ticker}?apikey=${polygonApiKey}`
     );
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    if (lastTradeResponse.ok) {
+      const lastTradeData = await lastTradeResponse.json();
+      console.log(`📊 Last trade data for ${ticker}:`, lastTradeData);
 
-    const data = await response.json();
-    console.log(`📊 Raw API response for ${ticker}:`, data);
-
-    // ✅ FIXED: Handle multiple Polygon.io response formats
-    let currentPrice = null;
-
-    // Try different response structures
-    if (data?.results?.[0]) {
-      const result = data.results[0];
-
-      // Format 1: Direct value field
-      currentPrice = result.value;
-
-      // Format 2: Last trade price
-      if (!currentPrice && result.last) {
-        currentPrice = result.last.price || result.last.p;
-      }
-
-      // Format 3: Market data in min field (for market hours)
-      if (!currentPrice && result.min) {
-        currentPrice = result.min.c; // Close price from minute data
-      }
-
-      // Format 4: Previous day close (fallback)
-      if (!currentPrice && result.prevDay) {
-        currentPrice = result.prevDay.c;
-        console.log(`📅 Using previous day close for ${ticker}`);
-      }
-
-      // Format 5: Market status and price fields
-      if (!currentPrice && result.market_status === "open" && result.fmv) {
-        currentPrice = result.fmv; // Fair market value
+      if (lastTradeData?.results?.p && lastTradeData.results.p > 0) {
+        const currentPrice = Number(lastTradeData.results.p);
+        console.log(
+          `✅ Got current price from last trade for ${ticker}: $${currentPrice}`
+        );
+        return currentPrice;
       }
     }
 
-    // ✅ FALLBACK: Try previous day endpoint if snapshot fails
-    if (!currentPrice) {
-      console.log(`🔄 Trying previous close endpoint for ${ticker}...`);
+    // ✅ SOLUTION 2: Fallback to aggregates (daily) if last trade fails
+    const today = new Date();
+    const dateStr = today.toISOString().split("T")[0];
 
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const dateStr = yesterday.toISOString().split("T")[0];
+    console.log(`🔄 Trying daily aggregates for ${ticker} on ${dateStr}...`);
 
-      const fallbackResponse = await fetch(
-        `https://api.polygon.io/v1/open-close/${ticker}/${dateStr}?adjusted=true&apikey=${polygonApiKey}`
-      );
+    const aggregatesResponse = await fetch(
+      `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${dateStr}/${dateStr}?adjusted=true&sort=desc&limit=1&apikey=${polygonApiKey}`
+    );
 
-      if (fallbackResponse.ok) {
-        const fallbackData = await fallbackResponse.json();
-        currentPrice = fallbackData.close;
-        console.log(`📅 Using previous close for ${ticker}: ${currentPrice}`);
+    if (aggregatesResponse.ok) {
+      const aggregatesData = await aggregatesResponse.json();
+      console.log(`📊 Aggregates data for ${ticker}:`, aggregatesData);
+
+      if (aggregatesData?.results?.[0]?.c && aggregatesData.results[0].c > 0) {
+        const currentPrice = Number(aggregatesData.results[0].c);
+        console.log(
+          `✅ Got current price from aggregates for ${ticker}: $${currentPrice}`
+        );
+        return currentPrice;
       }
     }
 
-    if (currentPrice && currentPrice > 0) {
-      console.log(
-        `✅ Successfully fetched price for ${ticker}: ${currentPrice}`
-      );
-      return Number(currentPrice);
+    // ✅ SOLUTION 3: Last resort - previous business day (but NOT outdated)
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    // Skip weekends - go to Friday if today is Monday
+    if (yesterday.getDay() === 0) {
+      // Sunday
+      yesterday.setDate(yesterday.getDate() - 2); // Go to Friday
+    } else if (yesterday.getDay() === 6) {
+      // Saturday
+      yesterday.setDate(yesterday.getDate() - 1); // Go to Friday
     }
 
-    console.warn(`⚠️ No valid price data found for ${ticker}:`, {
-      status: data?.status,
-      resultsCount: data?.results?.length,
-      sampleResult: data?.results?.[0],
-    });
+    const prevDateStr = yesterday.toISOString().split("T")[0];
+
+    console.log(
+      `🔄 Trying previous business day for ${ticker} on ${prevDateStr}...`
+    );
+
+    const prevDayResponse = await fetch(
+      `https://api.polygon.io/v1/open-close/${ticker}/${prevDateStr}?adjusted=true&apikey=${polygonApiKey}`
+    );
+
+    if (prevDayResponse.ok) {
+      const prevDayData = await prevDayResponse.json();
+      console.log(`📊 Previous day data for ${ticker}:`, prevDayData);
+
+      if (prevDayData?.close && prevDayData.close > 0) {
+        const currentPrice = Number(prevDayData.close);
+        console.log(
+          `⚠️ Using previous business day close for ${ticker}: $${currentPrice}`
+        );
+        return currentPrice;
+      }
+    }
+
+    console.warn(
+      `❌ No valid price data found for ${ticker} from any endpoint`
+    );
     return null;
   } catch (error) {
     console.error(`❌ Error fetching price for ${ticker}:`, error);
@@ -512,7 +518,7 @@ const OpenPositions: React.FC = () => {
     navigate("/orders-history");
   };
 
-  // ✅ ENHANCED: Real-time price refresh function
+  // ✅ ENHANCED: Real-time price refresh function with improved accuracy
   const handleRefreshPositions = async () => {
     if (openPositions.length === 0) {
       toast({
@@ -529,10 +535,10 @@ const OpenPositions: React.FC = () => {
       // Show immediate feedback
       toast({
         title: "Updating prices...",
-        description: `Fetching real-time prices for ${openPositions.length} position(s)`,
+        description: `Fetching delayed prices for ${openPositions.length} position(s)`,
       });
 
-      // Update prices using Polygon.io
+      // Update prices using improved Polygon.io endpoints
       const results = await updatePositionPrices(openPositions);
 
       // Reload positions from database to get updated prices
@@ -545,12 +551,26 @@ const OpenPositions: React.FC = () => {
       if (results.updated > 0) {
         toast({
           title: "Prices Updated Successfully! 🎉",
-          description: `Updated ${results.updated} position(s). ${
+          description: `Updated ${
+            results.updated
+          } position(s) with delayed prices. ${
             results.errors.length > 0
               ? `${results.errors.length} failed.`
               : "All prices current!"
           }`,
         });
+
+        // ✅ PHASE 1.5: Auto-refresh dashboard after successful price updates
+        console.log("🔄 Triggering dashboard refresh...");
+        window.dispatchEvent(
+          new CustomEvent("portfolioUpdated", {
+            detail: {
+              updated: results.updated,
+              timestamp: new Date().toISOString(),
+              positions: openPositions.map((p) => p.symbol),
+            },
+          })
+        );
       } else {
         toast({
           title: "Price Update Issues",
@@ -592,7 +612,8 @@ const OpenPositions: React.FC = () => {
                 {lastUpdated && (
                   <p className="text-slate-400 text-sm mt-1 flex items-center">
                     <CheckCircle className="h-4 w-4 mr-1 text-emerald-400" />
-                    Prices updated {lastUpdated.toLocaleTimeString()}
+                    Prices updated {lastUpdated.toLocaleTimeString()} (Delayed
+                    15-20 min)
                   </p>
                 )}
               </div>
@@ -615,8 +636,10 @@ const OpenPositions: React.FC = () => {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Fetch real-time prices from Polygon.io</p>
-                  </TooltipContent>
+                    <p>
+                      Fetch delayed prices from Polygon.io (15-20 min delay)
+                    </p>
+                  </TooltipContent>{" "}
                 </Tooltip>
 
                 <Button
@@ -719,8 +742,8 @@ const OpenPositions: React.FC = () => {
                       Updating Prices
                     </Badge>
                   )}
-                  <Badge className="bg-green-600 text-white">
-                    📊 Real-Time Data
+                  <Badge className="bg-orange-600 text-white">
+                    ⏰ Delayed Data (15-20 min)
                   </Badge>
                 </div>
               </CardTitle>
@@ -888,8 +911,10 @@ const OpenPositions: React.FC = () => {
 
           {/* Disclaimer */}
           <div className="text-xs text-gray-500 text-center mt-8">
-            *This is a simulation. No real capital is involved. Real-time prices
-            provided by Polygon.io.
+            *This is a simulation. No real capital is involved. Prices are
+            delayed 15-20 minutes via Polygon.io.
+            <br />
+            For educational purposes only. Not financial advice.
           </div>
         </div>
       </TooltipProvider>

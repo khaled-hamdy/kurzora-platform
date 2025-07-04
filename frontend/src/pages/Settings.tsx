@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
@@ -20,10 +20,16 @@ import { TelegramConnection } from "../components/telegram";
 // Import the alert settings hook for email database integration
 import { useUserAlertSettings } from "../hooks/useUserAlertSettings";
 
+// Import the new ChangePasswordModal component
+import { ChangePasswordModal } from "../components/ChangePasswordModal";
+
 const Settings: React.FC = React.memo(() => {
   const { user, loading } = useAuth();
   const { t, language } = useLanguage();
   const navigate = useNavigate();
+
+  // State for Change Password modal
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   // Get email settings from database (same pattern as Telegram)
   const {
@@ -46,6 +52,16 @@ const Settings: React.FC = React.memo(() => {
     console.log("Settings page: User not authenticated, redirecting to home");
     navigate("/");
   }, [navigate]);
+
+  // 🔧 MEMOIZED: Change Password handler
+  const handleChangePasswordClick = useCallback(() => {
+    setShowPasswordModal(true);
+  }, []);
+
+  // 🔧 MEMOIZED: Close modal handler
+  const handleClosePasswordModal = useCallback(() => {
+    setShowPasswordModal(false);
+  }, []);
 
   React.useEffect(() => {
     console.log("Settings page: Auth state - loading:", loading, "user:", user);
@@ -143,6 +159,7 @@ const Settings: React.FC = React.memo(() => {
             <CardContent className="space-y-4">
               <Button
                 variant="outline"
+                onClick={handleChangePasswordClick}
                 className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600"
               >
                 {t("settings.changePassword")}
@@ -169,6 +186,12 @@ const Settings: React.FC = React.memo(() => {
           {/* REMOVED: API & Auto-Trading section entirely - too complex */}
           {/* REMOVED: UI & Data Preferences section entirely - user requested removal */}
         </div>
+
+        {/* Change Password Modal */}
+        <ChangePasswordModal
+          isOpen={showPasswordModal}
+          onClose={handleClosePasswordModal}
+        />
       </div>
     </Layout>
   );

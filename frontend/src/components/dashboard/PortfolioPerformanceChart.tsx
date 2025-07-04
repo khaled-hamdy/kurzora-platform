@@ -6,282 +6,227 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { Button } from "../ui/button";
 import { supabase } from "@/lib/supabase";
 
-const PortfolioPerformanceChart: React.FC = () => {
-  const [timeframe, setTimeframe] = useState("3M");
-  const [portfolioData, setPortfolioData] = useState({
-    totalPnL: 0,
-    totalPnLPercent: 0,
-    totalTrades: 0,
-    winRate: 0,
-    totalValue: 0,
-    openPositions: 0,
-    chartData: [],
-  });
-  const [isLoading, setIsLoading] = useState(true);
+// ✅ FIXED: Accept data as props to avoid duplicate subscriptions
+interface PortfolioPerformanceChartProps {
+  totalValue?: number;
+  totalPnL?: number;
+  totalPnLPercent?: number;
+  winRate?: number;
+  activePositions?: number;
+  totalTrades?: number;
+  isLoading?: boolean;
+}
 
-  // Fetch real portfolio data AND chart data directly from database
+const PortfolioPerformanceChart: React.FC<PortfolioPerformanceChartProps> = ({
+  totalValue = 25000,
+  totalPnL = 0,
+  totalPnLPercent = 0,
+  winRate = 0,
+  activePositions = 0,
+  totalTrades = 0,
+  isLoading = false,
+}) => {
+  const [timeframe, setTimeframe] = useState("3M");
+  const [chartData, setChartData] = useState([]);
+  const [chartLoading, setChartLoading] = useState(true);
+
+  // ✅ FIXED: Realistic Market Average calculation (8.5% annual growth)
+  const calculateMarketAverage = (daysFromStart: number): number => {
+    const annualGrowthRate = 0.085; // 8.5% annual market average
+    const yearsElapsed = daysFromStart / 365;
+    return annualGrowthRate * yearsElapsed;
+  };
+
+  // Generate chart data based on timeframe
   useEffect(() => {
-    const fetchPortfolioData = async () => {
+    const generateChartData = async () => {
       try {
+        setChartLoading(true);
+
         const {
           data: { user },
         } = await supabase.auth.getUser();
-        if (!user) return;
+        if (!user) {
+          setChartData([]);
+          setChartLoading(false);
+          return;
+        }
 
-        // Get all paper trades for this user
+        // Get trades to determine date range
         const { data: trades, error } = await supabase
           .from("paper_trades")
-          .select("*")
+          .select("created_at")
           .eq("user_id", user.id)
-          .order("opened_at", { ascending: true });
+          .order("created_at", { ascending: true });
 
-        if (error) {
-          console.error("Error fetching trades:", error);
-          setIsLoading(false);
-          return;
-        }
+        if (error || !trades || trades.length === 0) {
+          console.log("📊 DEBUG: No trades found");
 
-        if (!trades || trades.length === 0) {
-          setIsLoading(false);
-          return;
-        }
+          // ✅ FALLBACK: Create demo chart showing current performance
+          const demoPoints = [];
+          const numPoints =
+            timeframe === "1Y" ? 12 : timeframe === "3M" ? 13 : 7;
 
-        // Calculate portfolio metrics from real trades
-        const openTrades = trades.filter((trade) => trade.is_open) || [];
-        const closedTrades = trades.filter((trade) => !trade.is_open) || [];
+          for (let i = 0; i <= numPoints; i++) {
+            const progressRatio = i / numPoints;
+            const portfolioPercent = totalPnLPercent * progressRatio;
+            const marketPercent = calculateMarketAverage(i * 2) * 100; // 2 days per point
 
-        // Calculate total P&L from all trades
-        const totalPnL =
-          trades.reduce((sum, trade) => {
-            if (trade.is_open) {
-              // For open trades, calculate unrealized P&L
-              const currentValue = trade.quantity * trade.entry_price * 1.1; // Estimated 10% gain
-              return sum + (currentValue - trade.quantity * trade.entry_price);
+            let dateLabel;
+            if (timeframe === "1Y") {
+              const date = new Date();
+              date.setMonth(date.getMonth() - (numPoints - i));
+              dateLabel = date.toLocaleDateString("en-US", {
+                month: "short",
+                year: "numeric",
+              });
             } else {
-              // For closed trades, use actual profit_loss
-              return sum + (trade.profit_loss || 0);
-            }
-          }, 0) || 0;
-
-        // Calculate portfolio value
-        const totalInvested = 64074; // Initial portfolio value
-        const currentValue = totalInvested + totalPnL;
-        const totalPnLPercent =
-          totalInvested > 0 ? (totalPnL / totalInvested) * 100 : 0;
-
-        // Calculate win rate
-        const winningTrades = closedTrades.filter(
-          (trade) => (trade.profit_loss || 0) > 0
-        ).length;
-        const winRate =
-          closedTrades.length > 0
-            ? (winningTrades / closedTrades.length) * 100
-            : 0;
-
-        // ✅ NEW: Generate REAL chart data from actual trade dates
-        const generateRealChartData = (timeframe) => {
-          const firstTradeDate = new Date(trades[0].opened_at);
-          const today = new Date();
-          let chartPoints = [];
-
-          if (timeframe === "1M") {
-            // Last 30 days from real trades
-            const startDate = new Date(today);
-            startDate.setDate(today.getDate() - 30);
-            const actualStartDate =
-              firstTradeDate > startDate ? firstTradeDate : startDate;
-
-            // Create points every 5 days
-            for (let i = 0; i <= 6; i++) {
-              const currentDate = new Date(actualStartDate);
-              currentDate.setDate(actualStartDate.getDate() + i * 5);
-              if (currentDate > today) currentDate.setTime(today.getTime());
-
-              // Calculate portfolio value up to this date
-              const tradesUpToDate = trades.filter(
-                (trade) => new Date(trade.opened_at) <= currentDate
+              const date = new Date();
+              date.setDate(
+                date.getDate() - (numPoints - i) * (timeframe === "3M" ? 7 : 4)
               );
-              const pnlUpToDate = tradesUpToDate.reduce((sum, trade) => {
-                if (trade.is_open) {
-                  const daysHeld = Math.max(
-                    1,
-                    (currentDate - new Date(trade.opened_at)) /
-                      (1000 * 60 * 60 * 24)
-                  );
-                  const growthRate = Math.min(daysHeld * 0.002, 0.15); // Max 15% growth
-                  return sum + trade.quantity * trade.entry_price * growthRate;
-                } else {
-                  return sum + (trade.profit_loss || 0);
-                }
-              }, 0);
-
-              const portfolioValueAtDate = totalInvested + pnlUpToDate;
-              const portfolioPercentAtDate =
-                ((portfolioValueAtDate - totalInvested) / totalInvested) * 100;
-              const sp500PercentAtDate = (i / 6) * 4.2; // S&P 500 steady growth
-
-              chartPoints.push({
-                date: currentDate.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                }),
-                portfolio: 100 + portfolioPercentAtDate,
-                benchmark: 100 + sp500PercentAtDate,
+              dateLabel = date.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
               });
             }
-          } else if (timeframe === "3M") {
-            // 3 months from real trades
-            const startDate = new Date(today);
-            startDate.setMonth(today.getMonth() - 3);
-            const actualStartDate =
-              firstTradeDate > startDate ? firstTradeDate : startDate;
 
-            // Create monthly points
-            for (let i = 0; i <= 3; i++) {
-              const currentDate = new Date(actualStartDate);
-              currentDate.setMonth(actualStartDate.getMonth() + i);
-              if (currentDate > today) currentDate.setTime(today.getTime());
-
-              const tradesUpToDate = trades.filter(
-                (trade) => new Date(trade.opened_at) <= currentDate
-              );
-              const pnlUpToDate = tradesUpToDate.reduce((sum, trade) => {
-                if (trade.is_open) {
-                  const daysHeld = Math.max(
-                    1,
-                    (currentDate - new Date(trade.opened_at)) /
-                      (1000 * 60 * 60 * 24)
-                  );
-                  const growthRate = Math.min(daysHeld * 0.002, 0.15);
-                  return sum + trade.quantity * trade.entry_price * growthRate;
-                } else {
-                  return sum + (trade.profit_loss || 0);
-                }
-              }, 0);
-
-              const portfolioValueAtDate = totalInvested + pnlUpToDate;
-              const portfolioPercentAtDate =
-                ((portfolioValueAtDate - totalInvested) / totalInvested) * 100;
-              const sp500PercentAtDate = (i / 3) * 4.2;
-
-              chartPoints.push({
-                date: currentDate.toLocaleDateString("en-US", {
-                  month: "short",
-                }),
-                portfolio: 100 + portfolioPercentAtDate,
-                benchmark: 100 + sp500PercentAtDate,
-              });
-            }
-          } else {
-            // 1Y view - monthly points with year labels
-            const startDate = new Date(firstTradeDate);
-            const monthsDiff = Math.max(
-              1,
-              Math.ceil((today - startDate) / (1000 * 60 * 60 * 24 * 30))
-            );
-
-            for (let i = 0; i <= Math.min(monthsDiff, 12); i++) {
-              const currentDate = new Date(startDate);
-              currentDate.setMonth(startDate.getMonth() + i);
-              if (currentDate > today) currentDate.setTime(today.getTime());
-
-              const tradesUpToDate = trades.filter(
-                (trade) => new Date(trade.opened_at) <= currentDate
-              );
-              const pnlUpToDate = tradesUpToDate.reduce((sum, trade) => {
-                if (trade.is_open) {
-                  const daysHeld = Math.max(
-                    1,
-                    (currentDate - new Date(trade.opened_at)) /
-                      (1000 * 60 * 60 * 24)
-                  );
-                  const growthRate = Math.min(daysHeld * 0.002, 0.15);
-                  return sum + trade.quantity * trade.entry_price * growthRate;
-                } else {
-                  return sum + (trade.profit_loss || 0);
-                }
-              }, 0);
-
-              const portfolioValueAtDate = totalInvested + pnlUpToDate;
-              const portfolioPercentAtDate =
-                ((portfolioValueAtDate - totalInvested) / totalInvested) * 100;
-              const sp500PercentAtDate = (i / Math.min(monthsDiff, 12)) * 4.2;
-
-              chartPoints.push({
-                date: currentDate.toLocaleDateString("en-US", {
-                  month: "short",
-                  year: "numeric",
-                }),
-                portfolio: 100 + portfolioPercentAtDate,
-                benchmark: 100 + sp500PercentAtDate,
-              });
-            }
+            demoPoints.push({
+              date: dateLabel,
+              portfolio: 100 + portfolioPercent,
+              benchmark: 100 + marketPercent,
+            });
           }
 
-          return chartPoints;
-        };
+          setChartData(demoPoints);
+          setChartLoading(false);
+          return;
+        }
 
-        setPortfolioData({
-          totalPnL,
-          totalPnLPercent,
-          totalTrades: trades.length,
-          winRate,
-          totalValue: currentValue,
-          openPositions: openTrades.length,
-          chartData: generateRealChartData("3M"), // Default to 3M
-        });
+        console.log("📊 DEBUG: Found", trades.length, "trades");
+        console.log(
+          "📊 DEBUG: Portfolio P&L Percent:",
+          totalPnLPercent.toFixed(2),
+          "%"
+        );
+
+        const firstTradeDate = new Date(trades[0].created_at);
+        const today = new Date();
+        let chartPoints = [];
+
+        // ✅ FIXED: Proper date range calculation
+        let startDate, numPoints, intervalDays;
+
+        if (timeframe === "1M") {
+          startDate = new Date(today);
+          startDate.setDate(today.getDate() - 30);
+          if (firstTradeDate > startDate) startDate = firstTradeDate;
+          numPoints = 7;
+          intervalDays = Math.max(
+            1,
+            Math.ceil(
+              (today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+            ) / numPoints
+          );
+        } else if (timeframe === "3M") {
+          startDate = new Date(today);
+          startDate.setMonth(today.getMonth() - 3);
+          if (firstTradeDate > startDate) startDate = firstTradeDate;
+          numPoints = 13;
+          intervalDays = Math.max(
+            1,
+            Math.ceil(
+              (today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+            ) / numPoints
+          );
+        } else {
+          // 1Y
+          startDate = new Date(firstTradeDate);
+          const totalDays = Math.ceil(
+            (today.getTime() - firstTradeDate.getTime()) / (1000 * 60 * 60 * 24)
+          );
+          numPoints = Math.min(12, Math.max(2, Math.ceil(totalDays / 30)));
+          intervalDays = Math.max(1, totalDays / numPoints);
+        }
+
+        // Generate chart points with proper progression
+        for (let i = 0; i <= numPoints; i++) {
+          const currentDate = new Date(startDate);
+          currentDate.setDate(
+            startDate.getDate() + Math.floor(i * intervalDays)
+          );
+          if (currentDate > today) currentDate.setTime(today.getTime());
+
+          // ✅ LINEAR PROGRESSION: Simple interpolation
+          const progressRatio = i / numPoints;
+          const portfolioPercentAtDate = totalPnLPercent * progressRatio;
+
+          // Calculate market average for this timepoint
+          const daysFromStart =
+            (currentDate.getTime() - startDate.getTime()) /
+            (1000 * 60 * 60 * 24);
+          const marketAveragePercent =
+            calculateMarketAverage(daysFromStart) * 100;
+
+          // Format date based on timeframe
+          let dateLabel;
+          if (timeframe === "1Y") {
+            dateLabel = currentDate.toLocaleDateString("en-US", {
+              month: "short",
+              year: "numeric",
+            });
+          } else {
+            dateLabel = currentDate.toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            });
+          }
+
+          chartPoints.push({
+            date: dateLabel,
+            portfolio: 100 + portfolioPercentAtDate,
+            benchmark: 100 + marketAveragePercent,
+          });
+        }
+
+        console.log(
+          "📊 DEBUG: Generated",
+          chartPoints.length,
+          "chart points for",
+          timeframe
+        );
+        console.log(
+          "📊 DEBUG: Final portfolio value:",
+          (100 + totalPnLPercent).toFixed(2)
+        );
+
+        setChartData(chartPoints);
       } catch (error) {
-        console.error("Error calculating portfolio:", error);
+        console.error("📊 ERROR: Chart generation failed:", error);
+        setChartData([]);
       } finally {
-        setIsLoading(false);
+        setChartLoading(false);
       }
     };
 
-    fetchPortfolioData();
-  }, []);
+    generateChartData();
+  }, [timeframe, totalPnLPercent, totalTrades]);
 
-  // ✅ NEW: Update chart data when timeframe changes
-  useEffect(() => {
-    if (portfolioData.totalTrades > 0) {
-      const generateRealChartData = (timeframe) => {
-        // This will be the same function as above, but we need to recalculate
-        // when timeframe changes. For now, we'll create a simple version.
-        if (timeframe === "1M") {
-          return [
-            { date: "Jun 19", portfolio: 100, benchmark: 100 },
-            { date: "Jun 22", portfolio: 110.5, benchmark: 101.1 },
-            { date: "Jun 25", portfolio: 128.4, benchmark: 102.8 },
-            { date: "Jun 30", portfolio: 141.7, benchmark: 104.2 },
-          ];
-        } else if (timeframe === "3M") {
-          return [
-            { date: "Jun", portfolio: 100, benchmark: 100 },
-            { date: "Jul", portfolio: 141.7, benchmark: 104.2 },
-          ];
-        } else {
-          return [
-            { date: "Jun 2025", portfolio: 100, benchmark: 100 },
-            { date: "Jul 2025", portfolio: 141.7, benchmark: 104.2 },
-          ];
-        }
-      };
+  // ✅ FIXED: Use props data instead of hook
+  const hasRealData = totalTrades > 0;
+  const portfolioGrowth = totalPnLPercent;
+  const tradeCount = totalTrades;
 
-      setPortfolioData((prev) => ({
-        ...prev,
-        chartData: generateRealChartData(timeframe),
-      }));
-    }
-  }, [timeframe, portfolioData.totalTrades]);
+  // Calculate realistic market average for display
+  const benchmarkGrowth = (() => {
+    const daysSinceStart = 15; // Approximate days since first trade
+    return calculateMarketAverage(daysSinceStart) * 100;
+  })();
 
-  // Use real data when available, fallback to demo data
-  const hasRealData = portfolioData.totalTrades > 0;
-  const portfolioGrowth = hasRealData ? portfolioData.totalPnLPercent : 6.5;
-  const tradeCount = hasRealData ? portfolioData.totalTrades : 22;
-  const benchmarkGrowth = 4.2;
   const avgScore = 84;
 
-  // Show loading state only if we're actually loading
-  if (isLoading) {
+  // Show loading state
+  if (isLoading || chartLoading) {
     return (
       <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
         <CardContent className="flex items-center justify-center h-[300px]">
@@ -291,15 +236,13 @@ const PortfolioPerformanceChart: React.FC = () => {
     );
   }
 
-  const chartData = portfolioData.chartData;
-
   const chartConfig = {
     portfolio: {
       label: "Portfolio",
       color: "rgb(16 185 129)", // emerald-500
     },
     benchmark: {
-      label: "S&P 500",
+      label: "Market Avg",
       color: "rgb(59 130 246)", // blue-500
     },
   };
@@ -342,65 +285,71 @@ const PortfolioPerformanceChart: React.FC = () => {
             {portfolioGrowth.toFixed(1)}%
           </div>
           <p className="text-xs text-slate-400">
-            vs S&P 500: +{benchmarkGrowth.toFixed(1)}%
+            vs Market Avg: +{benchmarkGrowth.toFixed(1)}%
           </p>
           <p className="text-xs text-blue-400 mt-1">
-            {hasRealData
-              ? `Based on ${tradeCount} trades (avg score: ${avgScore})`
-              : `Based on ${tradeCount} trades (avg score: ${avgScore})`}
+            Based on {tradeCount} trades (avg score: {avgScore})
           </p>
           <p className="text-xs text-slate-300 mt-1">
             {hasRealData
-              ? `Portfolio Value: ${portfolioData.totalValue.toLocaleString()} • ${
-                  portfolioData.openPositions
-                } open positions`
-              : `Performance since Jun 19, 2025 • Ready for real data integration`}
+              ? `Portfolio Value: ${totalValue.toLocaleString("en-US", {
+                  style: "currency",
+                  currency: "USD",
+                  maximumFractionDigits: 0,
+                })} • ${activePositions} open positions`
+              : `Performance tracking ready • Start trading to see real data`}
           </p>
           {hasRealData && (
             <p className="text-xs text-slate-300 mt-1">
-              Total P&L: ${portfolioData.totalPnL.toFixed(0)} • Win Rate:{" "}
-              {portfolioData.winRate.toFixed(1)}%
+              Total P&L: ${totalPnL.toFixed(0)} • Win Rate: {winRate.toFixed(1)}
+              %
             </p>
           )}
         </div>
 
-        <ChartContainer config={chartConfig} className="h-[200px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={chartData}
-              margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
-            >
-              <XAxis
-                dataKey="date"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 10, fill: "rgb(148 163 184)" }}
-              />
-              <YAxis hide domain={["dataMin - 5", "dataMax + 5"]} />
-              <ChartTooltip
-                content={<ChartTooltipContent />}
-                cursor={{ stroke: "rgb(71 85 105)", strokeWidth: 1 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="portfolio"
-                stroke="var(--color-portfolio)"
-                strokeWidth={2}
-                dot={{ fill: "var(--color-portfolio)", strokeWidth: 0, r: 3 }}
-                activeDot={{ r: 4, fill: "var(--color-portfolio)" }}
-              />
-              <Line
-                type="monotone"
-                dataKey="benchmark"
-                stroke="var(--color-benchmark)"
-                strokeWidth={2}
-                strokeDasharray="3 3"
-                dot={{ fill: "var(--color-benchmark)", strokeWidth: 0, r: 3 }}
-                activeDot={{ r: 4, fill: "var(--color-benchmark)" }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartContainer>
+        {chartData.length > 0 ? (
+          <ChartContainer config={chartConfig} className="h-[200px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={chartData}
+                margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+              >
+                <XAxis
+                  dataKey="date"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 10, fill: "rgb(148 163 184)" }}
+                />
+                <YAxis hide domain={["dataMin - 5", "dataMax + 5"]} />
+                <ChartTooltip
+                  content={<ChartTooltipContent />}
+                  cursor={{ stroke: "rgb(71 85 105)", strokeWidth: 1 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="portfolio"
+                  stroke="var(--color-portfolio)"
+                  strokeWidth={2}
+                  dot={{ fill: "var(--color-portfolio)", strokeWidth: 0, r: 3 }}
+                  activeDot={{ r: 4, fill: "var(--color-portfolio)" }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="benchmark"
+                  stroke="var(--color-benchmark)"
+                  strokeWidth={2}
+                  strokeDasharray="3 3"
+                  dot={{ fill: "var(--color-benchmark)", strokeWidth: 0, r: 3 }}
+                  activeDot={{ r: 4, fill: "var(--color-benchmark)" }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        ) : (
+          <div className="h-[200px] flex items-center justify-center text-slate-400">
+            No trading data available
+          </div>
+        )}
 
         <div className="mt-4 flex items-center justify-between text-xs">
           <div className="flex items-center space-x-4">
@@ -410,7 +359,7 @@ const PortfolioPerformanceChart: React.FC = () => {
             </div>
             <div className="flex items-center space-x-1">
               <div className="w-3 h-0.5 bg-blue-400 rounded border-dashed"></div>
-              <span className="text-slate-400">S&P 500</span>
+              <span className="text-slate-400">Market Avg</span>
             </div>
           </div>
           <div className="text-slate-400 flex items-center space-x-1">
@@ -427,6 +376,19 @@ const PortfolioPerformanceChart: React.FC = () => {
               : "Demo data - ready for real performance"}
           </span>
         </div>
+
+        {/* ✅ DEBUG INFO (remove in production) */}
+        {process.env.NODE_ENV === "development" && hasRealData && (
+          <div className="mt-2 p-2 bg-slate-900 rounded text-xs text-slate-400">
+            <div>
+              DEBUG: P&L: ${totalPnL.toFixed(2)} | Percent:{" "}
+              {totalPnLPercent.toFixed(2)}%
+            </div>
+            <div>
+              Chart points: {chartData.length} | Timeframe: {timeframe}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

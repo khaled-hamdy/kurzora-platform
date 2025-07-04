@@ -1,4 +1,4 @@
-// Complete Dashboard.tsx with Fixed Categorization Logic
+// Complete Dashboard.tsx with Fixed Categorization Logic and Clean Recent Activity
 // src/pages/Dashboard.tsx
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
@@ -495,7 +495,7 @@ const Dashboard: React.FC = () => {
           )}
         </div>
 
-        {/* Performance Summary with Real Recent Trades - ✅ FIXED RECENT TRADES */}
+        {/* Performance Summary with Clean Recent Trades - ✅ CLEAN RECENT ACTIVITY */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <div className="lg:col-span-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card className="bg-slate-900/50 backdrop-blur-sm border-blue-800/30 hover:bg-slate-900/70 transition-all duration-300">
@@ -589,7 +589,7 @@ const Dashboard: React.FC = () => {
             </Card>
           </div>
 
-          {/* ✅ FIXED: Recent Trades with Open/Closed Status Indicators */}
+          {/* ✅ CLEAN: Recent Activity - No P&L Numbers, Just Status */}
           <div className="lg:col-span-1">
             <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700 h-full">
               <CardHeader className="pb-3">
@@ -627,7 +627,7 @@ const Dashboard: React.FC = () => {
                       ))}
                     </div>
                   ) : recentTrades.length > 0 ? (
-                    // ✅ FIXED: Real trade data with open/closed indicators
+                    // ✅ CLEAN: Real trade data without P&L numbers - just status
                     recentTrades.map((trade, index) => (
                       <div
                         key={index}
@@ -638,7 +638,7 @@ const Dashboard: React.FC = () => {
                             <div className="text-white font-semibold text-xs">
                               {trade.ticker}
                             </div>
-                            {/* ✅ NEW: Status indicator: Open (blue dot) or Closed (green dot) */}
+                            {/* ✅ Status indicator: Open (blue dot) or Closed (green dot) */}
                             <div className="flex items-center">
                               {trade.isOpen ? (
                                 <div
@@ -653,22 +653,9 @@ const Dashboard: React.FC = () => {
                               )}
                             </div>
                           </div>
-                          <div
-                            className={`text-xs font-medium ${
-                              trade.pnl > 0
-                                ? "text-emerald-400"
-                                : trade.pnl < 0
-                                ? "text-red-400"
-                                : "text-slate-400"
-                            }`}
-                          >
-                            {trade.pnl > 0 ? "+" : ""}$
-                            {Math.abs(trade.pnl).toFixed(0)}
-                            {trade.isOpen && (
-                              <span className="text-slate-500 ml-1">
-                                (unrealized)
-                              </span>
-                            )}
+                          {/* ✅ CLEAN: No P&L numbers - just show status */}
+                          <div className="text-xs text-slate-400 font-medium">
+                            {trade.isOpen ? "Active" : "Closed"}
                           </div>
                         </div>
                         <div className="text-xs text-slate-400 text-right">
@@ -715,7 +702,16 @@ const Dashboard: React.FC = () => {
             />
           </div>
           <div className="lg:col-span-3">
-            <PortfolioPerformanceChart />
+            {/* ✅ FIXED: Pass portfolio data as props to avoid duplicate subscriptions */}
+            <PortfolioPerformanceChart
+              totalValue={totalValue}
+              totalPnL={totalPnL}
+              totalPnLPercent={totalPnLPercent}
+              winRate={portfolioWinRate}
+              activePositions={activePositions}
+              totalTrades={portfolioTotalTrades}
+              isLoading={portfolioLoading}
+            />
           </div>
         </div>
 
