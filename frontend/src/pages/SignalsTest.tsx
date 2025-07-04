@@ -1,7 +1,7 @@
 // ===================================================================
 // SIGNALS TEST WITH ENHANCED FILTERING INTEGRATION
 // ===================================================================
-// File: src/pages/SignalsTest.tsx (Updated with Enhanced Filters + S&P 500 Debug)
+// File: src/pages/SignalsTest.tsx (Updated with Enhanced Filters + S&P 500 Debug + DATABASE SAVING RESTORED)
 // Purpose: Integration example showing how to add enhanced filtering
 
 import React, { useState, useEffect, useMemo } from "react";
@@ -386,6 +386,64 @@ const SignalsTest: React.FC = () => {
       setAllResults(results);
       setProcessedSignals(processedSignalsList);
       setProcessingStats(stats);
+
+      // ===================================================================
+      // 🔧 RESTORED: DATABASE SAVING FUNCTIONALITY (Session #102-103)
+      // ===================================================================
+
+      // Save signals to database (restoring Session #102-103 functionality)
+      if (processedSignalsList.length > 0) {
+        console.log(
+          `💾 Saving ${processedSignalsList.length} signals to database...`
+        );
+
+        let savedCount = 0;
+        let failedCount = 0;
+
+        try {
+          for (const signal of processedSignalsList) {
+            try {
+              const saveResult = await signalProcessor.saveSignal(signal);
+              if (saveResult) {
+                savedCount++;
+                console.log(
+                  `✅ ${signal.ticker}: Saved to database (Score: ${signal.finalScore})`
+                );
+              } else {
+                failedCount++;
+                console.warn(
+                  `⚠️ ${signal.ticker}: Save failed but no error thrown`
+                );
+              }
+            } catch (signalError) {
+              failedCount++;
+              console.error(`❌ ${signal.ticker}: Save error -`, signalError);
+            }
+          }
+
+          console.log(
+            `💾 Database save completed: ${savedCount} saved, ${failedCount} failed`
+          );
+
+          if (savedCount > 0) {
+            console.log(
+              "✅ Database save successful! Signals will now appear in Dashboard and Signals pages."
+            );
+            console.log(
+              "🔄 Refresh your Dashboard or Signals page to see the new signals."
+            );
+          } else {
+            console.error(
+              "❌ No signals were saved to database. Check Supabase connection and console errors."
+            );
+          }
+        } catch (error) {
+          console.error("❌ Database save process failed:", error);
+          console.error(
+            "⚠️ Signals generated successfully but not saved to database. They will only appear on this test page."
+          );
+        }
+      }
 
       console.log("🎉 Market scan completed successfully!");
       console.log(
