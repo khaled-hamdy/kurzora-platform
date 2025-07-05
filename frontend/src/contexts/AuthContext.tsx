@@ -426,7 +426,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
-  // 🔧 FIXED: Profile creation that won't override existing users
+  // 🔧 FIXED: Profile creation that handles BOTH new and existing users with plan selection
   const createUserProfileInBackground = useCallback(
     async (userId: string) => {
       try {
@@ -448,22 +448,103 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           .eq("id", userId)
           .single();
 
+        // 🎯 BULLETPROOF: Get current plan selection data
+        console.log("🔍 ANALYZING: Current plan selection data...");
+        const comprehensivePlanData = retrievePlanDataFromAllSources();
+        console.log("🔍 PLAN DATA FOUND:", comprehensivePlanData);
+
+        // 🎯 BULLETPROOF: Enhanced tier determination
+        const determinedTier = determineSubscriptionTier(
+          comprehensivePlanData || pendingPlanInfo.current,
+          user.email
+        );
+        console.log("🎯 TIER DETERMINATION RESULT:", determinedTier);
+
         if (!checkError && existingUser) {
+          console.log("✅ EXISTING USER FOUND: Profile already exists");
           console.log(
-            "✅ EXISTING USER FOUND: Profile already exists, preserving existing data"
+            "✅ CURRENT DATABASE TIER:",
+            existingUser.subscription_tier
           );
-          console.log("✅ EXISTING TIER:", existingUser.subscription_tier);
-          console.log(
-            "✅ NOT OVERRIDING: Backend subscription processing already set correct tier"
-          );
+          console.log("✅ NEW PLAN SELECTION TIER:", determinedTier);
 
-          // Clear plan data since user already exists with correct tier
-          clearAllPlanData();
+          // 🔧 CRITICAL BUG FIX: Apply plan selection logic to existing users too!
+          if (
+            comprehensivePlanData?.id &&
+            existingUser.subscription_tier !== determinedTier
+          ) {
+            console.log(
+              "🔄 UPDATING EXISTING USER: Plan selection detected, updating tier..."
+            );
+            console.log(
+              `🔄 CHANGING: ${existingUser.subscription_tier} → ${determinedTier}`
+            );
 
-          if (mounted.current) {
-            setUserProfile(existingUser);
+            // Update existing user's tier based on new plan selection
+            const updatedProfile = {
+              ...existingUser,
+              subscription_tier: determinedTier,
+              notification_settings: {
+                ...existingUser.notification_settings,
+                email_alerts_enabled: true,
+                telegram_alerts_enabled: determinedTier === "professional",
+                daily_alert_limit: determinedTier === "starter" ? 3 : null,
+                minimum_score: 65,
+              },
+              updated_at: new Date().toISOString(),
+            };
+
+            console.log("🔄 UPDATING DATABASE: New profile data:", {
+              email: updatedProfile.email,
+              subscription_tier: updatedProfile.subscription_tier,
+              notification_settings: updatedProfile.notification_settings,
+            });
+
+            const { data: updatedData, error: updateError } = await supabase
+              .from("users")
+              .update({
+                subscription_tier: determinedTier,
+                notification_settings: updatedProfile.notification_settings,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", userId)
+              .select()
+              .single();
+
+            if (updateError) {
+              console.error("❌ EXISTING USER UPDATE ERROR:", updateError);
+            } else {
+              console.log("✅ EXISTING USER UPDATED SUCCESSFULLY!");
+              console.log(
+                "✅ NEW TIER IN DATABASE:",
+                updatedData.subscription_tier
+              );
+
+              // Clear plan data after successful update
+              clearAllPlanData();
+
+              if (mounted.current) {
+                setUserProfile(updatedData);
+              }
+              return;
+            }
+          } else {
+            console.log(
+              "ℹ️ EXISTING USER: No plan change detected or tier already correct"
+            );
+            console.log(
+              "ℹ️ KEEPING EXISTING TIER:",
+              existingUser.subscription_tier
+            );
+
+            // Clear plan data since no update needed
+            clearAllPlanData();
+
+            if (mounted.current) {
+              setUserProfile(existingUser);
+            }
+            return;
           }
-          return;
         }
 
         console.log(
@@ -477,36 +558,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           pendingPlanInfo.current
         );
 
-        // Test all storage methods
-        const comprehensivePlanData = retrievePlanDataFromAllSources();
         console.log(
           "🔍 PROFILE CREATION: Comprehensive plan data =",
           comprehensivePlanData
         );
 
-        // 🎯 BULLETPROOF: Enhanced tier determination
-        console.log(
-          "🔍 PROFILE CREATION: About to call bulletproof tier determination..."
-        );
-
-        const subscriptionTier = determineSubscriptionTier(
-          comprehensivePlanData || pendingPlanInfo.current,
-          user.email
-        );
-
         console.log(
           "🔍 PROFILE CREATION: FINAL TIER DECISION:",
-          subscriptionTier
+          determinedTier
         );
 
         // 🚨 VALIDATION: Ensure tier is valid
-        if (
-          subscriptionTier !== "professional" &&
-          subscriptionTier !== "starter"
-        ) {
+        if (determinedTier !== "professional" && determinedTier !== "starter") {
           console.error(
             "🚨 INVALID TIER DETECTED:",
-            subscriptionTier,
+            determinedTier,
             "- forcing to starter"
           );
           console.error("🚨 DEBUG DATA:", {
@@ -517,7 +583,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
 
         const validTier =
-          subscriptionTier === "professional" ? "professional" : "starter";
+          determinedTier === "professional" ? "professional" : "starter";
         console.log(
           "🎯 VALIDATED FINAL DECISION: Creating NEW user with tier:",
           validTier
