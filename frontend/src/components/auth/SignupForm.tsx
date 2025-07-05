@@ -10,10 +10,10 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 
-// 🔧 FIXED: Load Stripe with Vite-compatible environment variable
+// ✅ FIXED: Load Stripe with Vite-compatible environment variable
 const stripePromise = loadStripe(
   import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "pk_test_51234567890"
-); // 🎯 CRITICAL FIX: Changed from process.env to import.meta.env for Vite
+);
 
 const planDetails = {
   starter: {
@@ -38,7 +38,7 @@ interface SignupFormProps {
   };
 }
 
-// 🎯 STRIPE CARD STYLING
+// ✅ STRIPE CARD STYLING
 const cardElementOptions = {
   style: {
     base: {
@@ -57,7 +57,7 @@ const cardElementOptions = {
   hidePostalCode: false,
 };
 
-// 🔧 MAIN SIGNUP FORM COMPONENT (with Stripe)
+// ✅ MAIN SIGNUP FORM COMPONENT
 const SignupFormContent: React.FC<SignupFormProps> = ({
   onSwitchToLogin,
   selectedPlan,
@@ -78,21 +78,12 @@ const SignupFormContent: React.FC<SignupFormProps> = ({
   const [cardComplete, setCardComplete] = useState(false);
   const [cardError, setCardError] = useState<string | null>(null);
 
-  // Plan selection logic
+  // ✅ PLAN SELECTION LOGIC
   useEffect(() => {
-    console.log("🔧 PLAN DEBUG: Plan selection useEffect triggered");
-
     const urlParams = new URLSearchParams(window.location.search);
     const planId = urlParams.get("plan");
     const planPrice = urlParams.get("price");
     const billingCycle = urlParams.get("billing") || "monthly";
-
-    console.log(
-      "🔧 PLAN DEBUG: URL params - planId:",
-      planId,
-      "planPrice:",
-      planPrice
-    );
 
     if (planId && planPrice) {
       const planDetail = planDetails[planId as keyof typeof planDetails];
@@ -103,32 +94,28 @@ const SignupFormContent: React.FC<SignupFormProps> = ({
           price: planPrice,
           billingCycle: billingCycle,
         };
-        console.log("🔧 PLAN DEBUG: Setting planInfo from URL:", newPlanInfo);
         setPlanInfo(newPlanInfo);
       }
     } else if (!selectedPlan) {
+      // Default to professional plan
       const defaultPlan = {
         id: "professional",
         name: "Professional",
         price: "49",
         billingCycle: "monthly",
       };
-      console.log(
-        "🔧 PLAN DEBUG: Setting default professional plan:",
-        defaultPlan
-      );
       setPlanInfo(defaultPlan);
     }
   }, [selectedPlan]);
 
-  // Handle card element changes
+  // ✅ HANDLE CARD ELEMENT CHANGES
   const handleCardChange = (event: any) => {
     setCardComplete(event.complete);
     setCardError(event.error ? event.error.message : null);
   };
 
+  // ✅ FORM SUBMISSION WITH REDIRECT FIX
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    console.log("🚀 FORM SUBMIT TRIGGERED!");
     e.preventDefault();
     setError(null);
     setCardError(null);
@@ -146,7 +133,7 @@ const SignupFormContent: React.FC<SignupFormProps> = ({
       return;
     }
 
-    // 🔧 FIXED: Validate Stripe elements for paid plans
+    // ✅ VALIDATE STRIPE ELEMENTS FOR PAID PLANS
     if (planInfo && planInfo.id !== "starter") {
       if (!stripe || !elements) {
         setError("Stripe is not loaded. Please refresh and try again.");
@@ -167,17 +154,12 @@ const SignupFormContent: React.FC<SignupFormProps> = ({
       }
     }
 
-    console.log("✅ All validations passed, proceeding with signup...");
-
     try {
       setIsProcessingPayment(true);
-
       let paymentMethodId = null;
 
-      // 🔧 FIXED: Create payment method for paid plans
+      // ✅ CREATE PAYMENT METHOD FOR PAID PLANS
       if (planInfo && planInfo.id !== "starter" && stripe && elements) {
-        console.log("💳 Creating payment method for paid plan...");
-
         const cardElement = elements.getElement(CardElement);
         if (!cardElement) {
           throw new Error("Credit card element not found");
@@ -198,7 +180,6 @@ const SignupFormContent: React.FC<SignupFormProps> = ({
         }
 
         paymentMethodId = paymentMethod.id;
-        console.log("✅ Payment method created:", paymentMethodId);
 
         // Store payment method for backend processing
         if (planInfo) {
@@ -213,34 +194,24 @@ const SignupFormContent: React.FC<SignupFormProps> = ({
         }
       }
 
-      console.log("🚀 Starting user signup process...");
-
-      // 🎯 FIXED: Pass planInfo directly to signUp function with better logging
-      console.log(
-        "🎯 CRITICAL DEBUG: About to call signUp with planInfo:",
-        planInfo
-      );
-
+      // ✅ CREATE USER ACCOUNT
       const signUpResult = await signUp(
         formData.email,
         formData.password,
         formData.name,
-        planInfo || undefined // Pass plan info as parameter
+        planInfo || undefined
       );
 
       if (signUpResult.error) {
         throw new Error(signUpResult.error);
       }
 
-      console.log("✅ User signup successful!");
-
-      // Store plan info for persistence (double backup)
+      // Store plan info for persistence
       if (planInfo) {
         localStorage.setItem("selectedPlan", JSON.stringify(planInfo));
-        console.log("💾 BACKUP: Stored plan info in localStorage:", planInfo);
       }
 
-      // Success message
+      // ✅ SUCCESS MESSAGE
       if (planInfo && planInfo.id !== "starter") {
         toast.success(
           `✅ ${planInfo.name} account created with 7-day trial! Welcome to Kurzora!`
@@ -249,15 +220,16 @@ const SignupFormContent: React.FC<SignupFormProps> = ({
         toast.success("✅ Account created successfully! Welcome to Kurzora!");
       }
 
-      // Immediate redirect to homepage with success indicator
-      console.log("🔄 Redirecting to homepage...");
-      window.location.replace("/?signup=success");
+      // ✅ REDIRECT FIX: Automatically redirect to homepage after successful signup
+      setTimeout(() => {
+        window.location.href = "/?signup=success";
+      }, 1000); // Small delay to show success message
     } catch (error) {
       const errorMessage =
         error instanceof Error
           ? error.message
           : "Signup failed. Please try again.";
-      console.error("❌ Signup error:", errorMessage);
+      console.error("Signup error:", errorMessage);
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -403,7 +375,7 @@ const SignupFormContent: React.FC<SignupFormProps> = ({
           />
         </div>
 
-        {/* 🔧 FIXED: Credit Card Section for Paid Plans */}
+        {/* ✅ CREDIT CARD SECTION FOR PAID PLANS */}
         {showCardElement && (
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
@@ -459,7 +431,7 @@ const SignupFormContent: React.FC<SignupFormProps> = ({
   );
 };
 
-// 🔧 WRAPPER COMPONENT WITH STRIPE PROVIDER
+// ✅ WRAPPER COMPONENT WITH STRIPE PROVIDER
 const SignupForm: React.FC<SignupFormProps> = (props) => {
   return (
     <Elements stripe={stripePromise}>
