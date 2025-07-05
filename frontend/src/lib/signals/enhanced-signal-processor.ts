@@ -3,6 +3,7 @@
 // ===================================================================
 // File: src/lib/signals/enhanced-signal-processor.ts
 // 🔧 CRITICAL FIX: Completely bypasses old save methods
+// 🎯 THRESHOLD FIX: Changed minScoreForSave from 70 to 60 to match UI
 
 import {
   SignalProcessor,
@@ -71,7 +72,7 @@ export class EnhancedSignalProcessor {
     // Default configuration
     this.config = {
       enableAutoSave: true,
-      minScoreForSave: 70,
+      minScoreForSave: 60, // 🎯 FIXED: Changed from 70 to 60 to match UI
       batchSize: 25,
       enableDetailedLogging: true,
       clearOldSignals: true,
@@ -96,7 +97,9 @@ export class EnhancedSignalProcessor {
       console.log(
         `   Auto-Save: ${this.config.enableAutoSave ? "Enabled" : "Disabled"}`
       );
-      console.log(`   Min Score for DB: ${this.config.minScoreForSave}`);
+      console.log(
+        `   Min Score for DB: ${this.config.minScoreForSave}% (FIXED TO MATCH UI)`
+      );
       console.log(
         `   Real Prices: ${
           this.config.fetchRealPrices ? "Enabled" : "Disabled"
@@ -540,7 +543,7 @@ export class EnhancedSignalProcessor {
 
     if (this.config.enableDetailedLogging) {
       console.log(
-        `📊 Quality filter: ${qualitySignals.length}/${signals.length} signals passed (≥${this.config.minScoreForSave})`
+        `📊 Quality filter: ${qualitySignals.length}/${signals.length} signals passed (≥${this.config.minScoreForSave}%)`
       );
     }
 

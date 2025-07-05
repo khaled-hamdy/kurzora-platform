@@ -3,6 +3,7 @@
 // ===================================================================
 // File: src/pages/SignalsTest.tsx  // ✅ CHANGE FROM: EnhancedSignalsTest.tsx
 // Purpose: Test signal generation with automatic database storage and real price display
+// 🎯 THRESHOLD FIX: Changed default minScoreForSave from 70 to 60 to match UI
 
 import React, { useState, useEffect } from "react";
 import {
@@ -86,9 +87,9 @@ const EnhancedSignalsTest: React.FC = () => {
   const [progressMessage, setProgressMessage] = useState<string>("");
   const [currentProgress, setCurrentProgress] = useState<any>(null);
 
-  // Configuration state
+  // Configuration state - 🎯 FIXED: Changed default from 70 to 60
   const [enableAutoSave, setEnableAutoSave] = useState(true);
-  const [minScoreForSave, setMinScoreForSave] = useState(70);
+  const [minScoreForSave, setMinScoreForSave] = useState(60); // 🎯 FIXED: Changed from 70 to 60
   const [enableDetailedLogging, setEnableDetailedLogging] = useState(true);
   const [fetchRealPrices, setFetchRealPrices] = useState(true); // 🚀 NEW: Real price toggle
 
@@ -146,7 +147,7 @@ const EnhancedSignalsTest: React.FC = () => {
         stockUniverse,
         {
           enableAutoSave,
-          minScoreForSave,
+          minScoreForSave, // 🎯 FIXED: Now defaults to 60 instead of 70
           enableDetailedLogging,
           clearOldSignals: true,
           // ✅ REMOVED: oldSignalsCutoffHours: 24 - this was causing the duplicate filtering issue!
