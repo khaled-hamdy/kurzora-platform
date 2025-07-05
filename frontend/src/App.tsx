@@ -39,9 +39,8 @@ import ShariahCompliance from "./pages/legal/ShariahCompliance";
 import GDPRCompliance from "./pages/legal/GDPRCompliance";
 import CookieNotice from "./pages/legal/CookieNotice";
 import PolygonTest from "./pages/PolygonTest";
+// ✅ CLEANED: Single signals test component (Enhanced with sector fix)
 import SignalsTest from "./pages/SignalsTest";
-// ✅ NEW: Enhanced Signals Test with Database Auto-Save
-import EnhancedSignalsTest from "./pages/EnhancedSignalsTest";
 
 // Create QueryClient with default options
 const queryClient = new QueryClient({
@@ -87,14 +86,8 @@ function App() {
                   {/* 🚀 POLYGON.IO TEST PAGE */}
                   <Route path="/polygon-test" element={<PolygonTest />} />
 
-                  {/* 🎯 SIGNAL GENERATION TEST PAGE */}
+                  {/* ✅ CLEANED: Enhanced Signal Generation Test with Database Auto-Save & Sector Fix */}
                   <Route path="/signals-test" element={<SignalsTest />} />
-
-                  {/* 🚀 ENHANCED SIGNALS TEST - DATABASE AUTO-SAVE PIPELINE */}
-                  <Route
-                    path="/enhanced-signals-test"
-                    element={<EnhancedSignalsTest />}
-                  />
 
                   {/* 🧪 SUBSCRIPTION TIER TEST PAGE */}
                   <Route

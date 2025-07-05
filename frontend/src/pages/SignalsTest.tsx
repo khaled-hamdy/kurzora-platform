@@ -1,10 +1,10 @@
 // ===================================================================
-// SIGNALS TEST WITH ENHANCED FILTERING INTEGRATION
+// ENHANCED SIGNALS TEST WITH DATABASE AUTO-SAVE & REAL PRICES - FIXED
 // ===================================================================
-// File: src/pages/SignalsTest.tsx (Updated with Enhanced Filters + S&P 500 Debug + DATABASE SAVING RESTORED)
-// Purpose: Integration example showing how to add enhanced filtering
+// File: src/pages/SignalsTest.tsx  // ✅ CHANGE FROM: EnhancedSignalsTest.tsx
+// Purpose: Test signal generation with automatic database storage and real price display
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ArrowLeft,
   Play,
@@ -12,489 +12,188 @@ import {
   TrendingUp,
   TrendingDown,
   Minus,
-  Filter,
-  Search,
-  Bug,
-  AlertTriangle,
+  Database,
   CheckCircle,
+  AlertTriangle,
   XCircle,
   Clock,
   Activity,
-  Settings,
-  Eye,
-  EyeOff,
+  BarChart3,
+  Zap,
+  DollarSign,
 } from "lucide-react";
-import { StockScanner } from "../lib/signals/stock-scanner";
+
 import {
-  SignalProcessor,
+  EnhancedSignalProcessor,
+  processStocksWithAutoSave,
+} from "../lib/signals/enhanced-signal-processor";
+import {
   ProcessedSignal,
   SignalStrength,
 } from "../lib/signals/signal-processor";
+import { StockScanner } from "../lib/signals/stock-scanner";
 
 // ===================================================================
-// NEW IMPORTS - Enhanced Filtering System
-// ===================================================================
-import {
-  EnhancedSignalFilter,
-  EnhancedFilterConfig,
-  FilteringStats,
-} from "../lib/signals/enhanced-filters";
-import EnhancedFiltersPanel from "../components/signals/EnhancedFiltersPanel";
-
-// ===================================================================
-// EXISTING INTERFACES (keeping your current structure)
+// INTERFACES
 // ===================================================================
 
-interface StockResult {
-  ticker: string;
-  score: number;
-  accepted: boolean;
-  reason?: string;
-  signalStrength?: SignalStrength;
-  signalType?: "bullish" | "bearish" | "neutral";
-  companyName?: string;
-  sector?: string;
+interface EnhancedProcessingStats {
+  totalStocks: number;
+  validDatasets: number;
+  signalsGenerated: number;
+  qualitySignals: number;
+  databaseSaves: number;
+  totalTime: number;
+  apiCallsMade: number;
+  pricesUpdated: number; // 🚀 NEW: Track price updates
 }
 
-interface ProcessingStats {
-  totalProcessed: number;
-  signalsGenerated: number;
-  scoreDistribution: {
-    above70: number;
-    between60_70: number;
-    between50_60: number;
-    below50: number;
-  };
-  highestScore: number;
-  averageScore: number;
+interface AutoSaveStats {
+  success: boolean;
+  signalsSaved: number;
+  signalsFiltered: number;
+  errors: string[];
   processingTime: number;
+}
+
+interface SystemHealthStatus {
+  status: string;
+  message: string;
+  details?: any;
 }
 
 // ===================================================================
 // ENHANCED SIGNALS TEST COMPONENT
 // ===================================================================
 
-const SignalsTest: React.FC = () => {
+const EnhancedSignalsTest: React.FC = () => {
   // ===================================================================
-  // EXISTING STATE (keeping your current structure)
+  // STATE MANAGEMENT
   // ===================================================================
 
   const [isProcessing, setIsProcessing] = useState(false);
-  const [processingStats, setProcessingStats] =
-    useState<ProcessingStats | null>(null);
-  const [allResults, setAllResults] = useState<StockResult[]>([]);
   const [processedSignals, setProcessedSignals] = useState<ProcessedSignal[]>(
     []
   );
-  const [systemHealthy, setSystemHealthy] = useState<boolean | null>(null);
-  const [healthMessage, setHealthMessage] = useState<string>("");
-
-  // ===================================================================
-  // NEW STATE - Enhanced Filtering
-  // ===================================================================
-
-  const [enhancedFilter] = useState(new EnhancedSignalFilter());
-  const [filterConfig, setFilterConfig] = useState<
-    Partial<EnhancedFilterConfig>
-  >({});
-  const [showEnhancedFilters, setShowEnhancedFilters] = useState(false);
-  const [filteredSignals, setFilteredSignals] = useState<ProcessedSignal[]>([]);
-  const [filterStats, setFilterStats] = useState<FilteringStats | null>(null);
-  const [filterRecommendations, setFilterRecommendations] = useState<string[]>(
-    []
+  const [processingStats, setProcessingStats] =
+    useState<EnhancedProcessingStats | null>(null);
+  const [autoSaveStats, setAutoSaveStats] = useState<AutoSaveStats | null>(
+    null
   );
+  const [systemHealth, setSystemHealth] = useState<SystemHealthStatus | null>(
+    null
+  );
+  const [progressMessage, setProgressMessage] = useState<string>("");
+  const [currentProgress, setCurrentProgress] = useState<any>(null);
+
+  // Configuration state
+  const [enableAutoSave, setEnableAutoSave] = useState(true);
+  const [minScoreForSave, setMinScoreForSave] = useState(70);
+  const [enableDetailedLogging, setEnableDetailedLogging] = useState(true);
+  const [fetchRealPrices, setFetchRealPrices] = useState(true); // 🚀 NEW: Real price toggle
 
   // ===================================================================
-  // EXISTING BASIC FILTERS (keeping for backward compatibility)
+  // SYSTEM TESTING
   // ===================================================================
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<
-    "all" | "accepted" | "rejected"
-  >("all");
-  const [scoreRangeFilter, setScoreRangeFilter] = useState<
-    "all" | "70+" | "60-69" | "50-59" | "<50"
-  >("all");
-  const [sortBy, setSortBy] = useState<"score" | "ticker" | "sector">("score");
-  const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
-
-  // ===================================================================
-  // ENHANCED FILTERING LOGIC
-  // ===================================================================
-
-  const applyEnhancedFiltering = (signals: ProcessedSignal[]) => {
-    if (Object.keys(filterConfig).length === 0) {
-      // No enhanced filters applied, use original signals
-      setFilteredSignals(signals);
-      setFilterStats(null);
-      setFilterRecommendations([]);
-      return;
-    }
-
-    console.log(`🔍 Applying enhanced filters to ${signals.length} signals`);
-
-    const result = enhancedFilter.filterSignals(signals, filterConfig);
-
-    setFilteredSignals(result.filteredSignals);
-    setFilterStats(result.filterStats);
-    setFilterRecommendations(result.recommendations);
-
-    console.log(
-      `✅ Enhanced filtering complete: ${result.filteredSignals.length} signals passed`
-    );
-  };
-
-  // Apply enhanced filtering whenever processedSignals or filterConfig changes
-  useEffect(() => {
-    if (processedSignals.length > 0) {
-      applyEnhancedFiltering(processedSignals);
-    }
-  }, [processedSignals, filterConfig]);
-
-  // ===================================================================
-  // COMBINED FILTERING (Enhanced + Basic)
-  // ===================================================================
-
-  const finalFilteredResults = useMemo(() => {
-    // Start with enhanced filtered signals, but convert to StockResult format for compatibility
-    let results: StockResult[] = [];
-
-    if (filteredSignals.length > 0) {
-      // Convert ProcessedSignal[] to StockResult[] for existing UI
-      results = filteredSignals.map((signal) => ({
-        ticker: signal.ticker,
-        score: signal.finalScore,
-        accepted: true,
-        signalStrength: signal.signalStrength,
-        signalType: signal.signalType,
-        companyName: signal.ticker, // Would need additional mapping
-        sector: "Unknown", // Would need additional mapping
-      }));
-    } else {
-      // Fall back to original allResults if no enhanced filtering
-      results = [...allResults];
-    }
-
-    // Apply basic filters for backward compatibility
-    if (searchTerm) {
-      results = results.filter(
-        (r) =>
-          r.ticker.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          r.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          r.sector?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (selectedCategory !== "all") {
-      results = results.filter((r) =>
-        selectedCategory === "accepted" ? r.accepted : !r.accepted
-      );
-    }
-
-    if (scoreRangeFilter !== "all") {
-      switch (scoreRangeFilter) {
-        case "70+":
-          results = results.filter((r) => r.score >= 70);
-          break;
-        case "60-69":
-          results = results.filter((r) => r.score >= 60 && r.score < 70);
-          break;
-        case "50-59":
-          results = results.filter((r) => r.score >= 50 && r.score < 60);
-          break;
-        case "<50":
-          results = results.filter((r) => r.score < 50);
-          break;
-      }
-    }
-
-    // Sort results
-    results.sort((a, b) => {
-      let aVal, bVal;
-
-      switch (sortBy) {
-        case "ticker":
-          aVal = a.ticker;
-          bVal = b.ticker;
-          break;
-        case "sector":
-          aVal = a.sector || "";
-          bVal = b.sector || "";
-          break;
-        case "score":
-        default:
-          aVal = a.score;
-          bVal = b.score;
-          break;
-      }
-
-      if (sortOrder === "desc") {
-        return bVal > aVal ? 1 : -1;
-      } else {
-        return aVal > bVal ? 1 : -1;
-      }
-    });
-
-    return results;
-  }, [
-    filteredSignals,
-    allResults,
-    searchTerm,
-    selectedCategory,
-    scoreRangeFilter,
-    sortBy,
-    sortOrder,
-  ]);
-
-  // ===================================================================
-  // EXISTING METHODS (keeping your current implementation)
-  // ===================================================================
-
-  const testSystemHealth = async () => {
+  const testEnhancedSystem = async () => {
     try {
-      const signalProcessor = new SignalProcessor();
-      const healthCheck = await signalProcessor.testSystemHealth();
+      setProgressMessage("Testing system health...");
+      const processor = new EnhancedSignalProcessor();
+      const health = await processor.testSystemHealth();
+      setSystemHealth(health);
 
-      setSystemHealthy(healthCheck.status === "healthy");
-      setHealthMessage(healthCheck.message);
-
-      if (healthCheck.status !== "healthy") {
-        console.error("❌ System health check failed:", healthCheck);
+      if (health.status === "healthy") {
+        setProgressMessage("✅ All systems operational");
+      } else {
+        setProgressMessage(`⚠️ System issue: ${health.message}`);
       }
     } catch (error) {
-      setSystemHealthy(false);
-      setHealthMessage(`System initialization failed: ${error.message}`);
-      console.error("❌ System health check error:", error);
+      setSystemHealth({
+        status: "error",
+        message: `System test failed: ${error.message}`,
+      });
+      setProgressMessage("❌ System test failed");
     }
   };
 
-  const startRealMarketScan = async () => {
+  // ===================================================================
+  // ENHANCED PROCESSING - FIXED
+  // ===================================================================
+
+  const startEnhancedProcessing = async () => {
     if (isProcessing) return;
 
     setIsProcessing(true);
-    setAllResults([]);
     setProcessedSignals([]);
-    setFilteredSignals([]);
     setProcessingStats(null);
-    setFilterStats(null);
+    setAutoSaveStats(null);
+    setProgressMessage("Initializing enhanced processing...");
 
     try {
-      console.log("🚀 Starting comprehensive market scan...");
-      const startTime = Date.now();
+      console.log(
+        "🚀 Starting Enhanced Signal Processing with Auto-Save & Real Prices..."
+      );
 
-      const stockScanner = new StockScanner();
-      const signalProcessor = new SignalProcessor();
-      signalProcessor.clearResults();
-
+      // Get stock universe
       const stockUniverse = StockScanner.getDefaultStockUniverse();
-
-      // 🔍 S&P 500 DEBUG CODE - Critical for identifying stock universe size issue
       console.log(
-        `🔍 DEBUG: Total stocks in universe: ${stockUniverse.length}`
-      );
-      console.log(
-        `🔍 DEBUG: First 5 stocks:`,
-        stockUniverse.slice(0, 5).map((s) => s.ticker)
-      );
-      console.log(
-        `🔍 DEBUG: Last 5 stocks:`,
-        stockUniverse.slice(-5).map((s) => s.ticker)
+        `📊 Processing ${stockUniverse.length} stocks from modular universe`
       );
 
-      console.log(`📊 Scanning ${stockUniverse.length} stocks for signals`);
-
-      const { multiTimeframeData, errors } = await stockScanner.scanStocks(
+      // 🔧 FIXED: Remove oldSignalsCutoffHours override - let Enhanced Signal Processor use its correct 0.1 hours default
+      const result = await processStocksWithAutoSave(
         stockUniverse,
+        {
+          enableAutoSave,
+          minScoreForSave,
+          enableDetailedLogging,
+          clearOldSignals: true,
+          // ✅ REMOVED: oldSignalsCutoffHours: 24 - this was causing the duplicate filtering issue!
+          fetchRealPrices, // 🚀 NEW: Enable real price fetching
+        },
         (progress) => {
-          console.log(
-            `📈 Progress: ${progress.stocksScanned}/${progress.totalStocks} - ${progress.currentStock}`
+          setCurrentProgress(progress);
+          setProgressMessage(
+            `${progress.stage}: ${progress.currentStock || ""}`
           );
         }
       );
 
+      // Update state with results
+      setProcessedSignals(result.signals);
+      setProcessingStats(result.processingStats);
+      setAutoSaveStats(result.autoSaveResult);
+
+      console.log("🎉 Enhanced processing complete!");
       console.log(
-        `✅ Stock scanning complete. Processing ${
-          Object.keys(multiTimeframeData).length
-        } valid datasets`
+        `📊 Results: ${result.signals.length} signals, ${result.autoSaveResult.signalsSaved} saved to DB`
+      );
+      console.log(
+        `💰 Prices Updated: ${result.processingStats.pricesUpdated} stocks with real prices`
       );
 
-      const results: StockResult[] = [];
-      const processedSignalsList: ProcessedSignal[] = [];
-
-      for (const stock of stockUniverse) {
-        const stockData = multiTimeframeData[stock.ticker];
-
-        if (stockData) {
-          try {
-            const signal = await signalProcessor.processSignal(
-              stock.ticker,
-              stockData
-            );
-
-            if (signal) {
-              results.push({
-                ticker: stock.ticker,
-                score: signal.finalScore,
-                accepted: true,
-                signalStrength: signal.signalStrength,
-                signalType: signal.signalType,
-                companyName: stock.companyName,
-                sector: stock.sector,
-              });
-              processedSignalsList.push(signal);
-            } else {
-              const processorResults = signalProcessor.getAllResults();
-              const result = processorResults.find(
-                (r) => r.ticker === stock.ticker
-              );
-
-              results.push({
-                ticker: stock.ticker,
-                score: result?.score || 0,
-                accepted: false,
-                reason: result?.reason || "Processing failed",
-                companyName: stock.companyName,
-                sector: stock.sector,
-              });
-            }
-          } catch (error) {
-            console.error(`❌ Error processing ${stock.ticker}:`, error);
-            results.push({
-              ticker: stock.ticker,
-              score: 0,
-              accepted: false,
-              reason: `Error: ${error.message}`,
-              companyName: stock.companyName,
-              sector: stock.sector,
-            });
-          }
-        } else {
-          results.push({
-            ticker: stock.ticker,
-            score: 0,
-            accepted: false,
-            reason: "No valid timeframe data",
-            companyName: stock.companyName,
-            sector: stock.sector,
-          });
-        }
-      }
-
-      const totalTime = Math.floor((Date.now() - startTime) / 1000);
-      const stats = generateStats(results, totalTime);
-
-      setAllResults(results);
-      setProcessedSignals(processedSignalsList);
-      setProcessingStats(stats);
-
-      // ===================================================================
-      // 🔧 RESTORED: DATABASE SAVING FUNCTIONALITY (Session #102-103)
-      // ===================================================================
-
-      // Save signals to database (restoring Session #102-103 functionality)
-      if (processedSignalsList.length > 0) {
-        console.log(
-          `💾 Saving ${processedSignalsList.length} signals to database...`
-        );
-
-        let savedCount = 0;
-        let failedCount = 0;
-
-        try {
-          for (const signal of processedSignalsList) {
-            try {
-              const saveResult = await signalProcessor.saveSignal(signal);
-              if (saveResult) {
-                savedCount++;
-                console.log(
-                  `✅ ${signal.ticker}: Saved to database (Score: ${signal.finalScore})`
-                );
-              } else {
-                failedCount++;
-                console.warn(
-                  `⚠️ ${signal.ticker}: Save failed but no error thrown`
-                );
-              }
-            } catch (signalError) {
-              failedCount++;
-              console.error(`❌ ${signal.ticker}: Save error -`, signalError);
-            }
-          }
-
-          console.log(
-            `💾 Database save completed: ${savedCount} saved, ${failedCount} failed`
-          );
-
-          if (savedCount > 0) {
-            console.log(
-              "✅ Database save successful! Signals will now appear in Dashboard and Signals pages."
-            );
-            console.log(
-              "🔄 Refresh your Dashboard or Signals page to see the new signals."
-            );
-          } else {
-            console.error(
-              "❌ No signals were saved to database. Check Supabase connection and console errors."
-            );
-          }
-        } catch (error) {
-          console.error("❌ Database save process failed:", error);
-          console.error(
-            "⚠️ Signals generated successfully but not saved to database. They will only appear on this test page."
-          );
-        }
-      }
-
-      console.log("🎉 Market scan completed successfully!");
-      console.log(
-        `📊 Results: ${stats.signalsGenerated}/${stats.totalProcessed} signals generated`
+      setProgressMessage(
+        `✅ Enhanced processing complete! ${result.autoSaveResult.signalsSaved} signals saved with real prices`
       );
     } catch (error) {
-      console.error("❌ Market scan failed:", error);
-      alert(`Market scan failed: ${error.message}`);
+      console.error("❌ Enhanced processing failed:", error);
+      setProgressMessage(`❌ Processing failed: ${error.message}`);
     } finally {
       setIsProcessing(false);
+      setCurrentProgress(null);
     }
   };
 
-  const generateStats = (
-    results: StockResult[],
-    processingTime: number
-  ): ProcessingStats => {
-    const totalProcessed = results.length;
-    const signalsGenerated = results.filter((r) => r.accepted).length;
-
-    const scoreDistribution = {
-      above70: results.filter((r) => r.score >= 70).length,
-      between60_70: results.filter((r) => r.score >= 60 && r.score < 70).length,
-      between50_60: results.filter((r) => r.score >= 50 && r.score < 60).length,
-      below50: results.filter((r) => r.score < 50).length,
-    };
-
-    const scores = results.map((r) => r.score);
-    const highestScore = scores.length > 0 ? Math.max(...scores) : 0;
-    const averageScore =
-      scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
-
-    return {
-      totalProcessed,
-      signalsGenerated,
-      scoreDistribution,
-      highestScore,
-      averageScore: Math.round(averageScore * 100) / 100,
-      processingTime,
-    };
-  };
-
   // ===================================================================
-  // EXISTING HELPER FUNCTIONS (keeping your current implementation)
+  // UTILITY FUNCTIONS
   // ===================================================================
 
   const getScoreColor = (score: number): string => {
-    if (score >= 75) return "bg-emerald-600 text-white";
-    if (score >= 65) return "bg-blue-600 text-white";
-    if (score >= 55) return "bg-amber-600 text-white";
-    if (score >= 45) return "bg-slate-600 text-slate-300";
+    if (score >= 80) return "bg-emerald-600 text-white";
+    if (score >= 70) return "bg-blue-600 text-white";
+    if (score >= 60) return "bg-amber-600 text-white";
+    if (score >= 50) return "bg-slate-600 text-slate-300";
     return "bg-red-600 text-white";
   };
 
@@ -511,9 +210,34 @@ const SignalsTest: React.FC = () => {
     }
   };
 
-  const getStrengthText = (signal?: SignalStrength): string => {
-    if (!signal) return "N/A";
-    return signal.replace(/_/g, " ");
+  const getHealthStatusIcon = (status: string) => {
+    switch (status) {
+      case "healthy":
+        return <CheckCircle className="w-5 h-5 text-emerald-400" />;
+      case "warning":
+        return <AlertTriangle className="w-5 h-5 text-amber-400" />;
+      case "error":
+        return <XCircle className="w-5 h-5 text-red-400" />;
+      default:
+        return <Clock className="w-5 h-5 text-slate-400" />;
+    }
+  };
+
+  // 🚀 NEW: Price formatting utilities
+  const formatPrice = (price: number | undefined): string => {
+    if (!price || price === 0) return "N/A";
+    return `$${price.toFixed(2)}`;
+  };
+
+  const formatPriceChange = (changePercent: number | undefined): string => {
+    if (!changePercent && changePercent !== 0) return "0.00%";
+    const sign = changePercent >= 0 ? "+" : "";
+    return `${sign}${changePercent.toFixed(2)}%`;
+  };
+
+  const getPriceChangeColor = (changePercent: number | undefined): string => {
+    if (!changePercent && changePercent !== 0) return "text-slate-400";
+    return changePercent >= 0 ? "text-emerald-400" : "text-red-400";
   };
 
   // ===================================================================
@@ -521,7 +245,7 @@ const SignalsTest: React.FC = () => {
   // ===================================================================
 
   useEffect(() => {
-    testSystemHealth();
+    testEnhancedSystem();
   }, []);
 
   // ===================================================================
@@ -546,22 +270,29 @@ const SignalsTest: React.FC = () => {
 
             <div className="text-center">
               <h1 className="text-2xl font-bold text-white mb-1">
-                🔬 ENHANCED Stock Signal Generator
+                🚀 Enhanced Signal Processor
               </h1>
               <p className="text-slate-400 text-sm">
-                Professional filtering • Custom presets • Advanced criteria •
-                AI-powered insights
+                Complete automation pipeline • Database auto-save • Real-time
+                pricing
               </p>
             </div>
 
             <div className="text-right">
               <div className="text-sm text-slate-400">System Status</div>
-              <div
-                className={`text-sm font-bold ${
-                  systemHealthy ? "text-emerald-400" : "text-red-400"
-                }`}
-              >
-                {systemHealthy ? "✅ Healthy" : "❌ Error"}
+              <div className="flex items-center space-x-2">
+                {systemHealth && getHealthStatusIcon(systemHealth.status)}
+                <span
+                  className={`text-sm font-bold ${
+                    systemHealth?.status === "healthy"
+                      ? "text-emerald-400"
+                      : systemHealth?.status === "warning"
+                      ? "text-amber-400"
+                      : "text-red-400"
+                  }`}
+                >
+                  {systemHealth?.status || "Testing..."}
+                </span>
               </div>
             </div>
           </div>
@@ -575,42 +306,28 @@ const SignalsTest: React.FC = () => {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-xl font-bold text-white mb-2">
-                🎯 Enhanced Signal Processing Control
+                🎯 Enhanced Processing Control
               </h2>
               <p className="text-slate-400">
-                Advanced filtering • Professional presets • Custom criteria •
-                Real-time insights
+                Complete automation pipeline with database auto-save & real
+                prices
               </p>
             </div>
 
             <div className="flex items-center space-x-4">
-              {/* Enhanced Filters Toggle */}
               <button
-                onClick={() => setShowEnhancedFilters(!showEnhancedFilters)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold transition-all duration-200 ${
-                  showEnhancedFilters
-                    ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white"
-                    : "bg-slate-700 hover:bg-slate-600 text-slate-300"
-                }`}
-              >
-                {showEnhancedFilters ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-5" />
-                )}
-                <span>Enhanced Filters</span>
-              </button>
-
-              {/* Main Processing Button */}
-              <button
-                onClick={startRealMarketScan}
-                disabled={!systemHealthy || isProcessing}
+                onClick={startEnhancedProcessing}
+                disabled={
+                  !systemHealth ||
+                  systemHealth.status === "error" ||
+                  isProcessing
+                }
                 className={`flex items-center space-x-3 px-6 py-3 rounded-lg font-semibold text-lg transition-all duration-200 ${
-                  !systemHealthy
+                  !systemHealth || systemHealth.status === "error"
                     ? "bg-red-600/50 text-red-200 cursor-not-allowed"
                     : isProcessing
                     ? "bg-amber-600 text-white cursor-wait"
-                    : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl"
+                    : "bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl"
                 }`}
               >
                 {isProcessing ? (
@@ -620,181 +337,281 @@ const SignalsTest: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <Play className="w-5 h-5" />
-                    <span>🚀 Start Enhanced Analysis</span>
+                    <Database className="w-5 h-5" />
+                    <span>🚀 Start Enhanced Processing</span>
                   </>
                 )}
               </button>
             </div>
           </div>
 
-          {!systemHealthy && (
-            <div className="bg-red-900/50 border border-red-600 rounded-lg p-4">
-              <div className="flex items-center space-x-2 text-red-400">
-                <span className="font-semibold">❌ System Error:</span>
-                <span>{healthMessage}</span>
+          {/* Configuration - UPDATED */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                id="enableAutoSave"
+                checked={enableAutoSave}
+                onChange={(e) => setEnableAutoSave(e.target.checked)}
+                disabled={isProcessing}
+                className="rounded border-slate-600 bg-slate-700 text-blue-600 focus:ring-blue-500"
+              />
+              <label
+                htmlFor="enableAutoSave"
+                className="text-sm text-slate-300"
+              >
+                Enable Database Auto-Save
+              </label>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <label className="text-sm text-slate-300">
+                Min Score for DB:
+              </label>
+              <select
+                value={minScoreForSave}
+                onChange={(e) => setMinScoreForSave(Number(e.target.value))}
+                disabled={isProcessing}
+                className="px-3 py-1 bg-slate-700 border border-slate-600 rounded text-white text-sm"
+              >
+                <option value={60}>60+</option>
+                <option value={70}>70+</option>
+                <option value={80}>80+</option>
+              </select>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                id="fetchRealPrices"
+                checked={fetchRealPrices}
+                onChange={(e) => setFetchRealPrices(e.target.checked)}
+                disabled={isProcessing}
+                className="rounded border-slate-600 bg-slate-700 text-blue-600 focus:ring-blue-500"
+              />
+              <label
+                htmlFor="fetchRealPrices"
+                className="text-sm text-slate-300"
+              >
+                🚀 Fetch Real Prices
+              </label>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                id="enableLogging"
+                checked={enableDetailedLogging}
+                onChange={(e) => setEnableDetailedLogging(e.target.checked)}
+                disabled={isProcessing}
+                className="rounded border-slate-600 bg-slate-700 text-blue-600 focus:ring-blue-500"
+              />
+              <label htmlFor="enableLogging" className="text-sm text-slate-300">
+                Detailed Logging
+              </label>
+            </div>
+          </div>
+
+          {/* System Health */}
+          {systemHealth && systemHealth.status !== "healthy" && (
+            <div
+              className={`rounded-lg p-4 ${
+                systemHealth.status === "warning"
+                  ? "bg-amber-900/50 border border-amber-600"
+                  : "bg-red-900/50 border border-red-600"
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                {getHealthStatusIcon(systemHealth.status)}
+                <span className="font-semibold">System Status:</span>
+                <span>{systemHealth.message}</span>
               </div>
+            </div>
+          )}
+
+          {/* Progress */}
+          {(isProcessing || progressMessage) && (
+            <div className="mt-4 p-4 bg-slate-700/50 rounded-lg">
+              <div className="flex items-center space-x-2 mb-2">
+                <Activity className="w-4 h-4 text-blue-400" />
+                <span className="text-sm font-medium text-blue-400">
+                  Status:
+                </span>
+                <span className="text-sm text-slate-300">
+                  {progressMessage}
+                </span>
+              </div>
+
+              {currentProgress && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                  <div>
+                    <span className="text-slate-400">Progress:</span>
+                    <span className="ml-2 text-white">
+                      {currentProgress.stocksScanned}/
+                      {currentProgress.totalStocks}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400">Signals:</span>
+                    <span className="ml-2 text-white">
+                      {currentProgress.signalsFound}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400">Quality:</span>
+                    <span className="ml-2 text-white">
+                      {currentProgress.validSignals}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400">Time:</span>
+                    <span className="ml-2 text-white">
+                      {currentProgress.timeElapsed}s
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* Enhanced Filters Panel */}
-        {showEnhancedFilters && (
-          <EnhancedFiltersPanel
-            onFiltersChange={setFilterConfig}
-            currentStats={
-              filterStats
-                ? {
-                    originalCount: filterStats.originalCount,
-                    filteredCount: filterStats.finalCount,
-                    rejectionReasons: filterStats.rejectionReasons,
-                  }
-                : undefined
-            }
-            className="mb-8"
-          />
-        )}
+        {/* Results Dashboard - UPDATED WITH PRICE INFO */}
+        {(processingStats || autoSaveStats) && (
+          <div className="grid grid-cols-2 md:grid-cols-7 gap-4 mb-8">
+            {processingStats && (
+              <>
+                <div className="bg-slate-800/50 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-white">
+                    {processingStats.totalStocks}
+                  </div>
+                  <div className="text-slate-400 text-sm">Stocks Scanned</div>
+                </div>
+                <div className="bg-slate-800/50 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-blue-400">
+                    {processingStats.signalsGenerated}
+                  </div>
+                  <div className="text-slate-400 text-sm">
+                    Signals Generated
+                  </div>
+                </div>
+                <div className="bg-slate-800/50 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-emerald-400">
+                    {processingStats.qualitySignals}
+                  </div>
+                  <div className="text-slate-400 text-sm">Quality Signals</div>
+                </div>
+                {/* 🚀 NEW: Prices Updated stat */}
+                <div className="bg-slate-800/50 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-green-400">
+                    {processingStats.pricesUpdated}
+                  </div>
+                  <div className="text-slate-400 text-sm">Prices Updated</div>
+                </div>
+              </>
+            )}
 
-        {/* Filter Recommendations */}
-        {filterRecommendations.length > 0 && (
-          <div className="bg-blue-900/20 border border-blue-600/50 rounded-lg p-4 mb-8">
-            <h4 className="font-semibold text-blue-400 mb-2">
-              💡 Filter Insights & Recommendations
-            </h4>
-            <ul className="space-y-1">
-              {filterRecommendations.map((rec, index) => (
-                <li key={index} className="text-sm text-blue-300">
-                  • {rec}
-                </li>
-              ))}
-            </ul>
+            {autoSaveStats && (
+              <>
+                <div className="bg-slate-800/50 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-purple-400">
+                    {autoSaveStats.signalsSaved}
+                  </div>
+                  <div className="text-slate-400 text-sm">Saved to DB</div>
+                </div>
+                <div className="bg-slate-800/50 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-amber-400">
+                    {Math.round((processingStats?.totalTime || 0) / 1000)}s
+                  </div>
+                  <div className="text-slate-400 text-sm">Total Time</div>
+                </div>
+                <div className="bg-slate-800/50 rounded-lg p-4 text-center">
+                  <div
+                    className={`text-2xl font-bold ${
+                      autoSaveStats.success
+                        ? "text-emerald-400"
+                        : "text-red-400"
+                    }`}
+                  >
+                    {autoSaveStats.success ? "✅" : "❌"}
+                  </div>
+                  <div className="text-slate-400 text-sm">Auto-Save</div>
+                </div>
+              </>
+            )}
           </div>
         )}
 
-        {/* Enhanced Statistics Overview */}
-        {processingStats && (
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
-            <div className="bg-slate-800/50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-white">
-                {processingStats.totalProcessed}
-              </div>
-              <div className="text-slate-400 text-sm">Stocks Scanned</div>
-            </div>
-            <div className="bg-slate-800/50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-emerald-400">
-                {processingStats.signalsGenerated}
-              </div>
-              <div className="text-slate-400 text-sm">Base Signals</div>
-            </div>
-            <div className="bg-slate-800/50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-purple-400">
-                {filteredSignals.length}
-              </div>
-              <div className="text-slate-400 text-sm">Filtered Signals</div>
-            </div>
-            <div className="bg-slate-800/50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-blue-400">
-                {processingStats.highestScore}
-              </div>
-              <div className="text-slate-400 text-sm">Highest Score</div>
-            </div>
-            <div className="bg-slate-800/50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-amber-400">
-                {processingStats.averageScore}
-              </div>
-              <div className="text-slate-400 text-sm">Average Score</div>
-            </div>
-            <div className="bg-slate-800/50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-cyan-400">
-                {filterStats
-                  ? Math.round(
-                      (filterStats.finalCount / filterStats.originalCount) * 100
-                    )
-                  : 100}
-                %
-              </div>
-              <div className="text-slate-400 text-sm">Filter Pass Rate</div>
-            </div>
-          </div>
-        )}
-
-        {/* Basic Filters (keeping for backward compatibility) */}
-        {finalFilteredResults.length > 0 && (
+        {/* Auto-Save Results */}
+        {autoSaveStats && (
           <div className="bg-slate-800/50 rounded-lg p-6 mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white flex items-center">
-                <Filter className="w-5 h-5 mr-2" />
-                Quick Filters & Search
-              </h3>
-              <div className="text-slate-400">
-                Showing {finalFilteredResults.length} signals
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+              <Database className="w-5 h-5 mr-2" />
+              Database Auto-Save Results
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <div className="text-sm text-slate-400 mb-2">Save Summary</div>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span>Signals Processed:</span>
+                    <span className="text-white">
+                      {processedSignals.length}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Quality Filter (≥{minScoreForSave}):</span>
+                    <span className="text-white">
+                      {processingStats?.qualitySignals || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Saved to Database:</span>
+                    <span className="text-emerald-400">
+                      {autoSaveStats.signalsSaved}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Real Prices Fetched:</span>
+                    <span className="text-green-400">
+                      {processingStats?.pricesUpdated || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Processing Time:</span>
+                    <span className="text-white">
+                      {autoSaveStats.processingTime}ms
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Search */}
-              <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search ticker, company, sector..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              {/* Category Filter */}
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value as any)}
-                className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All Signals</option>
-                <option value="accepted">Accepted Only</option>
-                <option value="rejected">Rejected Only</option>
-              </select>
-
-              {/* Score Range Filter */}
-              <select
-                value={scoreRangeFilter}
-                onChange={(e) => setScoreRangeFilter(e.target.value as any)}
-                className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All Scores</option>
-                <option value="70+">70+ (BUY)</option>
-                <option value="60-69">60-69 (WEAK BUY)</option>
-                <option value="50-59">50-59 (NEUTRAL)</option>
-                <option value="<50">&lt;50 (WEAK/SELL)</option>
-              </select>
-
-              {/* Sort */}
-              <div className="flex space-x-2">
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
-                  className="flex-1 px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="score">Sort by Score</option>
-                  <option value="ticker">Sort by Ticker</option>
-                  <option value="sector">Sort by Sector</option>
-                </select>
-                <button
-                  onClick={() =>
-                    setSortOrder(sortOrder === "desc" ? "asc" : "desc")
-                  }
-                  className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white hover:bg-slate-600"
-                >
-                  {sortOrder === "desc" ? "↓" : "↑"}
-                </button>
-              </div>
+              {autoSaveStats.errors.length > 0 && (
+                <div>
+                  <div className="text-sm text-slate-400 mb-2">Errors</div>
+                  <div className="space-y-1 text-sm text-red-400 max-h-32 overflow-y-auto">
+                    {autoSaveStats.errors.map((error, index) => (
+                      <div key={index} className="text-xs">
+                        • {error}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {/* Results Table (keeping your existing table structure) */}
-        {finalFilteredResults.length > 0 && (
+        {/* Signals Table - UPDATED WITH PRICE COLUMNS */}
+        {processedSignals.length > 0 && (
           <div className="bg-slate-800/50 rounded-lg border border-slate-700 overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-700">
+              <h3 className="text-lg font-semibold text-white flex items-center">
+                <BarChart3 className="w-5 h-5 mr-2" />
+                Generated Signals ({processedSignals.length}) with Real Prices
+              </h3>
+            </div>
+
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-slate-700">
@@ -805,94 +622,130 @@ const SignalsTest: React.FC = () => {
                     <th className="px-4 py-3 text-left text-white font-semibold">
                       Ticker
                     </th>
-                    <th className="px-4 py-3 text-left text-white font-semibold">
-                      Company
+                    <th className="px-4 py-3 text-center text-white font-semibold">
+                      Current Price
                     </th>
-                    <th className="px-4 py-3 text-left text-white font-semibold">
-                      Sector
+                    <th className="px-4 py-3 text-center text-white font-semibold">
+                      Change %
                     </th>
                     <th className="px-4 py-3 text-center text-white font-semibold">
                       Score
                     </th>
                     <th className="px-4 py-3 text-center text-white font-semibold">
-                      Signal
+                      Type
                     </th>
                     <th className="px-4 py-3 text-center text-white font-semibold">
-                      Status
+                      Strength
+                    </th>
+                    <th className="px-4 py-3 text-center text-white font-semibold">
+                      Saved
                     </th>
                     <th className="px-4 py-3 text-left text-white font-semibold">
-                      Notes
+                      Explanation
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-700">
-                  {finalFilteredResults.map((result, index) => (
-                    <tr
-                      key={result.ticker}
-                      className="hover:bg-slate-700/50 transition-colors"
-                    >
-                      <td className="px-4 py-3 text-slate-400 text-sm">
-                        {index + 1}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="font-mono font-semibold text-white">
-                          {result.ticker}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-slate-300 text-sm max-w-48 truncate">
-                        {result.companyName || "N/A"}
-                      </td>
-                      <td className="px-4 py-3 text-slate-400 text-sm">
-                        {result.sector || "N/A"}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span
-                          className={`inline-flex items-center justify-center w-16 h-8 rounded text-sm font-bold ${getScoreColor(
-                            result.score
-                          )}`}
-                        >
-                          {result.score}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <div className="flex items-center justify-center space-x-2">
-                          {getSignalIcon(result.signalStrength)}
-                          <span className="text-sm font-medium text-slate-300">
-                            {getStrengthText(result.signalStrength)}
+                  {processedSignals
+                    .sort((a, b) => b.finalScore - a.finalScore)
+                    .slice(0, 50) // Show top 50 signals
+                    .map((signal, index) => (
+                      <tr
+                        key={signal.ticker}
+                        className="hover:bg-slate-700/50 transition-colors"
+                      >
+                        <td className="px-4 py-3 text-slate-400 text-sm">
+                          {index + 1}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="font-mono font-semibold text-white">
+                            {signal.ticker}
                           </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span
-                          className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
-                            result.accepted
-                              ? "bg-emerald-600/20 text-emerald-400"
-                              : "bg-red-600/20 text-red-400"
-                          }`}
-                        >
-                          {result.accepted ? "✅ Accepted" : "❌ Rejected"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-slate-400 text-sm max-w-48 truncate">
-                        {result.reason || "Signal generated"}
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        {/* 🚀 FIXED: Current Price using correct snake_case database columns */}
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex items-center justify-center space-x-1">
+                            <DollarSign className="w-3 h-3 text-green-400" />
+                            <span className="text-white font-mono">
+                              {formatPrice(signal.current_price)}
+                            </span>
+                          </div>
+                        </td>
+                        {/* 🚀 FIXED: Price Change using correct snake_case database columns */}
+                        <td className="px-4 py-3 text-center">
+                          <span
+                            className={`font-mono font-semibold ${getPriceChangeColor(
+                              signal.price_change_percent
+                            )}`}
+                          >
+                            {formatPriceChange(signal.price_change_percent)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span
+                            className={`inline-flex items-center justify-center w-16 h-8 rounded text-sm font-bold ${getScoreColor(
+                              signal.finalScore
+                            )}`}
+                          >
+                            {signal.finalScore}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span
+                            className={`px-2 py-1 rounded text-xs font-medium ${
+                              signal.signalType === "bullish"
+                                ? "bg-emerald-600/20 text-emerald-400"
+                                : signal.signalType === "bearish"
+                                ? "bg-red-600/20 text-red-400"
+                                : "bg-slate-600/20 text-slate-400"
+                            }`}
+                          >
+                            {signal.signalType}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex items-center justify-center space-x-2">
+                            {getSignalIcon(signal.signalStrength)}
+                            <span className="text-sm text-slate-300">
+                              {signal.signalStrength?.replace(/_/g, " ") ||
+                                "N/A"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {signal.finalScore >= minScoreForSave ? (
+                            <CheckCircle className="w-4 h-4 text-emerald-400 mx-auto" />
+                          ) : (
+                            <XCircle className="w-4 h-4 text-slate-500 mx-auto" />
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-slate-300 text-sm max-w-64 truncate">
+                          {signal.explanation || "No explanation available"}
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
+
+            {processedSignals.length > 50 && (
+              <div className="px-6 py-4 bg-slate-700/50 text-center text-sm text-slate-400">
+                Showing top 50 of {processedSignals.length} signals with real
+                prices
+              </div>
+            )}
           </div>
         )}
 
-        {/* No Results */}
-        {finalFilteredResults.length === 0 && !isProcessing && (
+        {/* Empty State */}
+        {!isProcessing && processedSignals.length === 0 && (
           <div className="text-center py-12">
             <div className="text-slate-400 mb-4">
-              <Play className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <p className="text-lg">Ready for enhanced signal analysis</p>
+              <Zap className="w-16 h-16 mx-auto mb-4 opacity-50" />
+              <p className="text-lg">Ready for enhanced signal processing</p>
               <p className="text-sm">
-                Configure enhanced filters and click "🚀 Start Enhanced
-                Analysis"
+                Test the complete automation pipeline with database auto-save &
+                real prices
               </p>
             </div>
           </div>
@@ -902,4 +755,4 @@ const SignalsTest: React.FC = () => {
   );
 };
 
-export default SignalsTest;
+export default EnhancedSignalsTest;

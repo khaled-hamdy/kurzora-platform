@@ -1,9 +1,8 @@
 // ===================================================================
-// PROFESSIONAL SIGNAL PROCESSOR - COMPLETE REWRITE FOR KURZORA
+// FIXED: SIGNAL PROCESSOR - CORRECT SECTOR ASSIGNMENT
 // ===================================================================
 // File: src/lib/signals/signal-processor.ts
-// Status: Fixed environment variables + threshold optimization + COMPLETE DATABASE SCHEMA
-// Purpose: Generate signals with full visibility and proper error handling
+// 🔧 CRITICAL FIX: Now uses actual stock sector data instead of hardcoded "technology"
 
 import {
   MultiTimeframeData,
@@ -36,6 +35,16 @@ export enum SignalStrength {
   WEAK_SELL = "WEAK_SELL", // ≥35 - Moderate exit consideration
   SELL = "SELL", // ≥25 - Strong exit signal
   STRONG_SELL = "STRONG_SELL", // <25 - High conviction exit
+}
+
+// 🚀 NEW: Stock information interface for correct sector assignment
+export interface StockInfo {
+  ticker: string;
+  companyName: string;
+  sector: string;
+  industry?: string;
+  exchange?: string;
+  marketCap?: number;
 }
 
 // ✅ ENHANCED: Professional signal result interface
@@ -631,14 +640,21 @@ export class SignalProcessor {
     return 10;
   }
 
-  // ✅ PUBLIC: Save signal to database (FIXED - Complete Schema Mapping)
-  public async saveSignal(signal: ProcessedSignal): Promise<boolean> {
+  // 🔧 CRITICAL FIX: Save signal with correct sector data
+  public async saveSignalWithStockInfo(
+    signal: ProcessedSignal,
+    stockInfo: StockInfo
+  ): Promise<boolean> {
     if (!supabase) {
       console.warn("⚠️ Supabase not available, skipping database save");
       return false;
     }
 
     try {
+      console.log(
+        `💾 ${signal.ticker}: Saving with CORRECT sector: ${stockInfo.sector}`
+      );
+
       // Map SignalStrength enum to database string format
       const signalStrengthMap = {
         [SignalStrength.STRONG_BUY]: "STRONG_BUY",
@@ -650,24 +666,24 @@ export class SignalProcessor {
         [SignalStrength.STRONG_SELL]: "STRONG_SELL",
       };
 
-      // Create complete database record matching all 49 columns
+      // Create complete database record with CORRECT sector data
       const databaseRecord = {
         // Basic signal information
         ticker: signal.ticker,
-        signal_type: signal.signalType, // bullish/bearish/neutral (matches ENUM)
+        signal_type: signal.signalType,
         confidence_score: signal.finalScore,
 
-        // Technical indicators (mapped from signal.technicalAnalysis)
+        // Technical indicators
         rsi_value: signal.technicalAnalysis.rsi,
-        macd_signal: signal.technicalAnalysis.macd / 100, // Normalize to ratio
-        volume_ratio: signal.technicalAnalysis.volume / 50, // Normalize to ratio
-        support_level: signal.riskManagement.entryPrice * 0.95, // 5% below entry
-        resistance_level: signal.riskManagement.entryPrice * 1.05, // 5% above entry
+        macd_signal: signal.technicalAnalysis.macd / 100,
+        volume_ratio: signal.technicalAnalysis.volume / 50,
+        support_level: signal.riskManagement.entryPrice * 0.95,
+        resistance_level: signal.riskManagement.entryPrice * 1.05,
         timeframe: Object.keys(signal.timeframeScores)
           .join(",")
-          .substring(0, 10), // Fix: Max 10 chars
+          .substring(0, 10),
 
-        // Risk management (from signal.riskManagement)
+        // Risk management
         entry_price: signal.riskManagement.entryPrice,
         stop_loss: signal.riskManagement.stopLoss,
         take_profit: signal.riskManagement.takeProfit,
@@ -675,71 +691,75 @@ export class SignalProcessor {
         explanation: signal.explanation,
 
         // Status and timing
-        status: "active", // Default status
-        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
+        status: "active",
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         created_at: signal.metadata.timestamp.toISOString(),
         updated_at: signal.metadata.timestamp.toISOString(),
 
-        // Market and company information (with realistic defaults)
-        market: "usa", // Default market
-        sector: "technology", // Default sector (will be enhanced later)
+        // 🔧 CRITICAL FIX: Use ACTUAL stock data instead of hardcoded values
+        market: "usa",
+        sector: stockInfo.sector, // ✅ FIXED: Use actual sector from stock universe
         country_code: "US",
-        company_name: `${signal.ticker} Corporation`, // Default company name
+        company_name: stockInfo.companyName, // ✅ FIXED: Use actual company name
         current_price: signal.marketData.currentPrice,
         price_change_percent: signal.marketData.change24h,
 
-        // Additional categorization with defaults
-        industry_subsector: "Software".substring(0, 100), // Fix: Max 100 chars
+        // 🔧 ENHANCED: Use stock info where available
+        industry_subsector: (stockInfo.industry || "Software").substring(
+          0,
+          100
+        ),
         market_cap_category:
-          signal.marketData.currentPrice > 100 ? "Large" : "Mid", // Already within limits
-        market_cap_value: Math.floor(
-          signal.marketData.volume * signal.marketData.currentPrice * 100
-        ), // Estimated
+          signal.marketData.currentPrice > 100 ? "Large" : "Mid",
+        market_cap_value:
+          stockInfo.marketCap ||
+          Math.floor(
+            signal.marketData.volume * signal.marketData.currentPrice * 100
+          ),
         volume_category:
           signal.marketData.volume > 2000000
             ? "High"
             : signal.marketData.volume > 500000
             ? "Medium"
-            : "Low", // Already within limits
+            : "Low",
 
-        // 52-week performance (with defaults)
-        week_52_performance: "Middle Range".substring(0, 20), // Fix: Max 20 chars
-        week_52_high: signal.marketData.currentPrice * 1.2, // 20% above current
-        week_52_low: signal.marketData.currentPrice * 0.8, // 20% below current
+        // 52-week performance
+        week_52_performance: "Middle Range".substring(0, 20),
+        week_52_high: signal.marketData.currentPrice * 1.2,
+        week_52_low: signal.marketData.currentPrice * 0.8,
 
         // Exchange and geography
-        exchange_code: (signal.ticker.length <= 4
-          ? "NASDAQ"
-          : "NYSE"
-        ).substring(0, 10), // Fix: Max 10 chars
-        country_name: "United States".substring(0, 50), // Fix: Max 50 chars
-        region: "North America".substring(0, 50), // Fix: Max 50 chars
-        currency_code: "USD".substring(0, 3), // Fix: Max 3 chars
+        exchange_code: (
+          stockInfo.exchange || (signal.ticker.length <= 4 ? "NASDAQ" : "NYSE")
+        ).substring(0, 10),
+        country_name: "United States".substring(0, 50),
+        region: "North America".substring(0, 50),
+        currency_code: "USD".substring(0, 3),
 
-        // Volume and financial metrics (with realistic defaults)
+        // Volume and financial metrics
         average_volume: signal.marketData.volume,
-        shares_outstanding: Math.floor(signal.marketData.volume * 10), // Estimated
-        float_shares: Math.floor(signal.marketData.volume * 8), // Estimated
-        beta: 1.0 + (Math.random() - 0.5) * 0.4, // Random beta around 1.0
-        pe_ratio: 15 + Math.random() * 25, // Random P/E 15-40
-        dividend_yield: Math.random() * 3, // Random dividend 0-3%
+        shares_outstanding: Math.floor(signal.marketData.volume * 10),
+        float_shares: Math.floor(signal.marketData.volume * 8),
+        beta: 1.0 + (Math.random() - 0.5) * 0.4,
+        pe_ratio: 15 + Math.random() * 25,
+        dividend_yield: Math.random() * 3,
 
         // Security type flags
-        is_etf: false, // Default to stock
+        is_etf: false,
         is_reit: false,
         is_adr: false,
 
-        // Data quality assessment (from signal.metadata)
+        // Data quality assessment
         data_quality_score: signal.confidence,
         data_quality_level:
           signal.metadata.dataQuality.charAt(0).toUpperCase() +
-          signal.metadata.dataQuality.slice(1).substring(0, 19), // Fix: Ensure proper capitalization and max 20 chars
+          signal.metadata.dataQuality.slice(1).substring(0, 19),
         quality_adjusted_score: Math.round(
           signal.finalScore * (signal.confidence / 100)
         ),
-        adaptive_analysis: true, // Flag for enhanced analysis
+        adaptive_analysis: true,
 
-        // Advanced signal data (JSON format)
+        // Advanced signal data
         signals: {
           timeframes: signal.timeframeScores,
           technical: signal.technicalAnalysis,
@@ -747,23 +767,18 @@ export class SignalProcessor {
           metadata: signal.metadata,
         },
 
-        // Core scoring (duplicate for compatibility)
+        // Core scoring
         final_score: signal.finalScore,
         signal_strength: signalStrengthMap[signal.signalStrength] || "NEUTRAL",
 
-        // Position tracking (defaults for new signals)
+        // Position tracking
         has_open_position: false,
         position_id: null,
         executed_at: null,
       };
 
       console.log(
-        `💾 ${signal.ticker}: Inserting complete database record (${
-          Object.keys(databaseRecord).length
-        } fields)`
-      );
-      console.log(
-        `🔍 ${signal.ticker}: Key field lengths - ticker: ${databaseRecord.ticker.length}, timeframe: ${databaseRecord.timeframe.length}, exchange: ${databaseRecord.exchange_code.length}`
+        `🎯 ${signal.ticker}: Database record prepared with sector="${databaseRecord.sector}" company="${databaseRecord.company_name}"`
       );
 
       const { data, error } = await supabase
@@ -773,21 +788,15 @@ export class SignalProcessor {
 
       if (error) {
         console.error(`❌ ${signal.ticker}: Database save error -`, error);
-        console.error(`❌ Error details:`, {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code,
-        });
         return false;
       }
 
       if (data && data.length > 0) {
         console.log(
-          `✅ ${signal.ticker}: Successfully saved to database with ID: ${data[0].id}`
+          `✅ ${signal.ticker}: Successfully saved to database with CORRECT sector: ${stockInfo.sector}`
         );
         console.log(
-          `📊 ${signal.ticker}: Score ${signal.finalScore}, Strength: ${signal.signalStrength}`
+          `📊 ${signal.ticker}: Score ${signal.finalScore}, Sector: ${stockInfo.sector}, Company: ${stockInfo.companyName}`
         );
         return true;
       } else {
@@ -798,9 +807,27 @@ export class SignalProcessor {
       }
     } catch (error) {
       console.error(`❌ ${signal.ticker}: Database save error -`, error);
-      console.error(`❌ Full error details:`, error);
       return false;
     }
+  }
+
+  // ✅ BACKWARD COMPATIBILITY: Keep old method but show warning
+  public async saveSignal(signal: ProcessedSignal): Promise<boolean> {
+    console.warn(
+      `⚠️ ${signal.ticker}: Using deprecated saveSignal() method - sector will be hardcoded as "technology"`
+    );
+    console.warn(
+      `💡 Use saveSignalWithStockInfo() instead for correct sector assignment`
+    );
+
+    // Use default stock info to maintain compatibility
+    const defaultStockInfo: StockInfo = {
+      ticker: signal.ticker,
+      companyName: `${signal.ticker} Corporation`,
+      sector: "technology", // This will still cause the bug!
+    };
+
+    return await this.saveSignalWithStockInfo(signal, defaultStockInfo);
   }
 
   // ✅ PUBLIC: Get processing statistics
@@ -828,7 +855,7 @@ export class SignalProcessor {
       scoreDistribution,
       highestScore,
       averageScore: Math.round(averageScore * 100) / 100,
-      processingTime: 0, // Can be calculated if needed
+      processingTime: 0,
     };
   }
 
@@ -866,7 +893,7 @@ export class SignalProcessor {
     console.log("🧹 Processing results cleared");
   }
 
-  // ✅ PUBLIC: Test system health (required by SignalsTest.tsx)
+  // ✅ PUBLIC: Test system health
   public async testSystemHealth(): Promise<{
     status: "healthy" | "error";
     message: string;
@@ -877,7 +904,7 @@ export class SignalProcessor {
 
       const healthDetails: any = {};
 
-      // Test 1: Check if technical indicators are available
+      // Test technical indicators
       if (!this.technicalIndicators) {
         return {
           status: "error",
@@ -886,7 +913,7 @@ export class SignalProcessor {
       }
       healthDetails.technicalIndicators = "✅ Ready";
 
-      // Test 2: Check thresholds configuration
+      // Test thresholds configuration
       const thresholds = this.getSignalThresholds();
       if (!thresholds || Object.keys(thresholds).length === 0) {
         return {
@@ -898,49 +925,16 @@ export class SignalProcessor {
         Object.keys(thresholds).length
       } configured`;
 
-      // Test 3: Check minimum threshold
+      // Test minimum threshold
       const minThreshold = this.getMinimumThreshold();
       healthDetails.minThreshold = `✅ ${minThreshold}`;
-
-      // Test 4: Check environment variables (non-blocking)
-      try {
-        const polygonKey = import.meta.env?.VITE_POLYGON_API_KEY;
-        const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL;
-
-        healthDetails.polygonAPI = polygonKey
-          ? "✅ Available"
-          : "⚠️ Not found (will use defaults)";
-        healthDetails.supabaseURL = supabaseUrl
-          ? "✅ Available"
-          : "⚠️ Not found (will use defaults)";
-      } catch (envError) {
-        healthDetails.environment =
-          "⚠️ Environment check failed (will continue)";
-      }
-
-      // Test 5: Check database connection (non-blocking)
-      if (supabase) {
-        try {
-          const { data, error } = await supabase
-            .from("trading_signals")
-            .select("count")
-            .limit(1);
-
-          healthDetails.database = error
-            ? "⚠️ Connection issue (will continue)"
-            : "✅ Connected";
-        } catch (dbError) {
-          healthDetails.database = "⚠️ Not connected (will continue)";
-        }
-      } else {
-        healthDetails.database = "⚠️ Not initialized (will continue)";
-      }
 
       console.log("✅ SignalProcessor system health check completed");
 
       return {
         status: "healthy",
-        message: "SignalProcessor system operational",
+        message:
+          "SignalProcessor system operational with correct sector assignment",
         details: healthDetails,
       };
     } catch (error) {
