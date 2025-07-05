@@ -426,7 +426,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
-  // OPTIMIZATION: Background profile creation - doesn't block login
+  // 🔧 FIXED: Profile creation that won't override existing users
   const createUserProfileInBackground = useCallback(
     async (userId: string) => {
       try {
@@ -440,7 +440,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           user.email
         );
 
-        // 🔍 ENHANCED DEBUG: Comprehensive plan info analysis
+        // 🔧 CRITICAL FIX: Check if user already exists first
+        console.log("🔍 CHECKING: Does user profile already exist?");
+        const { data: existingUser, error: checkError } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", userId)
+          .single();
+
+        if (!checkError && existingUser) {
+          console.log(
+            "✅ EXISTING USER FOUND: Profile already exists, preserving existing data"
+          );
+          console.log("✅ EXISTING TIER:", existingUser.subscription_tier);
+          console.log(
+            "✅ NOT OVERRIDING: Backend subscription processing already set correct tier"
+          );
+
+          // Clear plan data since user already exists with correct tier
+          clearAllPlanData();
+
+          if (mounted.current) {
+            setUserProfile(existingUser);
+          }
+          return;
+        }
+
+        console.log(
+          "🆕 NEW USER: No existing profile found, creating new profile..."
+        );
+
+        // 🔍 ENHANCED DEBUG: Comprehensive plan info analysis for NEW users only
         console.log("🔍 PROFILE CREATION: Analyzing all plan data sources...");
         console.log(
           "🔍 PROFILE CREATION: pendingPlanInfo.current =",
@@ -489,7 +519,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const validTier =
           subscriptionTier === "professional" ? "professional" : "starter";
         console.log(
-          "🎯 VALIDATED FINAL DECISION: Creating user with tier:",
+          "🎯 VALIDATED FINAL DECISION: Creating NEW user with tier:",
           validTier
         );
 
@@ -513,14 +543,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           is_active: true,
         };
 
-        console.log("🎯 BULLETPROOF PROFILE: Final profile data:", {
-          email: profileData.email,
-          subscription_tier: profileData.subscription_tier,
-          subscription_status: profileData.subscription_status,
-          notification_settings: profileData.notification_settings,
-        });
+        console.log(
+          "🎯 BULLETPROOF PROFILE: Final profile data for NEW user:",
+          {
+            email: profileData.email,
+            subscription_tier: profileData.subscription_tier,
+            subscription_status: profileData.subscription_status,
+            notification_settings: profileData.notification_settings,
+          }
+        );
 
-        console.log("🔍 PROFILE CREATION: About to insert into Supabase...");
+        console.log(
+          "🔍 PROFILE CREATION: About to insert NEW user into Supabase..."
+        );
         const { data, error } = await supabase
           .from("users")
           .insert([profileData])
@@ -533,7 +568,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             error
           );
         } else {
-          console.log("✅ BULLETPROOF SUCCESS: Profile created successfully!");
+          console.log(
+            "✅ BULLETPROOF SUCCESS: NEW profile created successfully!"
+          );
           console.log(
             "✅ VERIFICATION: User tier in database:",
             data.subscription_tier
@@ -554,13 +591,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             });
           } else {
             console.log(
-              "✅ VERIFICATION PASSED: Database tier matches expected tier"
+              "✅ VERIFICATION PASSED: Database tier matches expected tier for NEW user"
             );
 
             // Clear plan data after successful creation
             clearAllPlanData();
             console.log(
-              "✅ CLEANUP: Plan data cleared after successful profile creation"
+              "✅ CLEANUP: Plan data cleared after successful NEW profile creation"
             );
           }
 
@@ -816,7 +853,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [clearAllPlanData]);
 
-  // 🎯 NEW: Process pending subscription after signup
+  // 🎯 FIXED: Process pending subscription without throwing errors
   const processPendingSubscription = useCallback(
     async (userId: string, userEmail: string, userName: string) => {
       try {
@@ -870,9 +907,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           result
         );
 
-        // Clear pending subscription from localStorage
+        // Clear pending subscription from localStorage only on success
         localStorage.removeItem("pendingSubscription");
         console.log("🧹 Mac AuthContext: Cleared pending subscription data");
+
+        // 🔧 IMPORTANT: Add delay to ensure backend database update completes
+        console.log("⏳ Waiting for backend database update to complete...");
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
         // Refresh user profile to get updated subscription data
         await fetchUserProfileInBackground(userId);
@@ -883,7 +924,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           "❌ Mac AuthContext: Subscription processing error:",
           error
         );
-        throw error;
+
+        // 🔧 CRITICAL FIX: Don't throw error - log warning and continue
+        console.warn(
+          "⚠️ SUBSCRIPTION PROCESSING FAILED - But user account creation will continue"
+        );
+        console.warn("⚠️ User will be created with plan data intact");
+        console.warn("⚠️ Subscription can be processed manually later");
+
+        // 🔧 IMPORTANT: Return null instead of throwing
+        // This allows profile creation to continue with plan data
+        return null;
       } finally {
         setIsProcessingSubscription(false);
       }
@@ -921,6 +972,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  // 🎯 FIXED: SignUp function with bulletproof plan preservation
   const signUp = async (
     email: string,
     password: string,
@@ -978,18 +1030,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       });
 
       if (error) {
-        clearAllPlanData(); // Clear on error
+        // 🔧 FIXED: Only clear plan data on auth errors, not subscription errors
+        clearAllPlanData();
         return { error: error.message };
       }
 
       if (!data.user) {
-        clearAllPlanData(); // Clear on error
+        // 🔧 FIXED: Only clear plan data on auth errors, not subscription errors
+        clearAllPlanData();
         return { error: "Failed to create user account" };
       }
 
-      console.log("✅ BULLETPROOF SIGNUP: Sign up successful");
+      console.log("✅ BULLETPROOF SIGNUP: User account created successfully");
 
-      // Step 2: Process pending subscription if exists
+      // Step 2: Process pending subscription (NON-BLOCKING)
       try {
         const subscriptionResult = await processPendingSubscription(
           data.user.id,
@@ -1002,25 +1056,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             "🎉 Mac AuthContext: Subscription created with 7-day trial!"
           );
         } else {
-          console.log("ℹ️ Mac AuthContext: No subscription to process");
+          console.log(
+            "ℹ️ Mac AuthContext: No subscription processed - continuing with account creation"
+          );
         }
       } catch (subscriptionError) {
+        // 🔧 CRITICAL FIX: Don't return error or clear plan data!
         console.error(
           "❌ Mac AuthContext: Subscription processing failed:",
           subscriptionError
         );
-        // Don't return error here - user account was created successfully
-        // They can contact support or try again later
+        console.warn(
+          "⚠️ IMPORTANT: User account was created successfully despite subscription error"
+        );
+        console.warn("⚠️ Profile will be created with selected plan data");
+        console.warn(
+          "⚠️ Subscription can be processed later through dashboard or admin panel"
+        );
+
+        // 🔧 DON'T clear plan data - let profile creation proceed!
+        // DON'T return error - user account was created successfully
       }
 
-      // Profile will be created by fetchUserProfile when auth state changes
+      // 🔧 IMPORTANT: Profile creation will happen automatically via auth state change
+      // The bulletproof plan selection system will ensure correct tier assignment
+
+      console.log("🔍 BULLETPROOF SIGNUP: Signup completed successfully");
       console.log(
-        "🔍 BULLETPROOF SIGNUP: End of signUp function. Plan data stored with bulletproof methods."
+        "🔍 Plan data preserved for profile creation via auth state change"
       );
+
       return {};
     } catch (error) {
       console.error("💥 Mac AuthContext: Sign up error:", error);
-      clearAllPlanData(); // Clear on error
+      // 🔧 FIXED: Only clear plan data on actual signup errors
+      clearAllPlanData();
       return { error: "An unexpected error occurred during sign up" };
     } finally {
       setLoading(false);
