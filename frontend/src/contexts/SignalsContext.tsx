@@ -1,6 +1,7 @@
-// src/contexts/SignalsContext.tsx - PRODUCTION SIGNALS PROVIDER - FIXED
+// src/contexts/SignalsContext.tsx - PRODUCTION SIGNALS PROVIDER - PRICE CORRUPTION FIXED
 // 🚀 ARCHITECTURE: Clean signals management with Edge Function alert processing
 // 🎯 ALERTS: Handled by Supabase Edge Function for enterprise-grade reliability
+// 🔧 CRITICAL FIX: String to number conversion prevents price corruption (ORCL $237.32 vs $120.33 bug)
 
 import React, {
   createContext,
@@ -153,16 +154,25 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
           finalScore = calculateFinalScore(timeframeSignals);
         }
 
+        // 🔧 CRITICAL FIX: Convert string prices to numbers to prevent corruption
+        // Database returns: "235.9900" (string) → parseFloat → 235.99 (number)
+        // This fixes ORCL showing $120.33 instead of $237.32
+        const currentPrice =
+          parseFloat(record.current_price) ||
+          parseFloat(record.entry_price) ||
+          100;
+        const priceChangePercent = parseFloat(record.price_change_percent) || 0;
+
         console.log(
-          `🔍 ${record.ticker}: DB=${record.confidence_score}, Calculated=${finalScore}`
+          `🔍 ${record.ticker}: DB=${record.confidence_score}, Calculated=${finalScore}, Price=${currentPrice} (converted from "${record.current_price}")`
         );
 
         return {
           ticker: record.ticker,
           name: record.company_name || `${record.ticker} Corporation`,
-          // 🔧 FIXED: Use database field names directly (no mapping)
-          current_price: record.current_price || record.entry_price || 100,
-          price_change_percent: record.price_change_percent || 0,
+          // 🔧 CRITICAL FIX: Ensure clean numbers, not strings
+          current_price: currentPrice,
+          price_change_percent: priceChangePercent,
           signals: timeframeSignals,
           sector: record.sector || "Technology",
           market: record.market || "usa",
@@ -214,7 +224,7 @@ export const SignalsProvider: React.FC<SignalsProviderProps> = ({
       console.log(
         `✅ Successfully loaded ${transformedSignals.length} signals (${
           data.filter((d) => d.signals && d.signals["1H"]).length
-        } with real timeframe data) - NOW LOADING SIGNALS FROM 30% AND UP FOR PROPER FILTERING`
+        } with real timeframe data) - 🔧 PRICE CORRUPTION FIXED: String → Number conversion`
       );
     } catch (err) {
       const errorMessage =

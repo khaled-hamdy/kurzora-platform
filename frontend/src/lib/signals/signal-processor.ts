@@ -1,8 +1,9 @@
 // ===================================================================
-// FIXED: SIGNAL PROCESSOR - CORRECT SECTOR ASSIGNMENT
+// FIXED: SIGNAL PROCESSOR - PRICE DATA BUG RESOLVED
 // ===================================================================
 // File: src/lib/signals/signal-processor.ts
-// 🔧 CRITICAL FIX: Now uses actual stock sector data instead of hardcoded "technology"
+// 🔧 CRITICAL FIX: Now uses Enhanced Signal Processor's real price data instead of mock marketData
+// 🔧 PRICE BUG FIX: Lines 780-781 now use signal.current_price instead of signal.marketData.currentPrice
 
 import {
   MultiTimeframeData,
@@ -640,7 +641,7 @@ export class SignalProcessor {
     return 10;
   }
 
-  // 🔧 CRITICAL FIX: Save signal with correct sector data
+  // 🔧 CRITICAL FIX: Save signal with correct sector data AND real price data
   public async saveSignalWithStockInfo(
     signal: ProcessedSignal,
     stockInfo: StockInfo
@@ -666,7 +667,7 @@ export class SignalProcessor {
         [SignalStrength.STRONG_SELL]: "STRONG_SELL",
       };
 
-      // Create complete database record with CORRECT sector data
+      // Create complete database record with CORRECT sector data AND real prices
       const databaseRecord = {
         // Basic signal information
         ticker: signal.ticker,
@@ -701,8 +702,12 @@ export class SignalProcessor {
         sector: stockInfo.sector, // ✅ FIXED: Use actual sector from stock universe
         country_code: "US",
         company_name: stockInfo.companyName, // ✅ FIXED: Use actual company name
-        current_price: signal.marketData.currentPrice,
-        price_change_percent: signal.marketData.change24h,
+
+        // 🔧 PRICE BUG FIX: Use Enhanced Signal Processor's real price data, fallback to marketData
+        current_price:
+          (signal as any).current_price || signal.marketData.currentPrice,
+        price_change_percent:
+          (signal as any).price_change_percent || signal.marketData.change24h,
 
         // 🔧 ENHANCED: Use stock info where available
         industry_subsector: (stockInfo.industry || "Software").substring(
@@ -934,7 +939,7 @@ export class SignalProcessor {
       return {
         status: "healthy",
         message:
-          "SignalProcessor system operational with correct sector assignment",
+          "SignalProcessor system operational with correct sector assignment AND real price data",
         details: healthDetails,
       };
     } catch (error) {
