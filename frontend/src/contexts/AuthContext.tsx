@@ -65,134 +65,318 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const redirectTimeouts = useRef<Set<NodeJS.Timeout>>(new Set());
   const mounted = useRef(true);
 
-  // 🎯 FIXED: Robust plan tier determination with multiple sources
-  const determineSubscriptionTier = useCallback(
-    (planInfo: any, userEmail?: string): "starter" | "professional" => {
-      console.log("🎯 PLAN LOGIC START: Determining subscription tier");
-      console.log("🎯 PLAN LOGIC: Input planInfo:", planInfo);
-      console.log("🎯 PLAN LOGIC: User email:", userEmail);
+  // 🔥 BULLETPROOF PLAN STORAGE: Multiple redundant storage methods
+  const storePlanDataWithMultipleBackups = useCallback((planInfo: any) => {
+    if (!planInfo || !planInfo.id) {
+      console.log("🚫 PLAN STORAGE: No valid plan info to store");
+      return;
+    }
 
-      // Method 1: Direct planInfo parameter (HIGHEST PRIORITY)
-      if (planInfo?.id) {
-        const planId = planInfo.id.toLowerCase().trim();
-        console.log("🎯 PLAN LOGIC: Method 1 - Direct planInfo.id:", planId);
+    console.log("🔐 BULLETPROOF STORAGE: Starting multi-layer plan storage...");
+    console.log("🔐 PLAN DATA:", planInfo);
 
-        if (planId === "professional") {
-          console.log("✅ PLAN LOGIC: PROFESSIONAL plan from direct planInfo");
-          return "professional";
-        } else if (planId === "starter") {
-          console.log("✅ PLAN LOGIC: STARTER plan from direct planInfo");
-          return "starter";
-        }
+    try {
+      // Method 1: In-memory storage (immediate)
+      pendingPlanInfo.current = planInfo;
+      console.log("✅ STORAGE METHOD 1: pendingPlanInfo.current stored");
+
+      // Method 2: localStorage with timestamp (survives page refresh)
+      const storageData = {
+        ...planInfo,
+        timestamp: Date.now(),
+        userAgent: navigator.userAgent,
+        url: window.location.href,
+      };
+      localStorage.setItem(
+        "kurzora_plan_selection",
+        JSON.stringify(storageData)
+      );
+      console.log(
+        "✅ STORAGE METHOD 2: localStorage kurzora_plan_selection stored"
+      );
+
+      // Method 3: Legacy localStorage (backward compatibility)
+      localStorage.setItem("selectedPlan", JSON.stringify(planInfo));
+      console.log("✅ STORAGE METHOD 3: localStorage selectedPlan stored");
+
+      // Method 4: sessionStorage (backup if localStorage corrupted)
+      sessionStorage.setItem(
+        "kurzora_plan_backup",
+        JSON.stringify(storageData)
+      );
+      console.log("✅ STORAGE METHOD 4: sessionStorage backup stored");
+
+      // Method 5: URL parameters (survives email verification redirect)
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set("plan_id", planInfo.id);
+        url.searchParams.set("plan_name", planInfo.name);
+        url.searchParams.set("plan_price", planInfo.price);
+        window.history.replaceState({}, "", url.toString());
+        console.log("✅ STORAGE METHOD 5: URL parameters stored");
+      } catch (urlError) {
+        console.warn("⚠️ STORAGE METHOD 5 failed:", urlError);
       }
 
-      // Method 2: Check pendingPlanInfo.current (backup)
-      if (pendingPlanInfo.current?.id) {
-        const planId = pendingPlanInfo.current.id.toLowerCase().trim();
+      // Method 6: Browser cookie (final fallback)
+      try {
+        const cookieData = encodeURIComponent(JSON.stringify(planInfo));
+        document.cookie = `kurzora_plan=${cookieData}; path=/; max-age=3600; SameSite=Strict`;
+        console.log("✅ STORAGE METHOD 6: Cookie stored");
+      } catch (cookieError) {
+        console.warn("⚠️ STORAGE METHOD 6 failed:", cookieError);
+      }
+
+      console.log(
+        "🎉 BULLETPROOF STORAGE: All 6 methods attempted successfully"
+      );
+
+      // VERIFICATION: Immediately test retrieval
+      const verification = retrievePlanDataFromAllSources();
+      if (verification?.id === planInfo.id) {
         console.log(
-          "🎯 PLAN LOGIC: Method 2 - pendingPlanInfo.current.id:",
-          planId
+          "✅ STORAGE VERIFICATION: Plan data retrieval working correctly"
         );
-
-        if (planId === "professional") {
-          console.log("✅ PLAN LOGIC: PROFESSIONAL plan from pendingPlanInfo");
-          return "professional";
-        } else if (planId === "starter") {
-          console.log("✅ PLAN LOGIC: STARTER plan from pendingPlanInfo");
-          return "starter";
-        }
+      } else {
+        console.error("🚨 STORAGE VERIFICATION FAILED:", {
+          expected: planInfo.id,
+          retrieved: verification?.id,
+        });
       }
+    } catch (error) {
+      console.error("💥 BULLETPROOF STORAGE ERROR:", error);
+    }
+  }, []);
 
-      // Method 3: Check localStorage selectedPlan (second backup)
-      try {
-        const selectedPlanStr = localStorage.getItem("selectedPlan");
-        if (selectedPlanStr) {
-          const selectedPlan = JSON.parse(selectedPlanStr);
-          console.log(
-            "🎯 PLAN LOGIC: Method 3 - localStorage selectedPlan:",
-            selectedPlan
-          );
+  // 🔍 BULLETPROOF PLAN RETRIEVAL: Check all storage methods
+  const retrievePlanDataFromAllSources = useCallback(() => {
+    console.log("🔍 BULLETPROOF RETRIEVAL: Checking all 6 storage methods...");
 
-          if (selectedPlan?.id) {
-            const planId = selectedPlan.id.toLowerCase().trim();
-            if (planId === "professional") {
-              console.log("✅ PLAN LOGIC: PROFESSIONAL plan from localStorage");
-              return "professional";
-            } else if (planId === "starter") {
-              console.log("✅ PLAN LOGIC: STARTER plan from localStorage");
-              return "starter";
-            }
-          }
-        }
-      } catch (error) {
-        console.warn("⚠️ PLAN LOGIC: localStorage parsing error:", error);
-      }
-
-      // Method 4: Check URL parameters (third backup)
-      try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const planFromUrl = urlParams.get("plan");
-        if (planFromUrl) {
-          const planId = planFromUrl.toLowerCase().trim();
-          console.log("🎯 PLAN LOGIC: Method 4 - URL parameter:", planId);
-
-          if (planId === "professional") {
-            console.log("✅ PLAN LOGIC: PROFESSIONAL plan from URL");
-            return "professional";
-          } else if (planId === "starter") {
-            console.log("✅ PLAN LOGIC: STARTER plan from URL");
-            return "starter";
-          }
-        }
-      } catch (error) {
-        console.warn("⚠️ PLAN LOGIC: URL parsing error:", error);
-      }
-
-      // Method 5: Check pendingSubscription in localStorage (fourth backup)
-      try {
-        const pendingSubscriptionStr = localStorage.getItem(
-          "pendingSubscription"
-        );
-        if (pendingSubscriptionStr) {
-          const pendingSubscription = JSON.parse(pendingSubscriptionStr);
-          console.log(
-            "🎯 PLAN LOGIC: Method 5 - pendingSubscription:",
-            pendingSubscription
-          );
-
-          if (pendingSubscription?.planId) {
-            const planId = pendingSubscription.planId.toLowerCase().trim();
-            if (planId === "professional") {
-              console.log(
-                "✅ PLAN LOGIC: PROFESSIONAL plan from pendingSubscription"
-              );
-              return "professional";
-            } else if (planId === "starter") {
-              console.log(
-                "✅ PLAN LOGIC: STARTER plan from pendingSubscription"
-              );
-              return "starter";
-            }
-          }
-        }
-      } catch (error) {
-        console.warn(
-          "⚠️ PLAN LOGIC: pendingSubscription parsing error:",
-          error
-        );
-      }
-
-      // 🚨 FINAL FALLBACK: Use starter as default BUT log warning
-      console.warn("⚠️ PLAN LOGIC: NO PLAN INFO FOUND - using default starter");
-      console.warn("🔍 PLAN LOGIC DEBUG: planInfo was:", planInfo);
-      console.warn(
-        "🔍 PLAN LOGIC DEBUG: pendingPlanInfo.current was:",
+    // Method 1: In-memory storage (fastest)
+    if (pendingPlanInfo.current?.id) {
+      console.log(
+        "✅ RETRIEVAL METHOD 1: Found in pendingPlanInfo.current:",
         pendingPlanInfo.current
       );
+      return pendingPlanInfo.current;
+    }
+
+    // Method 2: Primary localStorage with timestamp
+    try {
+      const stored = localStorage.getItem("kurzora_plan_selection");
+      if (stored) {
+        const planData = JSON.parse(stored);
+        console.log(
+          "✅ RETRIEVAL METHOD 2: Found in kurzora_plan_selection:",
+          planData
+        );
+
+        // Check if data is fresh (within 1 hour)
+        if (planData.timestamp && Date.now() - planData.timestamp < 3600000) {
+          return planData;
+        } else {
+          console.log(
+            "⚠️ RETRIEVAL METHOD 2: Data expired, checking other methods"
+          );
+        }
+      }
+    } catch (e) {
+      console.warn("⚠️ RETRIEVAL METHOD 2 failed:", e);
+    }
+
+    // Method 3: Legacy localStorage (backward compatibility)
+    try {
+      const legacy = localStorage.getItem("selectedPlan");
+      if (legacy) {
+        const planData = JSON.parse(legacy);
+        console.log("✅ RETRIEVAL METHOD 3: Found in selectedPlan:", planData);
+        return planData;
+      }
+    } catch (e) {
+      console.warn("⚠️ RETRIEVAL METHOD 3 failed:", e);
+    }
+
+    // Method 4: sessionStorage backup
+    try {
+      const session = sessionStorage.getItem("kurzora_plan_backup");
+      if (session) {
+        const planData = JSON.parse(session);
+        console.log(
+          "✅ RETRIEVAL METHOD 4: Found in sessionStorage:",
+          planData
+        );
+        return planData;
+      }
+    } catch (e) {
+      console.warn("⚠️ RETRIEVAL METHOD 4 failed:", e);
+    }
+
+    // Method 5: URL parameters
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const planId = urlParams.get("plan_id");
+      const planName = urlParams.get("plan_name");
+      const planPrice = urlParams.get("plan_price");
+
+      if (planId && planName && planPrice) {
+        const planData = { id: planId, name: planName, price: planPrice };
+        console.log(
+          "✅ RETRIEVAL METHOD 5: Found in URL parameters:",
+          planData
+        );
+        return planData;
+      }
+    } catch (e) {
+      console.warn("⚠️ RETRIEVAL METHOD 5 failed:", e);
+    }
+
+    // Method 6: Cookie fallback
+    try {
+      const cookies = document.cookie.split(";");
+      const planCookie = cookies.find((c) =>
+        c.trim().startsWith("kurzora_plan=")
+      );
+      if (planCookie) {
+        const cookieValue = planCookie.split("=")[1];
+        const planData = JSON.parse(decodeURIComponent(cookieValue));
+        console.log("✅ RETRIEVAL METHOD 6: Found in cookie:", planData);
+        return planData;
+      }
+    } catch (e) {
+      console.warn("⚠️ RETRIEVAL METHOD 6 failed:", e);
+    }
+
+    // Method 7: Check pendingSubscription localStorage (existing method)
+    try {
+      const pendingSubscriptionStr = localStorage.getItem(
+        "pendingSubscription"
+      );
+      if (pendingSubscriptionStr) {
+        const pendingSubscription = JSON.parse(pendingSubscriptionStr);
+        if (pendingSubscription?.planId) {
+          const planData = { id: pendingSubscription.planId };
+          console.log(
+            "✅ RETRIEVAL METHOD 7: Found in pendingSubscription:",
+            planData
+          );
+          return planData;
+        }
+      }
+    } catch (e) {
+      console.warn("⚠️ RETRIEVAL METHOD 7 failed:", e);
+    }
+
+    console.log(
+      "❌ BULLETPROOF RETRIEVAL: No plan data found in any of the 7 methods"
+    );
+    return null;
+  }, []);
+
+  // 🧹 CLEANUP: Clear all plan data storage
+  const clearAllPlanData = useCallback(() => {
+    console.log(
+      "🧹 CLEANUP: Clearing all plan data from all storage methods..."
+    );
+
+    // Clear in-memory
+    pendingPlanInfo.current = null;
+
+    // Clear localStorage
+    localStorage.removeItem("kurzora_plan_selection");
+    localStorage.removeItem("selectedPlan");
+    localStorage.removeItem("pendingSubscription");
+
+    // Clear sessionStorage
+    sessionStorage.removeItem("kurzora_plan_backup");
+
+    // Clear URL parameters
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("plan_id");
+      url.searchParams.delete("plan_name");
+      url.searchParams.delete("plan_price");
+      window.history.replaceState({}, "", url.toString());
+    } catch (e) {
+      console.warn("⚠️ URL cleanup failed:", e);
+    }
+
+    // Clear cookie
+    try {
+      document.cookie =
+        "kurzora_plan=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    } catch (e) {
+      console.warn("⚠️ Cookie cleanup failed:", e);
+    }
+
+    console.log("✅ CLEANUP: All plan data storage methods cleared");
+  }, []);
+
+  // 🎯 BULLETPROOF: Enhanced plan tier determination with detailed logging
+  const determineSubscriptionTier = useCallback(
+    (directPlanInfo: any, userEmail?: string): "starter" | "professional" => {
+      console.log(
+        "🎯 BULLETPROOF TIER DETERMINATION: Starting comprehensive analysis..."
+      );
+      console.log("🎯 INPUT: directPlanInfo:", directPlanInfo);
+      console.log("🎯 INPUT: userEmail:", userEmail);
+
+      // Priority 1: Direct planInfo parameter (from function call)
+      if (directPlanInfo?.id) {
+        const planId = String(directPlanInfo.id).toLowerCase().trim();
+        console.log("🎯 PRIORITY 1: Direct planInfo.id found:", planId);
+
+        if (planId === "professional") {
+          console.log("✅ TIER DECISION: PROFESSIONAL from direct planInfo");
+          return "professional";
+        } else if (planId === "starter") {
+          console.log("✅ TIER DECISION: STARTER from direct planInfo");
+          return "starter";
+        }
+      }
+
+      // Priority 2: Comprehensive retrieval from all storage methods
+      const retrievedPlan = retrievePlanDataFromAllSources();
+      if (retrievedPlan?.id) {
+        const planId = String(retrievedPlan.id).toLowerCase().trim();
+        console.log("🎯 PRIORITY 2: Retrieved plan ID:", planId);
+
+        if (planId === "professional") {
+          console.log(
+            "✅ TIER DECISION: PROFESSIONAL from comprehensive retrieval"
+          );
+          return "professional";
+        } else if (planId === "starter") {
+          console.log("✅ TIER DECISION: STARTER from comprehensive retrieval");
+          return "starter";
+        }
+      }
+
+      // Priority 3: Email-based detection (for known admin emails)
+      if (userEmail) {
+        const email = userEmail.toLowerCase().trim();
+        const adminEmails = [
+          "admin@kurzora.com",
+          "khaled@kurzora.com",
+          "khaledhamdy@gmail.com",
+          "test@kurzora.com",
+        ];
+
+        if (adminEmails.includes(email)) {
+          console.log("✅ TIER DECISION: PROFESSIONAL for admin email:", email);
+          return "professional";
+        }
+      }
+
+      // 🚨 FINAL FALLBACK: Default to starter with comprehensive logging
+      console.warn("⚠️ BULLETPROOF TIER DETERMINATION: NO PLAN DATA FOUND");
+      console.warn("🔍 FALLBACK DEBUG: directPlanInfo was:", directPlanInfo);
+      console.warn("🔍 FALLBACK DEBUG: retrievedPlan was:", retrievedPlan);
+      console.warn("🔍 FALLBACK DEBUG: userEmail was:", userEmail);
+      console.warn("🎯 FALLBACK DECISION: Using default STARTER tier");
 
       return "starter";
     },
-    []
+    [retrievePlanDataFromAllSources]
   );
 
   // OPTIMIZATION: New background profile fetching - doesn't block login
@@ -252,50 +436,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         if (!user || !mounted.current) return;
 
         console.log(
-          "🆕 Mac AuthContext: Creating profile in background for:",
+          "🆕 BULLETPROOF PROFILE CREATION: Starting for user:",
           user.email
         );
 
-        // 🔍 ENHANCED DEBUG: Check ALL plan info sources
+        // 🔍 ENHANCED DEBUG: Comprehensive plan info analysis
+        console.log("🔍 PROFILE CREATION: Analyzing all plan data sources...");
         console.log(
-          "🔍 CREATE PROFILE DEBUG: pendingPlanInfo.current =",
+          "🔍 PROFILE CREATION: pendingPlanInfo.current =",
           pendingPlanInfo.current
         );
 
-        // Check localStorage backup
-        try {
-          const selectedPlan = localStorage.getItem("selectedPlan");
-          const pendingSubscription = localStorage.getItem(
-            "pendingSubscription"
-          );
-          console.log(
-            "🔍 CREATE PROFILE DEBUG: localStorage selectedPlan =",
-            selectedPlan
-          );
-          console.log(
-            "🔍 CREATE PROFILE DEBUG: localStorage pendingSubscription =",
-            pendingSubscription
-          );
-        } catch (e) {
-          console.log("🔍 CREATE PROFILE DEBUG: localStorage error =", e);
-        }
-
-        // 🎯 FIXED: Pass user email to improve debugging
+        // Test all storage methods
+        const comprehensivePlanData = retrievePlanDataFromAllSources();
         console.log(
-          "🔍 CREATE PROFILE DEBUG: About to call determineSubscriptionTier..."
+          "🔍 PROFILE CREATION: Comprehensive plan data =",
+          comprehensivePlanData
         );
 
-        // 🔧 FIXED: Use let instead of const to allow reassignment
-        let subscriptionTier = determineSubscriptionTier(
-          pendingPlanInfo.current,
+        // 🎯 BULLETPROOF: Enhanced tier determination
+        console.log(
+          "🔍 PROFILE CREATION: About to call bulletproof tier determination..."
+        );
+
+        const subscriptionTier = determineSubscriptionTier(
+          comprehensivePlanData || pendingPlanInfo.current,
           user.email
         );
+
         console.log(
-          "🔍 CREATE PROFILE DEBUG: Final tier decision:",
+          "🔍 PROFILE CREATION: FINAL TIER DECISION:",
           subscriptionTier
         );
 
-        // 🚨 ADDITIONAL VALIDATION: Double-check the result
+        // 🚨 VALIDATION: Ensure tier is valid
         if (
           subscriptionTier !== "professional" &&
           subscriptionTier !== "starter"
@@ -305,19 +479,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             subscriptionTier,
             "- forcing to starter"
           );
-          subscriptionTier = "starter"; // ✅ NOW WORKS: Can reassign let variable
+          console.error("🚨 DEBUG DATA:", {
+            comprehensivePlanData,
+            pendingPlanInfo: pendingPlanInfo.current,
+            userEmail: user.email,
+          });
         }
 
+        const validTier =
+          subscriptionTier === "professional" ? "professional" : "starter";
         console.log(
-          "🎯 FINAL DECISION: Creating user with tier:",
-          subscriptionTier
+          "🎯 VALIDATED FINAL DECISION: Creating user with tier:",
+          validTier
         );
 
         const profileData = {
           id: userId,
           email: user.email?.toLowerCase().trim() || "",
           name: user.user_metadata?.name || user.email?.split("@")[0] || "User",
-          subscription_tier: subscriptionTier as "starter" | "professional",
+          subscription_tier: validTier,
           subscription_status: "trial",
           language: "en",
           timezone: "UTC",
@@ -326,23 +506,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           risk_percentage: 2.0,
           notification_settings: {
             email_alerts_enabled: true,
-            telegram_alerts_enabled: subscriptionTier === "professional",
-            daily_alert_limit: subscriptionTier === "starter" ? 3 : null,
+            telegram_alerts_enabled: validTier === "professional",
+            daily_alert_limit: validTier === "starter" ? 3 : null,
             minimum_score: 65,
           },
           is_active: true,
         };
 
-        console.log("🎯 CREATING USER: Final profile data:", {
+        console.log("🎯 BULLETPROOF PROFILE: Final profile data:", {
           email: profileData.email,
           subscription_tier: profileData.subscription_tier,
           subscription_status: profileData.subscription_status,
           notification_settings: profileData.notification_settings,
         });
 
-        console.log(
-          "🔍 CREATE PROFILE DEBUG: About to insert into Supabase..."
-        );
+        console.log("🔍 PROFILE CREATION: About to insert into Supabase...");
         const { data, error } = await supabase
           .from("users")
           .insert([profileData])
@@ -355,7 +533,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             error
           );
         } else {
-          console.log("✅ Mac AuthContext: Profile created successfully!");
+          console.log("✅ BULLETPROOF SUCCESS: Profile created successfully!");
           console.log(
             "✅ VERIFICATION: User tier in database:",
             data.subscription_tier
@@ -365,16 +543,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             data.notification_settings
           );
 
-          // 🚨 FINAL VERIFICATION: Log the actual database result
-          if (data.subscription_tier !== subscriptionTier) {
-            console.error("🚨 DATABASE MISMATCH:", {
-              expected: subscriptionTier,
+          // 🚨 FINAL VERIFICATION: Comprehensive database result validation
+          if (data.subscription_tier !== validTier) {
+            console.error("🚨 DATABASE MISMATCH DETECTED:", {
+              expected: validTier,
               actual: data.subscription_tier,
-              planInfo: pendingPlanInfo.current,
+              originalPlanInfo: pendingPlanInfo.current,
+              comprehensivePlanData: comprehensivePlanData,
+              userEmail: user.email,
             });
           } else {
             console.log(
               "✅ VERIFICATION PASSED: Database tier matches expected tier"
+            );
+
+            // Clear plan data after successful creation
+            clearAllPlanData();
+            console.log(
+              "✅ CLEANUP: Plan data cleared after successful profile creation"
             );
           }
 
@@ -382,12 +568,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             setUserProfile(data);
           }
         }
-
-        // Clear pending plan info after use (but keep localStorage for debugging)
-        console.log(
-          "🔍 CREATE PROFILE DEBUG: Clearing pendingPlanInfo.current"
-        );
-        pendingPlanInfo.current = null;
       } catch (error) {
         console.error(
           "💥 Mac AuthContext: Background create profile error:",
@@ -395,7 +575,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         );
       }
     },
-    [determineSubscriptionTier]
+    [
+      determineSubscriptionTier,
+      retrievePlanDataFromAllSources,
+      clearAllPlanData,
+    ]
   );
 
   // ✅ IMPROVED: Reliable redirect function that actually works
@@ -608,7 +792,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setSession(null);
     setUserProfile(null);
     setLoading(false);
-    pendingPlanInfo.current = null; // Clear pending plan info
+
+    // Clear plan data on auth state clear
+    clearAllPlanData();
 
     // Clear Mac browser storage
     try {
@@ -628,7 +814,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch (error) {
       console.warn("⚠️ Mac AuthContext: Storage clear warning:", error);
     }
-  }, []);
+  }, [clearAllPlanData]);
 
   // 🎯 NEW: Process pending subscription after signup
   const processPendingSubscription = useCallback(
@@ -747,41 +933,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   ) => {
     try {
-      console.log("📝 Mac AuthContext: Sign up attempt for:", email);
-      console.log("🎯 SIGNUP: Plan info received:", planInfo);
-      console.log("🔍 SIGNUP DEBUG: planInfo type:", typeof planInfo);
-      console.log("🔍 SIGNUP DEBUG: planInfo.id:", planInfo?.id);
+      console.log("📝 BULLETPROOF SIGNUP: Starting signup for:", email);
+      console.log("🎯 BULLETPROOF SIGNUP: Plan info received:", planInfo);
       setLoading(true);
 
-      // 🎯 FIXED: Store plan info with multiple backup methods
+      // 🔥 BULLETPROOF: Store plan info with multiple backup methods
       if (planInfo) {
         // Validate plan info structure
         if (!planInfo.id || !planInfo.name || !planInfo.price) {
-          console.warn("⚠️ SIGNUP: Invalid plan info structure:", planInfo);
+          console.warn(
+            "⚠️ BULLETPROOF SIGNUP: Invalid plan info structure:",
+            planInfo
+          );
         } else {
-          // Store in memory
-          pendingPlanInfo.current = planInfo;
-          console.log("💾 SIGNUP: Stored plan info in memory:", planInfo);
-
-          // Store in localStorage as backup
-          localStorage.setItem("selectedPlan", JSON.stringify(planInfo));
-          console.log("💾 SIGNUP: Stored plan info in localStorage backup");
-
-          // 🔍 VERIFICATION: Check that storage worked
           console.log(
-            "🔍 SIGNUP DEBUG: pendingPlanInfo.current after storage:",
-            pendingPlanInfo.current
+            "🔐 BULLETPROOF SIGNUP: Storing plan data with all 6 methods..."
           );
+          storePlanDataWithMultipleBackups(planInfo);
 
-          const verifyLocalStorage = localStorage.getItem("selectedPlan");
-          console.log(
-            "🔍 SIGNUP DEBUG: localStorage verification:",
-            verifyLocalStorage
-          );
+          // Additional verification
+          setTimeout(() => {
+            const verification = retrievePlanDataFromAllSources();
+            console.log(
+              "🔍 BULLETPROOF SIGNUP: Plan data verification:",
+              verification
+            );
+          }, 100);
         }
       } else {
         console.log(
-          "ℹ️ SIGNUP: No plan info provided - will use default logic"
+          "ℹ️ BULLETPROOF SIGNUP: No plan info provided - will use default logic"
         );
       }
 
@@ -797,16 +978,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       });
 
       if (error) {
-        pendingPlanInfo.current = null; // Clear on error
+        clearAllPlanData(); // Clear on error
         return { error: error.message };
       }
 
       if (!data.user) {
-        pendingPlanInfo.current = null; // Clear on error
+        clearAllPlanData(); // Clear on error
         return { error: "Failed to create user account" };
       }
 
-      console.log("✅ Mac AuthContext: Sign up successful");
+      console.log("✅ BULLETPROOF SIGNUP: Sign up successful");
 
       // Step 2: Process pending subscription if exists
       try {
@@ -834,13 +1015,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // Profile will be created by fetchUserProfile when auth state changes
       console.log(
-        "🔍 SIGNUP DEBUG: End of signUp function. pendingPlanInfo.current:",
-        pendingPlanInfo.current
+        "🔍 BULLETPROOF SIGNUP: End of signUp function. Plan data stored with bulletproof methods."
       );
       return {};
     } catch (error) {
       console.error("💥 Mac AuthContext: Sign up error:", error);
-      pendingPlanInfo.current = null; // Clear on error
+      clearAllPlanData(); // Clear on error
       return { error: "An unexpected error occurred during sign up" };
     } finally {
       setLoading(false);
@@ -852,11 +1032,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       console.log("🚪 Mac AuthContext: Sign out initiated");
 
-      // Clear subscription data on logout
-      localStorage.removeItem("pendingSubscription");
-      localStorage.removeItem("selectedPlan");
+      // Clear all plan and subscription data on logout
+      clearAllPlanData();
       localStorage.removeItem("signupFormData");
-      pendingPlanInfo.current = null; // Clear pending plan info
 
       // Immediate state clearing for Mac Safari compatibility
       await clearAuthState();
