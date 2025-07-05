@@ -106,8 +106,10 @@ const LandingPage: React.FC = () => {
     );
   }
 
-  // Redirect if user is logged in
-  if (user) {
+  // ✅ FIXED: Better redirect logic that doesn't conflict with AuthContext
+  // Only redirect if user exists AND we're not in an auth flow
+  if (user && !showAuth && !loading) {
+    console.log("🔄 LandingPage: User logged in, redirecting to dashboard");
     return <Navigate to="/dashboard" replace />;
   }
 

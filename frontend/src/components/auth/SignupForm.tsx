@@ -18,7 +18,7 @@ const stripePromise = loadStripe(
 const planDetails = {
   starter: {
     name: "Starter",
-    price: 19,
+    price: 19, // ✅ FIXED: Starter is now $19/month
     badge: null,
   },
   professional: {
@@ -114,7 +114,7 @@ const SignupFormContent: React.FC<SignupFormProps> = ({
     setCardError(event.error ? event.error.message : null);
   };
 
-  // ✅ FORM SUBMISSION WITH REDIRECT FIX
+  // ✅ FORM SUBMISSION WITH IMPROVED REDIRECT FIX
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
@@ -133,8 +133,11 @@ const SignupFormContent: React.FC<SignupFormProps> = ({
       return;
     }
 
-    // ✅ VALIDATE STRIPE ELEMENTS FOR PAID PLANS
-    if (planInfo && planInfo.id !== "starter") {
+    // ✅ FIXED: VALIDATE STRIPE ELEMENTS FOR ALL PAID PLANS (both starter and professional)
+    if (
+      planInfo &&
+      (planInfo.id === "starter" || planInfo.id === "professional")
+    ) {
       if (!stripe || !elements) {
         setError("Stripe is not loaded. Please refresh and try again.");
         return;
@@ -158,8 +161,13 @@ const SignupFormContent: React.FC<SignupFormProps> = ({
       setIsProcessingPayment(true);
       let paymentMethodId = null;
 
-      // ✅ CREATE PAYMENT METHOD FOR PAID PLANS
-      if (planInfo && planInfo.id !== "starter" && stripe && elements) {
+      // ✅ FIXED: CREATE PAYMENT METHOD FOR ALL PAID PLANS (both starter and professional)
+      if (
+        planInfo &&
+        (planInfo.id === "starter" || planInfo.id === "professional") &&
+        stripe &&
+        elements
+      ) {
         const cardElement = elements.getElement(CardElement);
         if (!cardElement) {
           throw new Error("Credit card element not found");
@@ -195,6 +203,7 @@ const SignupFormContent: React.FC<SignupFormProps> = ({
       }
 
       // ✅ CREATE USER ACCOUNT
+      console.log("🚀 Starting account creation...");
       const signUpResult = await signUp(
         formData.email,
         formData.password,
@@ -206,30 +215,38 @@ const SignupFormContent: React.FC<SignupFormProps> = ({
         throw new Error(signUpResult.error);
       }
 
+      console.log("✅ Account creation successful!");
+
       // Store plan info for persistence
       if (planInfo) {
         localStorage.setItem("selectedPlan", JSON.stringify(planInfo));
       }
 
-      // ✅ SUCCESS MESSAGE
-      if (planInfo && planInfo.id !== "starter") {
+      // ✅ SUCCESS MESSAGE - Both plans now have 7-day trials
+      if (planInfo) {
         toast.success(
-          `✅ ${planInfo.name} account created with 7-day trial! Welcome to Kurzora!`
+          `✅ ${planInfo.name} account created with 7-day trial! Welcome to Kurzora!`,
+          { duration: 4000 }
         );
       } else {
-        toast.success("✅ Account created successfully! Welcome to Kurzora!");
+        toast.success("✅ Account created successfully! Welcome to Kurzora!", {
+          duration: 4000,
+        });
       }
 
-      // ✅ REDIRECT FIX: Automatically redirect to homepage after successful signup
-      setTimeout(() => {
-        window.location.href = "/?signup=success";
-      }, 1000); // Small delay to show success message
+      console.log(
+        "✅ Success message shown - letting AuthContext handle redirect..."
+      );
+
+      // ✅ FIXED: Remove redirect from SignupForm completely
+      // Let AuthContext handle the redirect after auth state changes
+      // This prevents redirect conflicts and ensures proper authentication flow
     } catch (error) {
       const errorMessage =
         error instanceof Error
           ? error.message
           : "Signup failed. Please try again.";
-      console.error("Signup error:", errorMessage);
+      console.error("❌ Signup error:", errorMessage);
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -248,17 +265,15 @@ const SignupFormContent: React.FC<SignupFormProps> = ({
     if (isProcessingPayment) return "Creating your account...";
     if (loading) return "Setting up your profile...";
     if (planInfo) {
-      if (planInfo.id === "starter") {
-        return `Start ${planInfo.name} Plan (Free)`;
-      } else {
-        return `Start ${planInfo.name} Plan ($${planInfo.price}/month)`;
-      }
+      // ✅ FIXED: Both plans now have trials and pricing
+      return `Start ${planInfo.name} Plan (${planInfo.price}/month)`;
     }
     return "Create Account";
   };
 
-  // Only show card element for paid plans
-  const showCardElement = planInfo && planInfo.id !== "starter";
+  // ✅ FIXED: Show card element for ALL plans (both starter and professional need payment info)
+  const showCardElement =
+    planInfo && (planInfo.id === "starter" || planInfo.id === "professional");
 
   return (
     <div className="w-full max-w-md mx-auto bg-slate-900/50 backdrop-blur-sm border border-blue-800/30 rounded-lg p-6">
@@ -285,16 +300,11 @@ const SignupFormContent: React.FC<SignupFormProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-white font-medium">{planInfo.name} Plan</h3>
-              <p className="text-blue-400">
-                {planInfo.id === "starter"
-                  ? "Free"
-                  : `$${planInfo.price}/month`}
+              <p className="text-blue-400">${planInfo.price}/month</p>
+              {/* ✅ FIXED: Both plans now have 7-day trials */}
+              <p className="text-xs text-slate-400">
+                7-day free trial included
               </p>
-              {planInfo.id !== "starter" && (
-                <p className="text-xs text-slate-400">
-                  7-day free trial included
-                </p>
-              )}
             </div>
             <div className="text-sm text-slate-400">
               {planInfo.billingCycle}
@@ -375,7 +385,7 @@ const SignupFormContent: React.FC<SignupFormProps> = ({
           />
         </div>
 
-        {/* ✅ CREDIT CARD SECTION FOR PAID PLANS */}
+        {/* ✅ FIXED: CREDIT CARD SECTION FOR ALL PAID PLANS (both starter and professional) */}
         {showCardElement && (
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">

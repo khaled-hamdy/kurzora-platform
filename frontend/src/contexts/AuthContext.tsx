@@ -61,8 +61,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   // Store plan info temporarily during signup
   const pendingPlanInfo = useRef<any>(null);
 
-  // Prevent multiple redirects
-  const isRedirecting = useRef(false);
+  // ✅ IMPROVED: Better redirect management
+  const redirectTimeouts = useRef<Set<NodeJS.Timeout>>(new Set());
   const mounted = useRef(true);
 
   // 🎯 FIXED: Robust plan tier determination with multiple sources
@@ -398,6 +398,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     [determineSubscriptionTier]
   );
 
+  // ✅ IMPROVED: Reliable redirect function that actually works
+  const performReliableRedirect = useCallback(
+    (path: string, reason: string = "") => {
+      console.log(
+        `🔄 Mac AuthContext: Reliable redirect to ${path} (${reason})`
+      );
+
+      // Clear any pending timeouts
+      redirectTimeouts.current.forEach((timeout) => clearTimeout(timeout));
+      redirectTimeouts.current.clear();
+
+      try {
+        // Method 1: Try immediate redirect
+        window.location.href = path;
+      } catch (error) {
+        console.warn("⚠️ Method 1 failed, trying Method 2");
+
+        try {
+          // Method 2: Try location.replace
+          window.location.replace(path);
+        } catch (error2) {
+          console.warn("⚠️ Method 2 failed, trying Method 3");
+
+          // Method 3: Force reload with new path
+          const timeout = setTimeout(() => {
+            if (mounted.current) {
+              window.history.pushState({}, "", path);
+              window.location.reload();
+            }
+          }, 100);
+
+          redirectTimeouts.current.add(timeout);
+        }
+      }
+    },
+    []
+  );
+
   useEffect(() => {
     mounted.current = true;
 
@@ -464,7 +502,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     initializeAuth();
 
-    // Auth state change listener
+    // ✅ IMPROVED: Auth state change listener with better redirect logic
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -480,8 +518,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         if (event === "SIGNED_OUT") {
           console.log("🚪 Mac AuthContext: User signed out");
           await clearAuthState();
-          if (!isRedirecting.current && window.location.pathname !== "/") {
-            await safeRedirect("/");
+
+          // ✅ FIXED: Only redirect if not already on landing page
+          const currentPath = window.location.pathname;
+          if (
+            currentPath !== "/" &&
+            !currentPath.includes("/auth") &&
+            !currentPath.includes("/signup")
+          ) {
+            console.log(
+              "🔄 Mac AuthContext: Redirecting from",
+              currentPath,
+              "to landing page"
+            );
+            performReliableRedirect("/", "signed out");
           }
           return;
         }
@@ -497,9 +547,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           // OPTIMIZATION: Don't wait for profile on login
           fetchUserProfileInBackground(session.user.id);
 
-          // Only redirect on login page
-          if (!isRedirecting.current && window.location.pathname === "/") {
-            await safeRedirect("/dashboard");
+          // ✅ FIXED: Only redirect to dashboard if on login/signup pages
+          const currentPath = window.location.pathname;
+          if (
+            currentPath === "/" ||
+            currentPath.includes("/auth") ||
+            currentPath.includes("/signup")
+          ) {
+            console.log(
+              "🔄 Mac AuthContext: Redirecting from",
+              currentPath,
+              "to dashboard"
+            );
+            performReliableRedirect("/dashboard", "signed in");
           }
           return;
         }
@@ -531,8 +591,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => {
       mounted.current = false;
       subscription.unsubscribe();
+
+      // Clear any pending redirects
+      redirectTimeouts.current.forEach((timeout) => clearTimeout(timeout));
+      redirectTimeouts.current.clear();
     };
-  }, [fetchUserProfileInBackground, createUserProfileInBackground]);
+  }, [
+    fetchUserProfileInBackground,
+    createUserProfileInBackground,
+    performReliableRedirect,
+  ]);
 
   const clearAuthState = useCallback(async () => {
     console.log("🧹 Mac AuthContext: Clearing auth state");
@@ -560,23 +628,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch (error) {
       console.warn("⚠️ Mac AuthContext: Storage clear warning:", error);
     }
-  }, []);
-
-  const safeRedirect = useCallback(async (path: string) => {
-    if (isRedirecting.current) {
-      console.log("🔄 Mac AuthContext: Already redirecting, skipping");
-      return;
-    }
-
-    isRedirecting.current = true;
-    console.log(`🔄 Mac AuthContext: Safe redirect to ${path}`);
-
-    // Mac-compatible redirect with small delay
-    setTimeout(() => {
-      if (mounted.current) {
-        window.location.replace(path);
-      }
-    }, 100);
   }, []);
 
   // 🎯 NEW: Process pending subscription after signup
@@ -796,6 +847,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  // ✅ IMPROVED: Simplified signOut with reliable redirect
   const signOut = async () => {
     try {
       console.log("🚪 Mac AuthContext: Sign out initiated");
@@ -818,13 +870,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         console.log("✅ Mac AuthContext: Supabase sign out successful");
       }
 
-      // Force redirect on Mac
-      await safeRedirect("/");
+      // ✅ FIXED: Reliable redirect to landing page
+      console.log(
+        "🔄 Mac AuthContext: Redirecting to landing page after signout"
+      );
+      performReliableRedirect("/", "sign out completed");
     } catch (error) {
       console.error("💥 Mac AuthContext: Sign out error:", error);
       // Force redirect even on error
       await clearAuthState();
-      await safeRedirect("/");
+      performReliableRedirect("/", "sign out error recovery");
     }
   };
 
