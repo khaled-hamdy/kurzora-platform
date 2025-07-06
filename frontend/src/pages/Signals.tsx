@@ -1,4 +1,4 @@
-// Complete Enhanced Signals.tsx - UX IMPROVEMENTS IMPLEMENTED
+// Complete Enhanced Signals.tsx - FIXED CHARTS + CLEAN UI
 // src/pages/Signals.tsx
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
@@ -9,7 +9,6 @@ import {
   useTrialStatus,
 } from "../hooks/useSubscriptionTier";
 import { useUserAlertSettings } from "../hooks/useUserAlertSettings";
-import { TelegramAlertBanner } from "../components/telegram";
 import Layout from "../components/Layout";
 import {
   Card,
@@ -52,6 +51,8 @@ import {
 import { useToast } from "../hooks/use-toast";
 // 🚀 UPDATED: Import the enhanced SignalModal with real values support
 import EnhancedSignalModal from "../components/signals/SignalModal";
+// 🚀 NEW: Import the standalone enhanced SignalCard component
+import SignalCard from "../components/signals/SignalCard";
 import { useSignalsPageData } from "../hooks/useSignalsPageData";
 import { usePositions } from "../contexts/PositionsContext";
 import {
@@ -64,104 +65,6 @@ import { useSectorData } from "../hooks/useSectorData";
 // 🚀 NEW: Import the signal generation integration
 import { usePeriodicSignalGeneration } from "../hooks/usePeriodicSignalGeneration";
 import { GenerationProgress } from "../services/signalGenerationService";
-
-// ENHANCED DATE FORMATTING UTILITY - PRESERVED FROM ORIGINAL
-const formatSignalDate = (timestamp: string | Date): string => {
-  try {
-    const signalDate = new Date(timestamp);
-    const now = new Date();
-
-    if (isNaN(signalDate.getTime())) {
-      return "Unknown date";
-    }
-
-    const diffInMs = now.getTime() - signalDate.getTime();
-    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-    const diffInHours = Math.floor(diffInMinutes / 60);
-
-    const formatTime = (date: Date) => {
-      return date.toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      });
-    };
-
-    const timeStr = formatTime(signalDate);
-
-    if (diffInMinutes < 1) {
-      return "Just now";
-    }
-
-    if (diffInMinutes < 60) {
-      return `${diffInMinutes} minute${diffInMinutes === 1 ? "" : "s"} ago`;
-    }
-
-    const isToday = signalDate.toDateString() === now.toDateString();
-    if (isToday) {
-      return `Today ${timeStr}`;
-    }
-
-    const yesterday = new Date(now);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const isYesterday = signalDate.toDateString() === yesterday.toDateString();
-    if (isYesterday) {
-      return `Yesterday ${timeStr}`;
-    }
-
-    const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 7) {
-      const dayName = signalDate.toLocaleDateString("en-US", {
-        weekday: "long",
-      });
-      return `${dayName} ${timeStr}`;
-    }
-
-    const isSameYear = signalDate.getFullYear() === now.getFullYear();
-    if (isSameYear) {
-      const monthDay = signalDate.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
-      return `${monthDay} ${timeStr}`;
-    }
-
-    const fullDate = signalDate.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-    return `${fullDate} ${timeStr}`;
-  } catch (error) {
-    console.warn("Error formatting signal date:", error);
-    return "Invalid date";
-  }
-};
-
-// Get relative time with icon for additional context - PRESERVED FROM ORIGINAL
-const getTimeContext = (
-  timestamp: string | Date
-): { icon: string; context: string } => {
-  try {
-    const signalDate = new Date(timestamp);
-    const now = new Date();
-    const diffInMinutes = Math.floor(
-      (now.getTime() - signalDate.getTime()) / (1000 * 60)
-    );
-
-    if (diffInMinutes < 5) {
-      return { icon: "🔥", context: "Fresh signal" };
-    } else if (diffInMinutes < 30) {
-      return { icon: "⚡", context: "Recent signal" };
-    } else if (diffInMinutes < 120) {
-      return { icon: "📊", context: "Active signal" };
-    } else {
-      return { icon: "📈", context: "Signal" };
-    }
-  } catch (error) {
-    return { icon: "📊", context: "Signal" };
-  }
-};
 
 // Filter signals by market (Global vs USA) - PRESERVED FROM ORIGINAL
 const filterSignalsByMarket = (
@@ -261,20 +164,7 @@ const SignalGenerationControls: React.FC<{
       {/* Enhanced Generation Progress */}
       {isGenerating && getProgressDisplay()}
 
-      {/* Periodic Status */}
-      {!isGenerating && periodicConfig.enabled && timeUntilNext && (
-        <div className="flex items-center space-x-2 bg-emerald-900/30 border border-emerald-500/40 rounded-lg px-3 py-2 backdrop-blur-sm">
-          <Timer className="h-3 w-3 text-emerald-400 flex-shrink-0" />
-          <div className="text-xs">
-            <div className="text-emerald-400 font-medium">
-              Auto: {timeUntilNext}
-            </div>
-            <div className="text-emerald-300">
-              {isMarketHours ? "Market Open" : "Market Closed"}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* 🚀 REMOVED: Inaccurate auto timer (as requested by user) */}
 
       {/* Manual Generate Button */}
       <Button
@@ -329,45 +219,6 @@ const TestAlertSettings = () => {
   return null; // This component is invisible, just for testing
 };
 
-// Simple Telegram indicator component - PRESERVED FROM ORIGINAL
-const SignalTelegramIndicator: React.FC<{
-  signalScore: number;
-  ticker: string;
-}> = ({ signalScore, ticker }) => {
-  const { isConnected, canUseTelegram } = useUserAlertSettings();
-
-  // Only show for high-scoring signals
-  if (signalScore < 80) return null;
-
-  // Show different states based on user's telegram status
-  if (!canUseTelegram) {
-    return (
-      <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 text-xs mt-1">
-        <Crown className="h-3 w-3 mr-1" />
-        Pro Alert Available
-      </Badge>
-    );
-  }
-
-  if (isConnected) {
-    return (
-      <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-xs mt-1">
-        <MessageSquare className="h-3 w-3 mr-1" />
-        Alert Sent
-      </Badge>
-    );
-  }
-
-  return (
-    <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-xs mt-1">
-      <MessageSquare className="h-3 w-3 mr-1" />
-      Connect Telegram
-    </Badge>
-  );
-};
-
-// 🚀 REMOVED: SubscriptionStatusBanner Component (replaced with Pro badge in header)
-
 // Enhanced Filter Header Component with Generation Controls - ENHANCED
 const FilterHeader: React.FC<{
   filteredSignals: Signal[];
@@ -393,15 +244,6 @@ const FilterHeader: React.FC<{
         <div className="flex items-center space-x-2">
           {/* Generation Controls */}
           <div className="relative">{generationControls}</div>
-
-          <div className="bg-emerald-600/20 border border-emerald-500/30 rounded-lg px-3 py-1.5">
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-              <span className="text-emerald-400 font-medium text-sm">
-                {filteredSignals.length} Live Signals
-              </span>
-            </div>
-          </div>
 
           {hiddenSignalsCount > 0 && (
             <div className="bg-amber-600/20 border border-amber-500/30 rounded-lg px-3 py-1.5">
@@ -487,186 +329,154 @@ const UpgradePrompt: React.FC<{ hiddenCount: number }> = ({ hiddenCount }) => {
   );
 };
 
-// ENHANCED SIGNAL CARD COMPONENT - PRESERVED FROM ORIGINAL
-const SignalCard: React.FC<{
-  signal: Signal;
-  isHighlighted: boolean;
-  hasExistingPosition: boolean;
-  buttonText: string;
-  onViewSignal: (signal: Signal) => void;
-  onToggleChart: (ticker: string) => void;
-  showChart: boolean;
-}> = ({
-  signal,
-  isHighlighted,
-  hasExistingPosition,
-  buttonText,
-  onViewSignal,
-  onToggleChart,
-  showChart,
-}) => {
-  const finalScore = calculateFinalScore(signal.signals);
-  const timeContext = getTimeContext(signal.timestamp);
+// 🚀 FIXED: TradingView Chart Component - Using ACTUAL Working Pattern from Project Knowledge
+const TradingViewChart: React.FC<{
+  symbol: string;
+  onHide: () => void;
+}> = ({ symbol, onHide }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const containerIdRef = useRef<string>(
+    `tradingview_${symbol.replace(/[^a-zA-Z0-9]/g, "")}_${Date.now()}`
+  );
 
-  const getScoreColor = (score: number) => {
-    if (score >= 90) return "bg-emerald-600";
-    if (score >= 80) return "bg-blue-600";
-    if (score >= 70) return "bg-amber-600";
-    return "bg-red-600";
-  };
+  useEffect(() => {
+    let mounted = true;
 
-  const getChangeColor = (change: number) => {
-    return change >= 0 ? "text-emerald-400" : "text-red-400";
-  };
+    const loadTradingViewWidget = () => {
+      if (!mounted || !containerRef.current) return;
+
+      setIsLoading(true);
+      setHasError(false);
+
+      try {
+        // ✅ CORRECT WORKING PATTERN: From Signals.docx & Integrations.docx
+        const script = document.createElement("script");
+        script.src =
+          "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+        script.type = "text/javascript";
+        script.async = true;
+
+        // ✅ KEY: Use script.innerHTML with JSON.stringify (NOT new window.TradingView.widget)
+        script.innerHTML = JSON.stringify({
+          autosize: true,
+          symbol: symbol, // ✅ FIXED: No exchange prefix - let TradingView auto-detect!
+          interval: "1H",
+          timezone: "Etc/UTC",
+          theme: "dark",
+          style: "1",
+          locale: "en",
+          toolbar_bg: "#1e293b",
+          enable_publishing: false,
+          allow_symbol_change: false,
+          container_id: containerIdRef.current,
+          studies: [
+            "RSI@tv-basicstudies",
+            "MACD@tv-basicstudies",
+            "Volume@tv-basicstudies",
+          ],
+        });
+
+        // ✅ KEY: Append script to CONTAINER, not document.head!
+        const container = document.getElementById(containerIdRef.current);
+        if (container && mounted) {
+          container.appendChild(script);
+
+          // Set loading to false after a delay
+          setTimeout(() => {
+            if (mounted) {
+              setIsLoading(false);
+            }
+          }, 2000);
+        } else {
+          if (mounted) {
+            setHasError(true);
+            setIsLoading(false);
+          }
+        }
+      } catch (error) {
+        console.error("TradingView widget loading error:", error);
+        if (mounted) {
+          setHasError(true);
+          setIsLoading(false);
+        }
+      }
+    };
+
+    // Small delay to ensure container DOM is ready
+    const timer = setTimeout(loadTradingViewWidget, 100);
+
+    // ✅ SAFE CLEANUP: Clear container innerHTML (proven working pattern)
+    return () => {
+      mounted = false;
+      clearTimeout(timer);
+
+      // Clear container content - this is the safe working method
+      const container = document.getElementById(containerIdRef.current);
+      if (container) {
+        container.innerHTML = "";
+      }
+    };
+  }, [symbol]);
 
   return (
-    <Card
-      className={`bg-slate-800/50 backdrop-blur-sm border-slate-700 hover:bg-slate-800/70 transition-all duration-500 ${
-        showChart ? "ring-2 ring-blue-500/50" : ""
-      } ${
-        isHighlighted
-          ? "ring-4 ring-emerald-400 ring-opacity-75 bg-emerald-900/20 scale-[1.02]"
-          : ""
-      }`}
-    >
+    <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700 border-t-2 border-t-blue-500">
       <CardContent className="p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-8">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <div className="flex items-center space-x-2">
-                  <h3 className="text-2xl font-bold text-white">
-                    {signal.ticker}
-                  </h3>
-                  {isHighlighted && (
-                    <Badge className="bg-emerald-600 text-white animate-pulse">
-                      Found!
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-slate-400 text-lg">{signal.name}</p>
-                <p className="text-slate-500 text-sm">{signal.sector}</p>
-                {hasExistingPosition && (
-                  <Badge className="bg-blue-600 text-white text-xs mt-2">
-                    📈 Position Open
-                  </Badge>
-                )}
-
-                {/* Telegram Alert Indicator */}
-                <SignalTelegramIndicator
-                  signalScore={finalScore}
-                  ticker={signal.ticker}
-                />
-
-                {/* FORMATTED SIGNAL DATE WITH CONTEXT */}
-                <div className="flex items-center space-x-2 mt-2">
-                  <Clock className="h-3 w-3 text-slate-500" />
-                  <span className="text-xs text-slate-500">
-                    {timeContext.icon} {formatSignalDate(signal.timestamp)}
-                  </span>
-                  <Badge className="bg-slate-700 text-slate-400 text-xs px-2 py-0.5">
-                    {timeContext.context}
-                  </Badge>
-                </div>
-              </div>
-              <div className="text-center">
-                <p className="text-slate-400 text-sm mb-1">Final Score</p>
-                <Badge
-                  className={`${getScoreColor(
-                    finalScore
-                  )} text-white text-2xl px-4 py-2 font-bold`}
-                >
-                  {finalScore}
-                </Badge>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex justify-between items-center">
-                <span className="text-slate-400">Price</span>
-                <span className="text-white font-semibold text-lg">
-                  $
-                  {signal.current_price
-                    ? signal.current_price.toFixed(2)
-                    : "N/A"}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-400">Change</span>
-                <span
-                  className={`font-semibold flex items-center text-lg ${getChangeColor(
-                    signal.price_change_percent || 0
-                  )}`}
-                >
-                  {(signal.price_change_percent || 0) >= 0 ? (
-                    <TrendingUp className="h-5 w-5 mr-1" />
-                  ) : (
-                    <TrendingDown className="h-5 w-5 mr-1" />
-                  )}
-                  {(signal.price_change_percent || 0) >= 0 ? "+" : ""}
-                  {signal.price_change_percent
-                    ? signal.price_change_percent.toFixed(2)
-                    : "0.00"}
-                  %
-                </span>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-slate-700 mt-4">
-              <div className="flex justify-between text-sm text-slate-400 mb-2">
-                <span>Signal Strength</span>
-                <span>
-                  {finalScore >= 90
-                    ? "Very Strong"
-                    : finalScore >= 80
-                    ? "Strong"
-                    : "Moderate"}
-                </span>
-              </div>
-              <div className="w-full bg-slate-700 rounded-full h-3">
-                <div
-                  className={`h-3 rounded-full ${getScoreColor(finalScore)}`}
-                  style={{ width: `${finalScore}%` }}
-                ></div>
-              </div>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-4">
+            <BarChart3 className="h-6 w-6 text-blue-400" />
+            <div>
+              <h3 className="text-xl font-bold text-white">
+                Live Chart Analysis - {symbol}
+              </h3>
+              <p className="text-slate-400">
+                Real-time TradingView chart with RSI, MACD, and Volume
+                indicators
+              </p>
             </div>
           </div>
+          <Button
+            onClick={onHide}
+            variant="outline"
+            size="sm"
+            className="border-slate-600 text-slate-400 hover:bg-slate-700"
+          >
+            <X className="h-4 w-4 mr-2" />
+            Hide Chart
+          </Button>
+        </div>
 
-          <div className="lg:col-span-4 flex flex-col justify-center space-y-3">
-            <Button
-              onClick={() => onViewSignal(signal)}
-              className={`w-full text-white text-lg py-3 ${
-                hasExistingPosition
-                  ? "bg-blue-600 hover:bg-blue-700"
-                  : "bg-emerald-600 hover:bg-emerald-700"
-              }`}
-              disabled={buttonText === "Loading..."}
-            >
-              <Activity className="h-5 w-5 mr-2" />
-              {buttonText}
-            </Button>
+        {/* ✅ WORKING CONTAINER: Uses exact pattern from successful implementations */}
+        <div className="bg-slate-900/50 rounded-lg p-4">
+          <div className="relative">
+            {/* Loading indicator */}
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-slate-800 rounded z-10 h-96">
+                <div className="flex items-center space-x-2 text-slate-400">
+                  <RefreshCw className="h-5 w-5 animate-spin" />
+                  <span>Loading TradingView chart...</span>
+                </div>
+              </div>
+            )}
 
-            <Button
-              onClick={() => onToggleChart(signal.ticker)}
-              variant="outline"
-              className={`w-full text-lg py-3 transition-all duration-200 ${
-                showChart
-                  ? "border-blue-500 bg-blue-600/20 text-blue-300"
-                  : "border-blue-500 text-blue-400 hover:bg-blue-600/10"
-              }`}
-            >
-              {showChart ? (
-                <>
-                  <BarChart3 className="h-5 w-5 mr-2" />
-                  Hide Chart
-                </>
-              ) : (
-                <>
-                  <BarChart3 className="h-5 w-5 mr-2" />
-                  View Chart
-                </>
-              )}
-            </Button>
+            {/* Error state */}
+            {hasError && (
+              <div className="absolute inset-0 flex items-center justify-center bg-slate-800 rounded z-10 h-96">
+                <div className="text-center text-slate-400">
+                  <AlertCircle className="h-8 w-8 mx-auto mb-2" />
+                  <p>Unable to load chart for {symbol}</p>
+                  <p className="text-xs mt-1">Please try again later</p>
+                </div>
+              </div>
+            )}
+
+            {/* ✅ CORRECT CONTAINER: TradingView script appends here (proven working pattern) */}
+            <div
+              ref={containerRef}
+              id={containerIdRef.current}
+              className="h-96 w-full rounded"
+            />
           </div>
         </div>
       </CardContent>
@@ -687,6 +497,9 @@ const Signals: React.FC = () => {
   const trialStatus = useTrialStatus();
   const { hasPosition, getButtonText, refreshPositions, existingPositions } =
     usePositions();
+
+  // 🚀 NEW: Get telegram settings for SignalCard
+  const { isConnected, canUseTelegram } = useUserAlertSettings();
 
   // 🚀 NEW: Periodic signal generation hook
   const {
@@ -955,7 +768,7 @@ const Signals: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <TestAlertSettings />
 
-        {/* Header Section - PRESERVED */}
+        {/* 🚀 CLEANED UP: Header Section - Removed redundant elements */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
@@ -966,42 +779,18 @@ const Signals: React.FC = () => {
                 Browse and execute paper trades based on AI-powered signals
               </p>
             </div>
+            {/* 🚀 CLEAN: Only essential elements in header */}
             <div className="flex items-center space-x-3">
-              <div className="bg-emerald-600/20 border border-emerald-500/30 rounded-lg px-3 py-2">
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                  <span className="text-emerald-400 font-medium text-sm">
-                    {realSignals.length} Total Signals
-                  </span>
-                </div>
-              </div>
               {targetStock && (
                 <Badge className="bg-emerald-600 text-white animate-pulse">
                   Navigating to {targetStock}
                 </Badge>
               )}
-              <Button
-                onClick={refresh}
-                variant="outline"
-                size="sm"
-                className="flex items-center space-x-2 border-slate-600 text-slate-300 hover:bg-slate-700"
-              >
-                <RefreshCw className="h-4 w-4" />
-                <span>Refresh</span>
-              </Button>
             </div>
           </div>
         </div>
 
-        {/* 🚀 REMOVED: SubscriptionStatusBanner (replaced with Pro badge in FilterHeader) */}
-
-        {/* Telegram Alerts Banner - FIXED (hardcoded ≥80% removed) */}
-        <TelegramAlertBanner
-          showOnSignalsPage={true}
-          onConnect={() => {
-            navigate("/settings");
-          }}
-        />
+        {/* 🚀 REMOVED: TelegramAlertBanner (as requested - not important for clean interface) */}
 
         {/* 🚀 ENHANCED: Filters Section with Signal Generation Controls */}
         <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700 mb-8">
@@ -1108,7 +897,7 @@ const Signals: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Signals List - PRESERVED COMPLETELY */}
+        {/* 🚀 UPDATED: Signals List - Now using standalone SignalCard component */}
         <div className="space-y-6">
           {filteredSignals.map((signal) => {
             const hasExistingPosition = hasPosition(signal.ticker);
@@ -1118,6 +907,7 @@ const Signals: React.FC = () => {
             return (
               <div key={signal.ticker} className="space-y-4">
                 <div ref={(el) => (signalRefs.current[signal.ticker] = el)}>
+                  {/* 🚀 UPDATED: Using standalone SignalCard component with all props */}
                   <SignalCard
                     signal={signal}
                     isHighlighted={isHighlighted}
@@ -1126,53 +916,18 @@ const Signals: React.FC = () => {
                     onViewSignal={handleViewSignal}
                     onToggleChart={toggleChart}
                     showChart={showChartsFor.has(signal.ticker)}
+                    // 🚀 NEW: Telegram functionality props
+                    canUseTelegram={canUseTelegram}
+                    isConnected={isConnected}
                   />
                 </div>
 
-                {/* TradingView Chart (if shown) - PRESERVED */}
+                {/* 🚀 FIXED: TradingView Chart with safe container cleanup */}
                 {showChartsFor.has(signal.ticker) && (
-                  <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700 border-t-2 border-t-blue-500">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center space-x-4">
-                          <BarChart3 className="h-6 w-6 text-blue-400" />
-                          <div>
-                            <h3 className="text-xl font-bold text-white">
-                              Live Chart Analysis - {signal.ticker}
-                            </h3>
-                            <p className="text-slate-400">
-                              Final Score {calculateFinalScore(signal.signals)}
-                              /100 • {signal.name} • TradingView verification
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          <Badge
-                            className={`${getScoreColor(
-                              calculateFinalScore(signal.signals)
-                            )} text-white`}
-                          >
-                            Final Score: {calculateFinalScore(signal.signals)}
-                          </Badge>
-                          <Button
-                            onClick={() => toggleChart(signal.ticker)}
-                            variant="outline"
-                            size="sm"
-                            className="border-slate-600 text-slate-400 hover:bg-slate-700"
-                          >
-                            Hide Chart
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="bg-slate-900/50 rounded-lg p-4">
-                        <div className="h-96 bg-slate-800 rounded flex items-center justify-center">
-                          <span className="text-slate-400">
-                            TradingView Chart: {signal.ticker}
-                          </span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <TradingViewChart
+                    symbol={signal.ticker}
+                    onHide={() => toggleChart(signal.ticker)}
+                  />
                 )}
               </div>
             );
