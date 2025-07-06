@@ -14,13 +14,15 @@ import {
   Loader2,
   Target,
   Activity,
+  Edit3,
+  RefreshCw,
 } from "lucide-react";
 import { useToast } from "../../hooks/use-toast";
 import { useExecutePaperTrade } from "../../hooks/useExecutePaperTrade";
 import { usePositions } from "../../contexts/PositionsContext";
 import { useNavigate } from "react-router-dom";
 
-// 🚀 NEW: Import professional risk management functions
+// 🚀 ENHANCED: Import professional risk management functions
 import {
   calculateStopLoss,
   calculateTakeProfit,
@@ -33,22 +35,39 @@ import {
   RiskManagementData,
 } from "../../utils/signalCalculations";
 
-interface SignalModalProps {
+// 🚀 NEW: Enhanced interface to support real signal data
+interface EnhancedSignalModalProps {
   isOpen: boolean;
   onClose: () => void;
+  // ENHANCED: Support both simple and full signal objects
   signal: {
     symbol: string;
     name: string;
     price: number;
     change: number;
     signalScore: number;
+    // 🚀 NEW: Real calculated values from enhanced-signal-processor
+    entryPrice?: number;
+    stopLoss?: number;
+    takeProfit?: number;
+    riskRewardRatio?: number;
+    atr?: number;
+    positionSize?: number;
+    sector?: string;
+    // Raw signal data for advanced calculations
+    signals?: {
+      "1H": number;
+      "4H": number;
+      "1D": number;
+      "1W": number;
+    };
   } | null;
   onExecuteTrade: (tradeData: any) => void;
   existingPositions?: string[];
   isViewingOnly?: boolean;
 }
 
-const SignalModal: React.FC<SignalModalProps> = ({
+const EnhancedSignalModal: React.FC<EnhancedSignalModalProps> = ({
   isOpen,
   onClose,
   signal,
@@ -58,6 +77,11 @@ const SignalModal: React.FC<SignalModalProps> = ({
 }) => {
   const [portfolioBalance, setPortfolioBalance] = useState(8000);
   const [customRiskPercent, setCustomRiskPercent] = useState([2]);
+
+  // 🚀 NEW: Custom entry price state
+  const [customEntryPrice, setCustomEntryPrice] = useState<number | null>(null);
+  const [useCustomEntry, setUseCustomEntry] = useState(false);
+
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -65,34 +89,75 @@ const SignalModal: React.FC<SignalModalProps> = ({
     useExecutePaperTrade();
   const { refreshPositions, hasPosition } = usePositions();
 
-  // 🚀 NEW: Professional Risk Management Calculations
+  // 🚀 ENHANCED: Professional Risk Management with Real Values + Custom Entry Support
   const riskManagement = useMemo((): RiskManagementData | null => {
     if (!signal) return null;
 
-    const entryPrice = signal.price;
+    // 🚀 CRITICAL: Use REAL values from enhanced-signal-processor when available
+    const hasRealValues =
+      signal.entryPrice && signal.stopLoss && signal.takeProfit;
+
+    // Determine entry price: Custom > Real Calculated > Current Market Price
+    const entryPrice =
+      useCustomEntry && customEntryPrice
+        ? customEntryPrice
+        : hasRealValues
+        ? signal.entryPrice!
+        : signal.price;
+
     const finalScore = signal.signalScore;
     const signalType = finalScore >= 70 ? "bullish" : "bearish";
     const riskPercentage = customRiskPercent[0];
 
-    // Calculate professional stop-loss and take-profit
-    const stopLoss = calculateStopLoss(entryPrice, finalScore, signalType);
-    const takeProfit = calculateTakeProfit(
-      entryPrice,
-      stopLoss,
-      finalScore,
-      signalType
-    );
-    const riskRewardRatio = calculateRiskReward(
-      entryPrice,
-      stopLoss,
-      takeProfit
-    );
-    const positionSize = calculatePositionSize(
-      portfolioBalance,
-      entryPrice,
-      stopLoss,
-      riskPercentage
-    );
+    let stopLoss: number;
+    let takeProfit: number;
+    let riskRewardRatio: number;
+
+    if (hasRealValues && !useCustomEntry) {
+      // 🎯 USE REAL CALCULATED VALUES (Best case)
+      stopLoss = signal.stopLoss!;
+      takeProfit = signal.takeProfit!;
+      riskRewardRatio =
+        signal.riskRewardRatio ||
+        calculateRiskReward(entryPrice, stopLoss, takeProfit);
+
+      console.log(
+        "✅ Using REAL calculated values from enhanced-signal-processor:"
+      );
+      console.log(
+        `Entry: $${entryPrice}, Stop: $${stopLoss}, Target: $${takeProfit}, R/R: ${riskRewardRatio}`
+      );
+    } else {
+      // 🔄 RECALCULATE for custom entry price or fallback
+      stopLoss = calculateStopLoss(entryPrice, finalScore, signalType);
+      takeProfit = calculateTakeProfit(
+        entryPrice,
+        stopLoss,
+        finalScore,
+        signalType
+      );
+      riskRewardRatio = calculateRiskReward(entryPrice, stopLoss, takeProfit);
+
+      console.log(
+        `🔄 ${
+          useCustomEntry
+            ? "Recalculating for custom entry"
+            : "Using fallback calculations"
+        }:`
+      );
+      console.log(
+        `Entry: $${entryPrice}, Stop: $${stopLoss}, Target: $${takeProfit}, R/R: ${riskRewardRatio}`
+      );
+    }
+
+    const positionSize =
+      signal.positionSize ||
+      calculatePositionSize(
+        portfolioBalance,
+        entryPrice,
+        stopLoss,
+        riskPercentage
+      );
 
     const riskAmount = Math.abs(entryPrice - stopLoss) * positionSize;
     const potentialProfit = Math.abs(takeProfit - entryPrice) * positionSize;
@@ -105,6 +170,7 @@ const SignalModal: React.FC<SignalModalProps> = ({
       entryPrice * (finalScore >= 85 ? 1.1 : finalScore >= 75 ? 1.08 : 1.06);
 
     return {
+      entryPrice, // 🚀 NEW: Include entry price in risk management
       stopLoss,
       takeProfit,
       riskRewardRatio,
@@ -115,22 +181,39 @@ const SignalModal: React.FC<SignalModalProps> = ({
       technicalSupport,
       technicalResistance,
       volatilityAdjusted: true,
+      // 🚀 NEW: Track data source
+      dataSource:
+        hasRealValues && !useCustomEntry ? "enhanced-processor" : "calculated",
+      atr: signal.atr || null,
     };
-  }, [signal, portfolioBalance, customRiskPercent]);
+  }, [
+    signal,
+    portfolioBalance,
+    customRiskPercent,
+    useCustomEntry,
+    customEntryPrice,
+  ]);
 
-  // 🚀 NEW: Trade validation using professional criteria
+  // Initialize custom entry price when signal changes
+  React.useEffect(() => {
+    if (signal && !customEntryPrice) {
+      const suggestedEntry = signal.entryPrice || signal.price;
+      setCustomEntryPrice(suggestedEntry);
+    }
+  }, [signal?.symbol]);
+
+  // 🚀 ENHANCED: Trade validation using professional criteria
   const tradeValidation = useMemo(() => {
     if (!signal || !riskManagement) return null;
 
     const enhancedSignal: EnhancedSignal = {
-      // Mock signal structure for validation
       ticker: signal.symbol,
       name: signal.name,
       price: signal.price,
       change: signal.change,
-      sector: "Technology", // Default
-      market: "USA", // Default
-      signals: {
+      sector: signal.sector || "Technology",
+      market: "USA",
+      signals: signal.signals || {
         "1H": signal.signalScore,
         "4H": signal.signalScore,
         "1D": signal.signalScore,
@@ -148,9 +231,9 @@ const SignalModal: React.FC<SignalModalProps> = ({
 
   const hasExistingPosition = hasPosition(signal.symbol);
   const maxRiskPercent = customRiskPercent[0];
-  const entryPrice = signal.price;
+  const entryPrice = riskManagement.entryPrice;
 
-  // 🚀 ENHANCED: Use professional calculations instead of fixed percentages
+  // 🚀 ENHANCED: Use professional calculations
   const stopLoss = riskManagement.stopLoss;
   const takeProfit = riskManagement.takeProfit;
   const maxShares = riskManagement.positionSize;
@@ -163,11 +246,32 @@ const SignalModal: React.FC<SignalModalProps> = ({
     riskManagement.riskLevel === "high" || maxRiskPercent > 2;
   const formattedRisk = formatRiskManagement(riskManagement);
 
+  // 🚀 NEW: Handle custom entry price changes
+  const handleCustomEntryChange = (value: string) => {
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue) && numValue > 0) {
+      setCustomEntryPrice(numValue);
+    }
+  };
+
+  const handleToggleCustomEntry = () => {
+    setUseCustomEntry(!useCustomEntry);
+    if (!useCustomEntry && customEntryPrice) {
+      // Switching to custom entry - prices will recalculate
+      console.log(`🔄 Switching to custom entry: $${customEntryPrice}`);
+    } else {
+      // Switching back to real values
+      console.log("✅ Switching back to real calculated values");
+    }
+  };
+
   const handleExecuteTrade = async () => {
     console.log(
-      "🚀 DEBUG - SignalModal Execute Trade clicked for:",
+      "🚀 DEBUG - Enhanced SignalModal Execute Trade clicked for:",
       signal.symbol
     );
+    console.log("🔍 Entry price being used:", entryPrice);
+    console.log("🔍 Data source:", riskManagement.dataSource);
 
     clearError();
 
@@ -195,10 +299,11 @@ const SignalModal: React.FC<SignalModalProps> = ({
         signalId: crypto.randomUUID(),
         ticker: signal.symbol,
         companyName: signal.name,
+        // 🚀 CRITICAL: Use the actual entry price (custom or calculated)
         entryPrice: entryPrice,
         currentPrice: signal.price,
         market: "USA",
-        sector: "Technology",
+        sector: signal.sector || "Technology",
         quantity: maxShares,
         // 🚀 ENHANCED: Add professional risk management data
         stopLoss: stopLoss,
@@ -206,6 +311,10 @@ const SignalModal: React.FC<SignalModalProps> = ({
         riskRewardRatio: riskManagement.riskRewardRatio,
         riskLevel: riskManagement.riskLevel,
         signalScore: signal.signalScore,
+        // 🚀 NEW: Track data source and custom entry usage
+        dataSource: riskManagement.dataSource,
+        customEntryUsed: useCustomEntry,
+        atr: riskManagement.atr,
       };
 
       console.log("🚀 DEBUG - Executing trade with enhanced data:", tradeData);
@@ -219,9 +328,16 @@ const SignalModal: React.FC<SignalModalProps> = ({
         const actionText = hasExistingPosition
           ? "Position Extended!"
           : "Trade Started!";
+        const entryTypeText = useCustomEntry
+          ? "custom entry"
+          : "calculated entry";
         const descriptionText = hasExistingPosition
-          ? `Added ${maxShares} shares to your existing ${signal.symbol} position.`
-          : `Tracking ${signal.symbol} with ${formattedRisk.riskRewardFormatted} risk-reward.`;
+          ? `Added ${maxShares} shares to your existing ${
+              signal.symbol
+            } position at ${entryTypeText} $${entryPrice.toFixed(2)}.`
+          : `Tracking ${signal.symbol} with ${
+              formattedRisk.riskRewardFormatted
+            } risk-reward at ${entryTypeText} $${entryPrice.toFixed(2)}.`;
 
         toast({
           title: actionText,
@@ -235,7 +351,7 @@ const SignalModal: React.FC<SignalModalProps> = ({
             newTrade: {
               symbol: signal.symbol,
               name: signal.name,
-              entryPrice: entryPrice,
+              entryPrice: entryPrice, // 🚀 CRITICAL: Custom entry flows to Open Positions
               shares: maxShares,
               stopLoss: stopLoss,
               takeProfit: takeProfit,
@@ -245,6 +361,8 @@ const SignalModal: React.FC<SignalModalProps> = ({
               riskLevel: riskManagement.riskLevel,
               isAddingToPosition: hasExistingPosition,
               executedAt: new Date().toISOString(),
+              dataSource: riskManagement.dataSource,
+              customEntryUsed: useCustomEntry,
             },
             shouldRefresh: true,
           },
@@ -354,11 +472,87 @@ const SignalModal: React.FC<SignalModalProps> = ({
               <Badge className={`${formattedRisk.riskLevelColor}`}>
                 {formattedRisk.riskLevelText}
               </Badge>
+              {riskManagement.dataSource === "enhanced-processor" &&
+                !useCustomEntry && (
+                  <Badge className="bg-blue-600 text-white">
+                    🛡️ Real Values
+                  </Badge>
+                )}
             </div>
           </DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6 scrollbar-thin scrollbar-track-slate-700 scrollbar-thumb-slate-500 hover:scrollbar-thumb-slate-400">
+          {/* 🚀 NEW: Custom Entry Price Section */}
+          {!isViewingOnly && (
+            <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <Edit3 className="h-5 w-5 text-blue-400" />
+                  <h3 className="text-blue-200 text-sm font-semibold">
+                    Entry Price Settings
+                  </h3>
+                </div>
+                <Button
+                  onClick={handleToggleCustomEntry}
+                  variant="outline"
+                  size="sm"
+                  className={`${
+                    useCustomEntry
+                      ? "bg-blue-600 border-blue-500 text-white"
+                      : "border-slate-600 text-slate-400"
+                  }`}
+                >
+                  {useCustomEntry ? "Custom Entry" : "Use Calculated"}
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-blue-300 text-xs font-medium mb-1 block">
+                    {signal.entryPrice
+                      ? "Calculated Entry"
+                      : "Current Market Price"}
+                  </label>
+                  <div className="bg-slate-700 p-2 rounded border">
+                    <span className="text-white font-mono">
+                      ${(signal.entryPrice || signal.price).toFixed(2)}
+                    </span>
+                    {signal.entryPrice && (
+                      <Badge className="ml-2 bg-blue-600 text-white text-xs">
+                        Real Value
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-blue-300 text-xs font-medium mb-1 block">
+                    Your Entry Price
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={customEntryPrice || ""}
+                    onChange={(e) => handleCustomEntryChange(e.target.value)}
+                    disabled={!useCustomEntry}
+                    className={`bg-slate-700 border-slate-600 text-white font-mono ${
+                      useCustomEntry ? "border-blue-500" : "opacity-50"
+                    }`}
+                    placeholder="Enter custom price"
+                  />
+                </div>
+              </div>
+
+              {useCustomEntry && customEntryPrice && (
+                <div className="mt-2 text-xs text-blue-300 flex items-center">
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                  Stop loss and take profit will recalculate based on your
+                  custom entry price
+                </div>
+              )}
+            </div>
+          )}
+
           {hasExistingPosition && (
             <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-lg">
               <div className="flex items-center space-x-2">
@@ -416,13 +610,22 @@ const SignalModal: React.FC<SignalModalProps> = ({
             </div>
           )}
 
-          {/* 🚀 ENHANCED: Professional price targets with risk-reward display */}
+          {/* 🚀 ENHANCED: Professional price targets with real values display */}
           <div className="grid grid-cols-3 gap-4">
-            <div className="bg-slate-700/50 p-4 rounded-lg">
+            <div className="bg-slate-700/50 p-4 rounded-lg border border-blue-500/30">
               <p className="text-slate-400 text-sm">Entry Price</p>
               <p className="text-white font-bold text-lg">
                 ${entryPrice.toFixed(2)}
               </p>
+              {useCustomEntry && (
+                <p className="text-blue-300 text-xs mt-1">Custom Entry</p>
+              )}
+              {riskManagement.dataSource === "enhanced-processor" &&
+                !useCustomEntry && (
+                  <p className="text-blue-300 text-xs mt-1">
+                    🛡️ Real Calculated
+                  </p>
+                )}
             </div>
             <div className="bg-slate-700/50 p-4 rounded-lg border border-red-500/30">
               <p className="text-slate-400 text-sm">Stop Loss</p>
@@ -488,7 +691,32 @@ const SignalModal: React.FC<SignalModalProps> = ({
                 ></div>
               </div>
             </div>
+
+            {/* 🚀 NEW: ATR and Data Source Info */}
+            <div className="mt-3 pt-3 border-t border-slate-600">
+              <div className="grid grid-cols-2 gap-4 text-xs">
+                <div>
+                  <span className="text-slate-400">Data Source:</span>
+                  <span className="ml-2 text-white">
+                    {riskManagement.dataSource === "enhanced-processor"
+                      ? "🛡️ Real Calculated"
+                      : "🔄 Fallback Calc"}
+                  </span>
+                </div>
+                {riskManagement.atr && (
+                  <div>
+                    <span className="text-slate-400">ATR:</span>
+                    <span className="ml-2 text-white">
+                      ${riskManagement.atr.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
+
+          {/* REST OF THE COMPONENT REMAINS THE SAME... */}
+          {/* Portfolio Balance, Risk Percentage, Position Sizing, Technical Analysis sections */}
 
           {!isViewingOnly && (
             <div>
@@ -667,12 +895,12 @@ const SignalModal: React.FC<SignalModalProps> = ({
                 ) : hasExistingPosition ? (
                   <>
                     <Plus className="h-4 w-4 mr-2" />
-                    Add to Position
+                    Add to Position (${entryPrice.toFixed(2)})
                   </>
                 ) : (
                   <>
                     <TrendingUp className="h-4 w-4 mr-2" />
-                    Execute Paper Trade ({formattedRisk.riskRewardFormatted})
+                    Execute Paper Trade (${entryPrice.toFixed(2)})
                   </>
                 )}
               </Button>
@@ -684,4 +912,4 @@ const SignalModal: React.FC<SignalModalProps> = ({
   );
 };
 
-export default SignalModal;
+export default EnhancedSignalModal;
