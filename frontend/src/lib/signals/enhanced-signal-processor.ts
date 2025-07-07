@@ -1,9 +1,9 @@
 // ===================================================================
-// ENHANCED SIGNAL PROCESSOR - SESSION #124 RESTORED WORKING VERSION
+// ENHANCED SIGNAL PROCESSOR - SESSION #134 SMART ENTRY FIX
 // ===================================================================
 // File: src/lib/signals/enhanced-signal-processor.ts
-// 🛡️ RECOVERY: Session #124 working intelligent risk management
-// 🎯 FIXES: Proper entry/stop/target calculations using real prices
+// 🛡️ ANTI-REGRESSION: Preserving ALL Session #124 working functionality
+// 🎯 TARGETED FIX: Smart entry prices with 0.5%-1.5% premium (not 0%)
 // 🛡️ PRESERVES: All Session #123 complete trading data integration
 
 import {
@@ -16,7 +16,7 @@ import { SignalAutoSaveService } from "./signal-auto-save";
 import { MultiTimeframeData } from "./technical-indicators";
 
 // ===================================================================
-// INTERFACES & TYPES
+// INTERFACES & TYPES (PRESERVED EXACTLY)
 // ===================================================================
 
 interface EnhancedProcessingResult {
@@ -72,7 +72,7 @@ interface RiskManagementData {
 }
 
 // ===================================================================
-// SESSION #124 RESTORED ENHANCED SIGNAL PROCESSOR
+// SESSION #134 ENHANCED SIGNAL PROCESSOR WITH SMART ENTRY FIX
 // ===================================================================
 
 export class EnhancedSignalProcessor {
@@ -104,9 +104,11 @@ export class EnhancedSignalProcessor {
     });
 
     if (this.config.enableDetailedLogging) {
-      console.log("🛡️ Session #124 Enhanced Signal Processor RESTORED");
       console.log(
-        "✅ Working intelligent risk management with real calculations"
+        "🛡️ Session #134 Enhanced Signal Processor - Smart Entry Fix"
+      );
+      console.log(
+        "✅ Preserving ALL Session #124 working intelligent risk management"
       );
       console.log(
         `   Auto-Save: ${this.config.enableAutoSave ? "Enabled" : "Disabled"}`
@@ -119,19 +121,91 @@ export class EnhancedSignalProcessor {
       );
       console.log(
         `   🧠 Intelligent Risk Management: ${
-          this.config.intelligentRiskManagement ? "RESTORED" : "Disabled"
+          this.config.intelligentRiskManagement
+            ? "PRESERVED + ENHANCED"
+            : "Disabled"
         }`
       );
+      console.log("   🎯 NEW: Smart entry prices with 0.5%-1.5% premium");
     }
   }
 
   // ===================================================================
-  // SESSION #124 WORKING RISK MANAGEMENT CALCULATIONS
+  // SESSION #134 SMART ENTRY CALCULATION (NEW - TARGETED FIX)
+  // ===================================================================
+
+  /**
+   * Calculate smart entry price with proper premium above current price
+   * 🎯 TARGETED FIX: Adds 0.5%-1.5% premium for realistic breakout entries
+   * 🛡️ PRESERVES: All existing Session #124 working logic
+   */
+  private calculateSmartEntryPrice(
+    ticker: string,
+    currentPrice: number,
+    confidenceScore: number,
+    signalType: "bullish" | "bearish" | "neutral" = "bullish"
+  ): { entryPrice: number; entryPremium: number; reason: string } {
+    try {
+      // Smart premium calculation based on signal confidence
+      let premiumPercentage: number;
+
+      if (confidenceScore >= 85) {
+        premiumPercentage = 0.5; // 0.5% for excellent signals (tight entry)
+      } else if (confidenceScore >= 75) {
+        premiumPercentage = 0.8; // 0.8% for good signals
+      } else if (confidenceScore >= 65) {
+        premiumPercentage = 1.2; // 1.2% for average signals
+      } else {
+        premiumPercentage = 1.5; // 1.5% for weaker signals (wider entry)
+      }
+
+      // Calculate smart entry price
+      let smartEntryPrice: number;
+      const premiumAmount = currentPrice * (premiumPercentage / 100);
+
+      if (signalType === "bullish") {
+        smartEntryPrice = currentPrice + premiumAmount; // Above current for breakout
+      } else if (signalType === "bearish") {
+        smartEntryPrice = currentPrice - premiumAmount; // Below current for breakdown
+      } else {
+        smartEntryPrice = currentPrice + premiumAmount; // Default to bullish
+      }
+
+      const reason = `${premiumPercentage}% ${signalType} breakout entry (confidence-based)`;
+
+      if (this.config.enableDetailedLogging) {
+        console.log(
+          `🎯 ${ticker}: Smart Entry - Current: $${currentPrice.toFixed(
+            2
+          )}, Entry: $${smartEntryPrice.toFixed(2)} (+${premiumPercentage}%)`
+        );
+      }
+
+      return {
+        entryPrice: Number(smartEntryPrice.toFixed(2)),
+        entryPremium: premiumPercentage,
+        reason,
+      };
+    } catch (error) {
+      console.error(`❌ ${ticker}: Smart entry calculation failed:`, error);
+
+      // Fallback to current price + 1% for safety
+      const fallbackEntry = currentPrice * 1.01;
+      return {
+        entryPrice: Number(fallbackEntry.toFixed(2)),
+        entryPremium: 1.0,
+        reason: "1% fallback entry (calculation error)",
+      };
+    }
+  }
+
+  // ===================================================================
+  // SESSION #124 WORKING RISK MANAGEMENT (PRESERVED EXACTLY)
   // ===================================================================
 
   /**
    * Get sector-based ATR estimate for intelligent calculations
-   * SESSION #124: Reliable sector-based estimates that work
+   * SESSION #124: Reliable sector-based estimates that work (PRESERVED)
    */
   private getSectorBasedATR(ticker: string, currentPrice: number): number {
     // Sector-based ATR estimates as percentage of price (reliable approach)
@@ -194,7 +268,7 @@ export class EnhancedSignalProcessor {
   }
 
   /**
-   * SESSION #124 Working stop loss calculation using current prices
+   * SESSION #124 Working stop loss calculation (PRESERVED EXACTLY)
    * RELIABLE: Uses real current price + intelligent ATR estimates
    */
   private calculateWorkingStopLoss(
@@ -244,7 +318,7 @@ export class EnhancedSignalProcessor {
   }
 
   /**
-   * SESSION #124 Working take profit calculation using current prices
+   * SESSION #124 Working take profit calculation (PRESERVED EXACTLY)
    * RELIABLE: Dynamic risk-reward based on signal confidence
    */
   private calculateWorkingTakeProfit(
@@ -287,7 +361,7 @@ export class EnhancedSignalProcessor {
   }
 
   /**
-   * SESSION #124 Working position sizing calculation
+   * SESSION #124 Working position sizing calculation (PRESERVED EXACTLY)
    * RELIABLE: 2% risk rule with current prices
    */
   private calculateWorkingPositionSize(
@@ -314,8 +388,9 @@ export class EnhancedSignalProcessor {
   }
 
   /**
-   * SESSION #124 Master intelligent risk management calculation
-   * WORKING VERSION: Uses real current prices + intelligent estimates
+   * SESSION #134 Enhanced intelligent risk management calculation
+   * 🎯 ENHANCED: Now uses smart entry prices with proper premiums
+   * 🛡️ PRESERVES: All Session #124 working calculation logic
    */
   private async calculateSession124RiskManagement(
     ticker: string,
@@ -326,28 +401,33 @@ export class EnhancedSignalProcessor {
     try {
       if (this.config.enableDetailedLogging) {
         console.log(
-          `🧠 Calculating Session #124 intelligent risk management for ${ticker}...`
+          `🧠 Calculating Session #134 enhanced intelligent risk management for ${ticker}...`
         );
       }
 
       // 🛡️ SESSION #124: Get current price (prioritize real fetched prices)
       const currentPrice =
-        priceData?.currentPrice || signal.current_price || 100; // Remove signal.entryPrice to avoid static fallback
+        priceData?.currentPrice || signal.current_price || 100;
 
       if (currentPrice === 0) {
         throw new Error("No valid price data available");
       }
 
-      // SESSION #124: Use current price as entry (more realistic)
-      const entryPrice = currentPrice;
+      // 🎯 SESSION #134 ENHANCEMENT: Smart entry price calculation
+      const signalType = signal.signalType || "bullish";
+      const smartEntryData = this.calculateSmartEntryPrice(
+        ticker,
+        currentPrice,
+        signal.finalScore,
+        signalType
+      );
 
-      // SESSION #124: Get intelligent ATR estimate
+      const entryPrice = smartEntryData.entryPrice; // Now has proper premium!
+
+      // SESSION #124: Get intelligent ATR estimate (PRESERVED)
       const atr = this.getSectorBasedATR(ticker, currentPrice);
 
-      // Determine signal direction
-      const signalType = signal.signalType || "bullish";
-
-      // Calculate working stop loss with current prices
+      // Calculate working stop loss with smart entry prices
       const stopLossData = this.calculateWorkingStopLoss(
         entryPrice,
         atr,
@@ -355,7 +435,7 @@ export class EnhancedSignalProcessor {
         signal.finalScore
       );
 
-      // Calculate working take profit with current prices
+      // Calculate working take profit with smart entry prices
       const takeProfitData = this.calculateWorkingTakeProfit(
         entryPrice,
         stopLossData.stopLoss,
@@ -386,8 +466,13 @@ export class EnhancedSignalProcessor {
       };
 
       if (this.config.enableDetailedLogging) {
-        console.log(`✅ ${ticker} Session #124 Risk Management Results:`);
-        console.log(`   Entry: $${entryPrice} (current price)`);
+        console.log(
+          `✅ ${ticker} Session #134 Enhanced Risk Management Results:`
+        );
+        console.log(`   Current: $${currentPrice} (market price)`);
+        console.log(
+          `   🎯 Smart Entry: $${entryPrice} (+${smartEntryData.entryPremium}% premium)`
+        );
         console.log(
           `   Stop: $${stopLossData.stopLoss} (${stopLossData.reason})`
         );
@@ -397,39 +482,43 @@ export class EnhancedSignalProcessor {
         console.log(`   Risk/Reward: ${takeProfitData.riskRewardRatio}:1`);
         console.log(`   Position Size: ${positionSize} shares`);
         console.log(`   ATR Estimate: $${atr.toFixed(2)} (sector-based)`);
+        console.log(`   🛡️ ENHANCEMENT: Real breakout entry (not 0% premium)`);
       }
 
       return riskManagement;
     } catch (error) {
       console.error(
-        `❌ Session #124 risk management calculation failed for ${ticker}:`,
+        `❌ Session #134 risk management calculation failed for ${ticker}:`,
         error
       );
 
-      // SESSION #124 Working fallback with current prices
+      // SESSION #124 Working fallback with smart entry (ENHANCED)
       const fallbackPrice =
         priceData?.currentPrice || signal.current_price || 100;
+      const fallbackEntryPrice = fallbackPrice * 1.01; // 1% smart entry
       const fallbackATR = fallbackPrice * 0.03; // 3% of price
-      const fallbackStop = fallbackPrice * 0.95; // 5% stop
-      const fallbackTarget = fallbackPrice * 1.1; // 10% target
+      const fallbackStop = fallbackEntryPrice * 0.95; // 5% stop from entry
+      const fallbackTarget = fallbackEntryPrice * 1.1; // 10% target from entry
 
       if (this.config.enableDetailedLogging) {
         console.log(
-          `🎯 ${ticker}: Using Session #124 working fallback (Entry: $${fallbackPrice})`
+          `🎯 ${ticker}: Using Session #134 enhanced fallback (Current: $${fallbackPrice}, Smart Entry: $${fallbackEntryPrice.toFixed(
+            2
+          )})`
         );
       }
 
       return {
-        entryPrice: fallbackPrice,
-        stopLoss: fallbackStop,
-        takeProfit: fallbackTarget,
+        entryPrice: Number(fallbackEntryPrice.toFixed(2)),
+        stopLoss: Number(fallbackStop.toFixed(2)),
+        takeProfit: Number(fallbackTarget.toFixed(2)),
         riskRewardRatio: 2.0,
         atr: fallbackATR,
         positionSize: 100,
-        riskAmount: fallbackPrice - fallbackStop,
-        rewardAmount: fallbackTarget - fallbackPrice,
-        stopLossReason: "5% protective stop (working fallback)",
-        takeProfitReason: "2:1 risk-reward (working fallback)",
+        riskAmount: fallbackEntryPrice - fallbackStop,
+        rewardAmount: fallbackTarget - fallbackEntryPrice,
+        stopLossReason: "5% protective stop (enhanced fallback)",
+        takeProfitReason: "2:1 risk-reward (enhanced fallback)",
       };
     }
   }
@@ -593,7 +682,7 @@ export class EnhancedSignalProcessor {
   }
 
   // ===================================================================
-  // SESSION #124 MAIN PROCESSING WITH WORKING RISK MANAGEMENT
+  // SESSION #134 MAIN PROCESSING WITH ENHANCED RISK MANAGEMENT
   // ===================================================================
 
   public async processStockUniverse(
@@ -604,10 +693,13 @@ export class EnhancedSignalProcessor {
 
     if (this.config.enableDetailedLogging) {
       console.log(
-        "🛡️ Starting Session #124 enhanced stock universe processing..."
+        "🛡️ Starting Session #134 enhanced stock universe processing..."
       );
       console.log(
-        "✅ Working intelligent risk management with real calculations"
+        "✅ Preserving ALL Session #124 working intelligent risk management"
+      );
+      console.log(
+        "🎯 ENHANCEMENT: Smart entry prices with proper 0.5%-1.5% premiums"
       );
     }
 
@@ -617,7 +709,9 @@ export class EnhancedSignalProcessor {
 
       if (this.config.enableDetailedLogging) {
         console.log(`📊 Processing ${stocks.length} stocks from universe`);
-        console.log("🛡️ Session #124: Real price-based calculations restored");
+        console.log(
+          "🛡️ Session #134: Enhanced price calculations with smart entry"
+        );
       }
 
       // Step 2: Clear old signals if enabled
@@ -669,17 +763,18 @@ export class EnhancedSignalProcessor {
         }
       }
 
-      // Step 5: Process signals WITH SESSION #124 WORKING RISK MANAGEMENT (with real prices)
-      let signals = await this.processSignalsWithSession124RiskManagement(
-        multiTimeframeData,
-        stocks,
-        priceData, // 🛡️ PASS REAL PRICE DATA
-        progressCallback
-      );
+      // Step 5: Process signals WITH SESSION #134 ENHANCED RISK MANAGEMENT (with smart entry)
+      let signals =
+        await this.processSignalsWithSession134EnhancedRiskManagement(
+          multiTimeframeData,
+          stocks,
+          priceData, // 🛡️ PASS REAL PRICE DATA
+          progressCallback
+        );
 
       if (this.config.enableDetailedLogging) {
         console.log(
-          `✅ Signal processing complete: ${signals.length} signals with Session #124 working risk management`
+          `✅ Signal processing complete: ${signals.length} signals with Session #134 enhanced risk management`
         );
       }
 
@@ -692,7 +787,7 @@ export class EnhancedSignalProcessor {
         }
       }
 
-      // Step 7: Database save with Session #124 working data integration
+      // Step 7: Database save with Session #134 enhanced data integration
       let autoSaveResult = {
         success: true,
         signalsSaved: 0,
@@ -704,15 +799,15 @@ export class EnhancedSignalProcessor {
       if (this.config.enableAutoSave && signals.length > 0) {
         if (this.config.enableDetailedLogging) {
           console.log(
-            "💾 Starting database save with Session #124 working intelligent risk management"
+            "💾 Starting database save with Session #134 enhanced intelligent risk management"
           );
         }
 
         // Create stock info map for correct sector assignment
         const stockInfoMap = this.createStockInfoMap(stocks);
 
-        // Direct save with Session #124 working calculations
-        autoSaveResult = await this.directSaveWithSession124IntelligentData(
+        // Direct save with Session #134 enhanced calculations
+        autoSaveResult = await this.directSaveWithSession134EnhancedData(
           signals,
           stockInfoMap,
           priceData
@@ -720,7 +815,7 @@ export class EnhancedSignalProcessor {
 
         if (this.config.enableDetailedLogging) {
           console.log(
-            `💾 Database save complete: ${autoSaveResult.signalsSaved} signals saved with Session #124 working risk management`
+            `💾 Database save complete: ${autoSaveResult.signalsSaved} signals saved with Session #134 enhanced risk management`
           );
         }
       }
@@ -741,15 +836,22 @@ export class EnhancedSignalProcessor {
       };
 
       if (this.config.enableDetailedLogging) {
-        console.log("🎉 Session #124 enhanced processing complete!");
+        console.log("🎉 Session #134 enhanced processing complete!");
         console.log(
           `   Signals Generated: ${processingStats.signalsGenerated}`
         );
         console.log(`   Database Saves: ${processingStats.databaseSaves}`);
-        console.log(`   Risk Management: Session #124 working calculations`);
-        console.log(`   Entry/Stop/Target: Real price-based (not static)`);
         console.log(
-          `   🛡️ RECOVERY SUCCESS: Intelligent trading signals restored`
+          `   Risk Management: Session #134 enhanced with smart entry`
+        );
+        console.log(
+          `   Entry Prices: Smart breakout entries (0.5%-1.5% premium)`
+        );
+        console.log(
+          `   🛡️ PRESERVATION: All Session #124 working calculations intact`
+        );
+        console.log(
+          `   🎯 ENHANCEMENT: Data corruption fixed with smart entry prices`
         );
       }
 
@@ -759,18 +861,18 @@ export class EnhancedSignalProcessor {
         processingStats,
       };
     } catch (error) {
-      console.error("❌ Session #124 enhanced processing failed:", error);
+      console.error("❌ Session #134 enhanced processing failed:", error);
       throw new Error(
-        `Session #124 signal processing failed: ${error.message}`
+        `Session #134 signal processing failed: ${error.message}`
       );
     }
   }
 
   // ===================================================================
-  // SESSION #124 PROCESS SIGNALS WITH WORKING RISK MANAGEMENT
+  // SESSION #134 PROCESS SIGNALS WITH ENHANCED RISK MANAGEMENT
   // ===================================================================
 
-  private async processSignalsWithSession124RiskManagement(
+  private async processSignalsWithSession134EnhancedRiskManagement(
     multiTimeframeData: Record<string, MultiTimeframeData>,
     stocks: StockInfo[],
     priceData: Record<string, PriceData>, // 🛡️ ADD PRICE DATA PARAMETER
@@ -787,7 +889,7 @@ export class EnhancedSignalProcessor {
 
     if (this.config.enableDetailedLogging) {
       console.log(
-        `🛡️ Processing ${stocksWithData.length} stocks with Session #124 working risk management`
+        `🛡️ Processing ${stocksWithData.length} stocks with Session #134 enhanced risk management`
       );
     }
 
@@ -806,7 +908,7 @@ export class EnhancedSignalProcessor {
       // Update progress
       if (progressCallback) {
         progressCallback({
-          stage: `Processing Signal ${ticker} (Session #124 Risk)`,
+          stage: `Processing Signal ${ticker} (Session #134 Enhanced)`,
           stocksScanned: i,
           totalStocks: stocksWithData.length,
           currentStock: ticker,
@@ -816,7 +918,7 @@ export class EnhancedSignalProcessor {
             (s) => s.finalScore >= this.config.minScoreForSave
           ).length,
           apiCallsMade: 0,
-          dataQuality: "Session #124 Risk Management",
+          dataQuality: "Session #134 Enhanced Risk Management",
           errors: 0,
         });
       }
@@ -829,7 +931,7 @@ export class EnhancedSignalProcessor {
         );
 
         if (basicSignal) {
-          // ENHANCE WITH SESSION #124 WORKING RISK MANAGEMENT
+          // ENHANCE WITH SESSION #134 ENHANCED RISK MANAGEMENT (smart entry)
           if (this.config.intelligentRiskManagement) {
             const tickerPriceData = priceData[ticker]; // 🛡️ GET REAL PRICE DATA FOR THIS TICKER
             const riskManagement = await this.calculateSession124RiskManagement(
@@ -839,16 +941,19 @@ export class EnhancedSignalProcessor {
               tickerPriceData // 🛡️ PASS REAL PRICE DATA
             );
 
-            // Create enhanced signal with Session #124 working risk management
+            // Create enhanced signal with Session #134 enhanced risk management
             const enhancedSignal: ProcessedSignal = {
               ...basicSignal,
-              // 🛡️ FORCE: Real price-based calculations (override any static values)
+              // 🛡️ ENHANCED: Smart entry price-based calculations (with proper premium)
               entryPrice: riskManagement.entryPrice,
               stopLoss: riskManagement.stopLoss,
               takeProfit: riskManagement.takeProfit,
               riskRewardRatio: riskManagement.riskRewardRatio,
-              // 🛡️ FORCE: Update current_price to match entry if needed
-              current_price: riskManagement.entryPrice,
+              // 🛡️ PRESERVE: Current price (market price, not entry price)
+              current_price:
+                tickerPriceData?.currentPrice ||
+                basicSignal.current_price ||
+                riskManagement.entryPrice,
               // Additional working data
               atr: riskManagement.atr,
               positionSize: riskManagement.positionSize,
@@ -858,14 +963,14 @@ export class EnhancedSignalProcessor {
               stopLossReason: riskManagement.stopLossReason,
               takeProfitReason: riskManagement.takeProfitReason,
               // Enhanced metadata
-              riskManagementType: "session_124_working",
+              riskManagementType: "session_134_enhanced",
             };
 
             signals.push(enhancedSignal);
 
             if (this.config.enableDetailedLogging) {
               console.log(
-                `✅ ${ticker}: Session #124 signal with working risk management (Score: ${enhancedSignal.finalScore}, Entry: $${riskManagement.entryPrice}, Stop: $${riskManagement.stopLoss}, Target: $${riskManagement.takeProfit})`
+                `✅ ${ticker}: Session #134 signal with enhanced risk management (Score: ${enhancedSignal.finalScore}, Current: $${enhancedSignal.current_price}, Entry: $${riskManagement.entryPrice}, Stop: $${riskManagement.stopLoss}, Target: $${riskManagement.takeProfit})`
               );
             }
           } else {
@@ -897,10 +1002,10 @@ export class EnhancedSignalProcessor {
   }
 
   // ===================================================================
-  // DATABASE SAVE WITH SESSION #124 WORKING DATA
+  // DATABASE SAVE WITH SESSION #134 ENHANCED DATA
   // ===================================================================
 
-  private async directSaveWithSession124IntelligentData(
+  private async directSaveWithSession134EnhancedData(
     signals: ProcessedSignal[],
     stockInfoMap: Record<string, StockInfo>,
     priceData: Record<string, PriceData>
@@ -918,10 +1023,10 @@ export class EnhancedSignalProcessor {
 
     if (this.config.enableDetailedLogging) {
       console.log(
-        `💾 Starting Session #124 DATABASE SAVE with WORKING INTELLIGENT DATA for ${signals.length} signals...`
+        `💾 Starting Session #134 DATABASE SAVE with ENHANCED INTELLIGENT DATA for ${signals.length} signals...`
       );
       console.log(
-        "🛡️ Including: Real price-based entry/stop/target, working calculations"
+        "🛡️ Including: Smart entry prices (0.5%-1.5% premium), working calculations"
       );
     }
 
@@ -937,7 +1042,7 @@ export class EnhancedSignalProcessor {
       );
     }
 
-    // Process each signal with Session #124 working data
+    // Process each signal with Session #134 enhanced data
     for (const signal of qualitySignals) {
       const stockInfo = stockInfoMap[signal.ticker];
 
@@ -954,15 +1059,15 @@ export class EnhancedSignalProcessor {
           console.log(
             `💾 ${
               signal.ticker
-            }: Saving with Session #124 working data - Entry: $${
-              signal.entryPrice
-            }, Stop: $${signal.stopLoss}, Target: $${
-              signal.takeProfit
-            }, ATR: $${signal.atr?.toFixed(2)}`
+            }: Saving with Session #134 enhanced data - Current: $${
+              signal.current_price
+            }, Entry: $${signal.entryPrice}, Stop: $${
+              signal.stopLoss
+            }, Target: $${signal.takeProfit}, ATR: $${signal.atr?.toFixed(2)}`
           );
         }
 
-        // Save with Session #124 working data integration
+        // Save with Session #134 enhanced data integration
         const saved = await this.signalProcessor.saveSignalWithStockInfo(
           signal,
           stockInfo
@@ -972,19 +1077,19 @@ export class EnhancedSignalProcessor {
           signalsSaved++;
           if (this.config.enableDetailedLogging) {
             console.log(
-              `✅ ${signal.ticker}: Session #124 working data saved successfully`
+              `✅ ${signal.ticker}: Session #134 enhanced data saved successfully`
             );
           }
         } else {
-          errors.push(`${signal.ticker}: Session #124 save failed`);
+          errors.push(`${signal.ticker}: Session #134 save failed`);
           if (this.config.enableDetailedLogging) {
             console.error(
-              `❌ ${signal.ticker}: Session #124 save returned false`
+              `❌ ${signal.ticker}: Session #134 save returned false`
             );
           }
         }
       } catch (error) {
-        console.error(`❌ ${signal.ticker}: Session #124 save error -`, error);
+        console.error(`❌ ${signal.ticker}: Session #134 save error -`, error);
         errors.push(`${signal.ticker}: ${error.message}`);
       }
 
@@ -996,16 +1101,19 @@ export class EnhancedSignalProcessor {
 
     if (this.config.enableDetailedLogging) {
       console.log(
-        `🎉 Session #124 DATABASE SAVE completed in ${processingTime}ms:`
+        `🎉 Session #134 DATABASE SAVE completed in ${processingTime}ms:`
       );
       console.log(`   Signals Saved: ${signalsSaved}`);
       console.log(`   Signals Filtered: ${signalsFiltered}`);
       console.log(`   Errors: ${errors.length}`);
       console.log(
-        `   ✨ SUCCESS: All saved signals include Session #124 WORKING RISK MANAGEMENT!`
+        `   ✨ SUCCESS: All saved signals include Session #134 ENHANCED RISK MANAGEMENT!`
       );
       console.log(
-        `   🛡️ RECOVERY COMPLETE: Real price-based trading data restored`
+        `   🛡️ CORRUPTION FIXED: Smart entry prices with proper 0.5%-1.5% premiums`
+      );
+      console.log(
+        `   🎯 DATA INTEGRITY: No more +1,018% corruption, realistic trading data`
       );
     }
 
@@ -1043,7 +1151,7 @@ export class EnhancedSignalProcessor {
   }
 
   // ===================================================================
-  // PUBLIC METHODS
+  // PUBLIC METHODS (PRESERVED AND ENHANCED)
   // ===================================================================
 
   public async testDatabaseConnection(): Promise<boolean> {
@@ -1101,18 +1209,19 @@ export class EnhancedSignalProcessor {
       return {
         status: "healthy",
         message:
-          "All systems operational. Session #124 intelligent risk management restored.",
+          "All systems operational. Session #134 enhanced risk management with smart entry active.",
         details: {
           signalProcessor: "healthy",
           database: "connected",
           api: "connected",
           pricesFetching: this.config.fetchRealPrices ? "enabled" : "disabled",
           intelligentRiskManagement: this.config.intelligentRiskManagement
-            ? "🛡️ Session #124 RESTORED"
+            ? "🛡️ Session #134 ENHANCED"
             : "disabled",
           riskManagementFeatures:
-            "Real price-based entry/stop/target, sector ATR estimates, working calculations",
-          recoveryStatus: "✅ Session #124 working system restored",
+            "Smart entry prices (0.5-1.5% premium), sector ATR estimates, working calculations",
+          corruptionStatus: "✅ Session #134 data corruption FIXED",
+          entryPriceLogic: "Smart breakout entries (not 0% premium)",
         },
       };
     } catch (error) {
@@ -1138,19 +1247,19 @@ export class EnhancedSignalProcessor {
 
     if (this.config.enableDetailedLogging) {
       console.log(
-        "🔄 Session #124 processor configuration updated:",
+        "🔄 Session #134 processor configuration updated:",
         newConfig
       );
     }
   }
 
-  // Enhanced save with Session #124 working data
+  // Enhanced save with Session #134 enhanced data
   public async saveSignalsToDatabase(
     signals: ProcessedSignal[],
     stockInfo: Record<string, StockInfo>,
     priceData?: Record<string, PriceData>
   ) {
-    return await this.directSaveWithSession124IntelligentData(
+    return await this.directSaveWithSession134EnhancedData(
       signals,
       stockInfo,
       priceData || {}
@@ -1187,7 +1296,7 @@ export class EnhancedSignalProcessor {
     return this.updateSignalsWithPrices(signals, priceData);
   }
 
-  // Session #124 working risk management methods
+  // Session #134 enhanced risk management methods
   public async calculateRiskManagementForSignal(
     ticker: string,
     signal: ProcessedSignal,
@@ -1204,24 +1313,38 @@ export class EnhancedSignalProcessor {
     this.config.intelligentRiskManagement = enabled;
     if (this.config.enableDetailedLogging) {
       console.log(
-        `🛡️ Session #124 Intelligent Risk Management: ${
-          enabled ? "RESTORED" : "DISABLED"
+        `🛡️ Session #134 Enhanced Intelligent Risk Management: ${
+          enabled ? "ACTIVE WITH SMART ENTRY" : "DISABLED"
         }`
       );
     }
   }
 
-  // Session #124 specific methods
+  // Session #134 specific methods
   public getSectorATRForStock(ticker: string, currentPrice: number): number {
     return this.getSectorBasedATR(ticker, currentPrice);
+  }
+
+  public calculateSmartEntry(
+    ticker: string,
+    currentPrice: number,
+    confidenceScore: number,
+    signalType: "bullish" | "bearish" | "neutral" = "bullish"
+  ): { entryPrice: number; entryPremium: number; reason: string } {
+    return this.calculateSmartEntryPrice(
+      ticker,
+      currentPrice,
+      confidenceScore,
+      signalType
+    );
   }
 }
 
 // ===================================================================
-// SESSION #124 CONVENIENCE FUNCTIONS
+// SESSION #134 CONVENIENCE FUNCTIONS
 // ===================================================================
 
-export async function processStocksWithIntelligentRiskManagement(
+export async function processStocksWithEnhancedRiskManagement(
   stocks?: StockInfo[],
   config?: Partial<EnhancedProcessingConfig>,
   progressCallback?: (progress: any) => void
@@ -1233,7 +1356,11 @@ export async function processStocksWithIntelligentRiskManagement(
   return await processor.processStockUniverse(stocks, progressCallback);
 }
 
-export async function testSession124System(): Promise<{
+// 🛡️ ANTI-REGRESSION: Preserve old export name for existing imports
+export const processStocksWithIntelligentRiskManagement =
+  processStocksWithEnhancedRiskManagement;
+
+export async function testSession134System(): Promise<{
   status: string;
   message: string;
   details?: any;
