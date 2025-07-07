@@ -1,4 +1,4 @@
-// Complete Enhanced Signals.tsx - FIXED CHARTS + CLEAN UI
+// Complete Enhanced Signals.tsx - CLEANED USER CONTROLS + PRESERVED ALL FUNCTIONALITY
 // src/pages/Signals.tsx
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
@@ -49,9 +49,9 @@ import {
   X,
 } from "lucide-react";
 import { useToast } from "../hooks/use-toast";
-// 🚀 UPDATED: Import the enhanced SignalModal with real values support
+// 🚀 PRESERVED: Import the enhanced SignalModal with real values support
 import EnhancedSignalModal from "../components/signals/SignalModal";
-// 🚀 NEW: Import the standalone enhanced SignalCard component
+// 🚀 PRESERVED: Import the standalone enhanced SignalCard component
 import SignalCard from "../components/signals/SignalCard";
 import { useSignalsPageData } from "../hooks/useSignalsPageData";
 import { usePositions } from "../contexts/PositionsContext";
@@ -62,9 +62,8 @@ import {
 import { Signal } from "../types/signal";
 import { useSectorData } from "../hooks/useSectorData";
 
-// 🚀 NEW: Import the signal generation integration
-import { usePeriodicSignalGeneration } from "../hooks/usePeriodicSignalGeneration";
-import { GenerationProgress } from "../services/signalGenerationService";
+// 🚮 REMOVED: usePeriodicSignalGeneration import (user-controlled generation)
+// 🚮 REMOVED: GenerationProgress import (manual generation)
 
 // Filter signals by market (Global vs USA) - PRESERVED FROM ORIGINAL
 const filterSignalsByMarket = (
@@ -101,100 +100,7 @@ const filterSignalsByMarket = (
   return signals;
 };
 
-// 🚀 IMPROVED: Signal Generation Controls with Better UX
-const SignalGenerationControls: React.FC<{
-  onGenerateManually: () => void;
-  canGenerate: boolean;
-  isGenerating: boolean;
-  progress?: GenerationProgress;
-  periodicConfig: any;
-  timeUntilNext?: string | null;
-  isMarketHours: boolean;
-}> = ({
-  onGenerateManually,
-  canGenerate,
-  isGenerating,
-  progress,
-  periodicConfig,
-  timeUntilNext,
-  isMarketHours,
-}) => {
-  const navigate = useNavigate();
-
-  // 🚀 NEW: Navigate directly to Signal Generation section
-  const handleSettingsNavigation = () => {
-    navigate("/settings", {
-      state: { scrollToSection: "signal-generation" },
-    });
-  };
-
-  // Enhanced progress display with better error handling
-  const getProgressDisplay = () => {
-    if (!progress) return null;
-
-    const displayProgress = Math.max(0, Math.min(100, progress.progress || 0));
-    const progressMessage = progress.message || "Processing...";
-    const currentStock = progress.currentStock || "";
-
-    const isStuck =
-      displayProgress === 85 &&
-      progressMessage.includes("Fetching") &&
-      currentStock.includes("(0/0)");
-
-    return (
-      <div className="flex items-center space-x-2 bg-blue-900/30 border border-blue-500/40 rounded-lg px-4 py-2.5 backdrop-blur-sm">
-        <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin flex-shrink-0"></div>
-        <div className="text-sm min-w-0">
-          <div className="text-blue-300 font-medium truncate">
-            {isStuck ? "Completing signal analysis..." : progressMessage}
-          </div>
-          {currentStock && !isStuck && (
-            <div className="text-xs text-blue-400 truncate">{currentStock}</div>
-          )}
-        </div>
-        <div className="text-sm text-blue-400 font-bold flex-shrink-0">
-          {displayProgress}%
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div className="flex items-center space-x-3">
-      {/* Enhanced Generation Progress */}
-      {isGenerating && getProgressDisplay()}
-
-      {/* 🚀 REMOVED: Inaccurate auto timer (as requested by user) */}
-
-      {/* Manual Generate Button */}
-      <Button
-        onClick={onGenerateManually}
-        disabled={!canGenerate}
-        className={`${
-          isGenerating
-            ? "bg-blue-600/50 cursor-not-allowed"
-            : "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-        } text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 flex-shrink-0`}
-      >
-        <Sparkles className={`h-4 w-4 ${isGenerating ? "animate-spin" : ""}`} />
-        <span className="whitespace-nowrap">
-          {isGenerating ? "Generating..." : "Generate Fresh Signals"}
-        </span>
-      </Button>
-
-      {/* 🚀 IMPROVED: Industry Standard Settings Button */}
-      <Button
-        onClick={handleSettingsNavigation}
-        variant="outline"
-        size="sm"
-        className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white flex-shrink-0 bg-slate-800/50"
-      >
-        <Settings className="h-4 w-4 mr-2" />
-        <span className="whitespace-nowrap">Auto-Generation Settings</span>
-      </Button>
-    </div>
-  );
-};
+// 🚮 REMOVED: SignalGenerationControls component (user-controlled generation)
 
 // Test component to verify alert settings hook - PRESERVED FROM ORIGINAL
 const TestAlertSettings = () => {
@@ -219,32 +125,28 @@ const TestAlertSettings = () => {
   return null; // This component is invisible, just for testing
 };
 
-// Enhanced Filter Header Component with Generation Controls - ENHANCED
+// Enhanced Filter Header Component - CLEANED (removed generation controls)
 const FilterHeader: React.FC<{
   filteredSignals: Signal[];
   hiddenSignalsCount: number;
   subscription: any;
   signalLimits: any;
-  generationControls: React.ReactNode;
-}> = ({
-  filteredSignals,
-  hiddenSignalsCount,
-  subscription,
-  signalLimits,
-  generationControls,
-}) => {
+}> = ({ filteredSignals, hiddenSignalsCount, subscription, signalLimits }) => {
   return (
     <CardHeader>
       <CardTitle className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Filter className="h-5 w-5 text-blue-400" />
           <span className="text-white">Trading Filters</span>
+          <Badge
+            variant="outline"
+            className="border-blue-500/30 text-blue-400 text-xs"
+          >
+            Read-Only Display
+          </Badge>
         </div>
 
         <div className="flex items-center space-x-2">
-          {/* Generation Controls */}
-          <div className="relative">{generationControls}</div>
-
           {hiddenSignalsCount > 0 && (
             <div className="bg-amber-600/20 border border-amber-500/30 rounded-lg px-3 py-1.5">
               <div className="flex items-center space-x-1">
@@ -256,7 +158,7 @@ const FilterHeader: React.FC<{
             </div>
           )}
 
-          {/* 🚀 NEW: Small Pro Badge */}
+          {/* 🚀 PRESERVED: Small Pro Badge */}
           {signalLimits.canViewUnlimited && (
             <Badge className="bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 text-xs px-2 py-1">
               <Crown className="h-3 w-3 mr-1" />
@@ -269,7 +171,9 @@ const FilterHeader: React.FC<{
       <div className="text-xs text-slate-400 mt-2">
         {subscription && (
           <div className="flex items-center justify-between">
-            <span>Real-time market scanning active</span>
+            <span>
+              Automated signal generation - 3x daily during market hours
+            </span>
             <span>
               {signalLimits.canViewUnlimited ? (
                 <span className="text-emerald-400">Unlimited Access</span>
@@ -329,7 +233,7 @@ const UpgradePrompt: React.FC<{ hiddenCount: number }> = ({ hiddenCount }) => {
   );
 };
 
-// 🚀 FIXED: TradingView Chart Component - Using ACTUAL Working Pattern from Project Knowledge
+// 🚀 PRESERVED: TradingView Chart Component - Using ACTUAL Working Pattern from Project Knowledge
 const TradingViewChart: React.FC<{
   symbol: string;
   onHide: () => void;
@@ -351,17 +255,17 @@ const TradingViewChart: React.FC<{
       setHasError(false);
 
       try {
-        // ✅ CORRECT WORKING PATTERN: From Signals.docx & Integrations.docx
+        // ✅ PRESERVED: CORRECT WORKING PATTERN: From Signals.docx & Integrations.docx
         const script = document.createElement("script");
         script.src =
           "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
         script.type = "text/javascript";
         script.async = true;
 
-        // ✅ KEY: Use script.innerHTML with JSON.stringify (NOT new window.TradingView.widget)
+        // ✅ PRESERVED: KEY: Use script.innerHTML with JSON.stringify (NOT new window.TradingView.widget)
         script.innerHTML = JSON.stringify({
           autosize: true,
-          symbol: symbol, // ✅ FIXED: No exchange prefix - let TradingView auto-detect!
+          symbol: symbol, // ✅ PRESERVED: FIXED: No exchange prefix - let TradingView auto-detect!
           interval: "1H",
           timezone: "Etc/UTC",
           theme: "dark",
@@ -378,7 +282,7 @@ const TradingViewChart: React.FC<{
           ],
         });
 
-        // ✅ KEY: Append script to CONTAINER, not document.head!
+        // ✅ PRESERVED: KEY: Append script to CONTAINER, not document.head!
         const container = document.getElementById(containerIdRef.current);
         if (container && mounted) {
           container.appendChild(script);
@@ -407,7 +311,7 @@ const TradingViewChart: React.FC<{
     // Small delay to ensure container DOM is ready
     const timer = setTimeout(loadTradingViewWidget, 100);
 
-    // ✅ SAFE CLEANUP: Clear container innerHTML (proven working pattern)
+    // ✅ PRESERVED: SAFE CLEANUP: Clear container innerHTML (proven working pattern)
     return () => {
       mounted = false;
       clearTimeout(timer);
@@ -447,7 +351,7 @@ const TradingViewChart: React.FC<{
           </Button>
         </div>
 
-        {/* ✅ WORKING CONTAINER: Uses exact pattern from successful implementations */}
+        {/* ✅ PRESERVED: WORKING CONTAINER: Uses exact pattern from successful implementations */}
         <div className="bg-slate-900/50 rounded-lg p-4">
           <div className="relative">
             {/* Loading indicator */}
@@ -471,7 +375,7 @@ const TradingViewChart: React.FC<{
               </div>
             )}
 
-            {/* ✅ CORRECT CONTAINER: TradingView script appends here (proven working pattern) */}
+            {/* ✅ PRESERVED: CORRECT CONTAINER: TradingView script appends here (proven working pattern) */}
             <div
               ref={containerRef}
               id={containerIdRef.current}
@@ -484,7 +388,7 @@ const TradingViewChart: React.FC<{
   );
 };
 
-// Main Signals Component with Integration - ENHANCED
+// Main Signals Component - CLEANED USER CONTROLS + PRESERVED ALL FUNCTIONALITY
 const Signals: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -498,29 +402,16 @@ const Signals: React.FC = () => {
   const { hasPosition, getButtonText, refreshPositions, existingPositions } =
     usePositions();
 
-  // 🚀 NEW: Get telegram settings for SignalCard
+  // 🚀 PRESERVED: Get telegram settings for SignalCard
   const { isConnected, canUseTelegram } = useUserAlertSettings();
 
-  // 🚀 NEW: Periodic signal generation hook
-  const {
-    config: periodicConfig,
-    state: generationState,
-    generateSignalsManually,
-    updateConfig: updatePeriodicConfig,
-    isMarketHours,
-    timeUntilNext,
-    canGenerate,
-  } = usePeriodicSignalGeneration({
-    enabled: false, // Start disabled, user can enable
-    intervalHours: 4, // Default 4 hours
-    marketHoursOnly: true,
-  });
+  // 🚮 REMOVED: usePeriodicSignalGeneration hook (user-controlled generation)
 
   // Existing state - PRESERVED
   const [scoreThreshold, setScoreThreshold] = useState([70]);
   const [sectorFilter, setSectorFilter] = useState("all");
   const [marketFilter, setMarketFilter] = useState("global");
-  const [selectedSignal, setSelectedSignal] = useState<any>(null); // 🚀 UPDATED: Type changed to support enhanced signal data
+  const [selectedSignal, setSelectedSignal] = useState<any>(null); // 🚀 PRESERVED: Type changed to support enhanced signal data
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showChartsFor, setShowChartsFor] = useState<Set<string>>(new Set());
   const [targetStock, setTargetStock] = useState<string | null>(null);
@@ -542,38 +433,7 @@ const Signals: React.FC = () => {
     refresh: refreshSectors,
   } = useSectorData();
 
-  // 🚀 NEW: Handle manual signal generation
-  const handleGenerateSignals = async () => {
-    try {
-      const result = await generateSignalsManually();
-
-      if (result.success) {
-        toast({
-          title: "✅ Signals Generated Successfully!",
-          description: `Generated ${result.signalsGenerated} signals, saved ${
-            result.signalsSaved
-          } to database in ${Math.round(result.duration / 1000)}s`,
-        });
-
-        // Refresh the signals display using existing refresh mechanism
-        refresh();
-      } else {
-        toast({
-          title: "❌ Signal Generation Failed",
-          description: result.errors.join(", "),
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
-      toast({
-        title: "❌ Generation Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    }
-  };
+  // 🚮 REMOVED: handleGenerateSignals function (manual generation)
 
   // ALL EXISTING useEffect hooks and logic - PRESERVED COMPLETELY
   useEffect(() => {
@@ -705,11 +565,11 @@ const Signals: React.FC = () => {
     );
   }
 
-  // 🚀 ENHANCED: Event handler with REAL values support
+  // 🚀 PRESERVED: Event handler with REAL values support
   const handleViewSignal = (signal: Signal) => {
     const finalScore = calculateFinalScore(signal.signals);
 
-    // 🚀 CRITICAL: Pass FULL signal object with real calculated values
+    // 🚀 PRESERVED: Pass FULL signal object with real calculated values
     const enhancedSignalData = {
       symbol: signal.ticker,
       name: signal.name,
@@ -717,7 +577,7 @@ const Signals: React.FC = () => {
       change: signal.price_change_percent || 0,
       signalScore: finalScore,
 
-      // 🚀 CRITICAL: Pass real calculated values from enhanced-signal-processor
+      // 🚀 PRESERVED: Pass real calculated values from enhanced-signal-processor
       entryPrice: signal.entryPrice || signal.current_price, // Real calculated entry price
       stopLoss: signal.stopLoss, // Real calculated stop loss
       takeProfit: signal.takeProfit, // Real calculated take profit
@@ -768,7 +628,7 @@ const Signals: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <TestAlertSettings />
 
-        {/* 🚀 CLEANED UP: Header Section - Removed redundant elements */}
+        {/* 🚀 PRESERVED: Header Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
@@ -776,10 +636,11 @@ const Signals: React.FC = () => {
                 Trading Signals
               </h1>
               <p className="text-slate-400">
-                Browse and execute paper trades based on AI-powered signals
+                Browse and execute paper trades based on AI-powered signals •
+                Automated generation 3x daily
               </p>
             </div>
-            {/* 🚀 CLEAN: Only essential elements in header */}
+            {/* 🚀 PRESERVED: Only essential elements in header */}
             <div className="flex items-center space-x-3">
               {targetStock && (
                 <Badge className="bg-emerald-600 text-white animate-pulse">
@@ -790,26 +651,15 @@ const Signals: React.FC = () => {
           </div>
         </div>
 
-        {/* 🚀 REMOVED: TelegramAlertBanner (as requested - not important for clean interface) */}
+        {/* 🚮 REMOVED: TelegramAlertBanner (as requested - not important for clean interface) */}
 
-        {/* 🚀 ENHANCED: Filters Section with Signal Generation Controls */}
+        {/* 🚀 CLEANED: Filters Section WITHOUT Signal Generation Controls */}
         <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700 mb-8">
           <FilterHeader
             filteredSignals={filteredSignals}
             hiddenSignalsCount={hiddenSignalsCount}
             subscription={subscription}
             signalLimits={signalLimits}
-            generationControls={
-              <SignalGenerationControls
-                onGenerateManually={handleGenerateSignals}
-                canGenerate={canGenerate}
-                isGenerating={generationState.isGenerating}
-                progress={generationState.progress}
-                periodicConfig={periodicConfig}
-                timeUntilNext={timeUntilNext}
-                isMarketHours={isMarketHours}
-              />
-            }
           />
           <CardContent>
             {/* Existing filter controls - PRESERVED COMPLETELY */}
@@ -890,14 +740,14 @@ const Signals: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-emerald-400">Filters Active</span>
+                  <span className="text-blue-400">Auto-Updated 3x Daily</span>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* 🚀 UPDATED: Signals List - Now using standalone SignalCard component */}
+        {/* 🚀 PRESERVED: Signals List - Using standalone SignalCard component */}
         <div className="space-y-6">
           {filteredSignals.map((signal) => {
             const hasExistingPosition = hasPosition(signal.ticker);
@@ -907,7 +757,7 @@ const Signals: React.FC = () => {
             return (
               <div key={signal.ticker} className="space-y-4">
                 <div ref={(el) => (signalRefs.current[signal.ticker] = el)}>
-                  {/* 🚀 UPDATED: Using standalone SignalCard component with all props */}
+                  {/* 🚀 PRESERVED: Using standalone SignalCard component with all props */}
                   <SignalCard
                     signal={signal}
                     isHighlighted={isHighlighted}
@@ -916,13 +766,13 @@ const Signals: React.FC = () => {
                     onViewSignal={handleViewSignal}
                     onToggleChart={toggleChart}
                     showChart={showChartsFor.has(signal.ticker)}
-                    // 🚀 NEW: Telegram functionality props
+                    // 🚀 PRESERVED: Telegram functionality props
                     canUseTelegram={canUseTelegram}
                     isConnected={isConnected}
                   />
                 </div>
 
-                {/* 🚀 FIXED: TradingView Chart with safe container cleanup */}
+                {/* 🚀 PRESERVED: TradingView Chart with safe container cleanup */}
                 {showChartsFor.has(signal.ticker) && (
                   <TradingViewChart
                     symbol={signal.ticker}
@@ -934,24 +784,27 @@ const Signals: React.FC = () => {
           })}
         </div>
 
-        {/* Upgrade prompt for hidden fresh signals - PRESERVED */}
+        {/* PRESERVED: Upgrade prompt for hidden fresh signals */}
         {hiddenSignalsCount > 0 && (
           <UpgradePrompt hiddenCount={hiddenSignalsCount} />
         )}
 
-        {/* No signals found - FIXED (removed "Refresh Signals" button) */}
+        {/* CLEANED: No signals found - Updated message */}
         {filteredSignals.length === 0 && !loading && (
           <div className="text-center py-12">
             <Activity className="h-12 w-12 text-slate-500 mx-auto mb-4" />
             <h3 className="text-xl text-white mb-2">No signals found</h3>
             <p className="text-slate-400 mb-4">
-              Try adjusting your filters or generate fresh signals using the
-              "Generate Fresh Signals" button above
+              Try adjusting your filters or wait for the next automated signal
+              generation
+            </p>
+            <p className="text-xs text-slate-500">
+              Signals are automatically generated 3x daily during market hours
             </p>
           </div>
         )}
 
-        {/* 🚀 UPDATED: Enhanced Signal Modal with real values and custom entry price */}
+        {/* 🚀 PRESERVED: Enhanced Signal Modal with real values and custom entry price */}
         <EnhancedSignalModal
           isOpen={isModalOpen}
           onClose={handleModalClose}
@@ -960,7 +813,7 @@ const Signals: React.FC = () => {
           existingPositions={existingPositions}
         />
 
-        {/* Disclaimer - PRESERVED */}
+        {/* PRESERVED: Disclaimer */}
         <div className="text-xs text-gray-500 text-center mt-8">
           *This is a simulation. No real capital is involved.
         </div>
