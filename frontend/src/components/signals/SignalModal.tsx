@@ -78,8 +78,21 @@ const EnhancedSignalModal: React.FC<EnhancedSignalModalProps> = ({
   const [portfolioBalance, setPortfolioBalance] = useState(8000);
   const [customRiskPercent, setCustomRiskPercent] = useState([2]);
 
-  // 🚀 NEW: Custom entry price state
-  const [customEntryPrice, setCustomEntryPrice] = useState<number | null>(null);
+  // 🔧 SESSION #134 FIX: Initialize customEntryPrice with the calculated smart entry immediately
+  const [customEntryPrice, setCustomEntryPrice] = useState<number>(() => {
+    // Initialize with the calculated entry price from Session #134 smart entry system
+    if (signal?.entryPrice) {
+      console.log(
+        `🎯 Initializing modal with smart entry: $${signal.entryPrice}`
+      );
+      return signal.entryPrice;
+    } else if (signal?.price) {
+      console.log(`🔄 Initializing modal with market price: $${signal.price}`);
+      return signal.price;
+    }
+    return 100; // Fallback
+  });
+
   const [useCustomEntry, setUseCustomEntry] = useState(false);
 
   const { toast } = useToast();
@@ -88,6 +101,17 @@ const EnhancedSignalModal: React.FC<EnhancedSignalModalProps> = ({
   const { executePaperTrade, isExecuting, error, clearError } =
     useExecutePaperTrade();
   const { refreshPositions, hasPosition } = usePositions();
+
+  // 🔧 SESSION #134 FIX: Update customEntryPrice when signal changes
+  React.useEffect(() => {
+    if (signal) {
+      const correctEntryPrice = signal.entryPrice || signal.price;
+      console.log(
+        `🔄 Signal changed - updating entry price to: $${correctEntryPrice}`
+      );
+      setCustomEntryPrice(correctEntryPrice);
+    }
+  }, [signal?.symbol, signal?.entryPrice, signal?.price]);
 
   // 🚀 ENHANCED: Professional Risk Management with Real Values + Custom Entry Support
   const riskManagement = useMemo((): RiskManagementData | null => {
@@ -194,14 +218,6 @@ const EnhancedSignalModal: React.FC<EnhancedSignalModalProps> = ({
     customEntryPrice,
   ]);
 
-  // Initialize custom entry price when signal changes
-  React.useEffect(() => {
-    if (signal && !customEntryPrice) {
-      const suggestedEntry = signal.entryPrice || signal.price;
-      setCustomEntryPrice(suggestedEntry);
-    }
-  }, [signal?.symbol]);
-
   // 🚀 ENHANCED: Trade validation using professional criteria
   const tradeValidation = useMemo(() => {
     if (!signal || !riskManagement) return null;
@@ -246,19 +262,24 @@ const EnhancedSignalModal: React.FC<EnhancedSignalModalProps> = ({
     riskManagement.riskLevel === "high" || maxRiskPercent > 2;
   const formattedRisk = formatRiskManagement(riskManagement);
 
-  // 🚀 NEW: Handle custom entry price changes
+  // 🔧 SESSION #134 FIX: Handle custom entry price changes
   const handleCustomEntryChange = (value: string) => {
     const numValue = parseFloat(value);
     if (!isNaN(numValue) && numValue > 0) {
+      console.log(`🔧 Custom entry changed to: $${numValue}`);
       setCustomEntryPrice(numValue);
     }
   };
 
   const handleToggleCustomEntry = () => {
-    setUseCustomEntry(!useCustomEntry);
-    if (!useCustomEntry && customEntryPrice) {
-      // Switching to custom entry - prices will recalculate
-      console.log(`🔄 Switching to custom entry: $${customEntryPrice}`);
+    const newUseCustomEntry = !useCustomEntry;
+    setUseCustomEntry(newUseCustomEntry);
+
+    if (newUseCustomEntry) {
+      // Switching to custom entry - ensure we have the correct initial value
+      const initialCustomEntry = signal.entryPrice || signal.price;
+      setCustomEntryPrice(initialCustomEntry);
+      console.log(`🔄 Switching to custom entry: $${initialCustomEntry}`);
     } else {
       // Switching back to real values
       console.log("✅ Switching back to real calculated values");
@@ -483,7 +504,7 @@ const EnhancedSignalModal: React.FC<EnhancedSignalModalProps> = ({
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6 scrollbar-thin scrollbar-track-slate-700 scrollbar-thumb-slate-500 hover:scrollbar-thumb-slate-400">
-          {/* 🚀 NEW: Custom Entry Price Section */}
+          {/* 🔧 SESSION #134 FIX: Custom Entry Price Section with correct initialization */}
           {!isViewingOnly && (
             <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-lg">
               <div className="flex items-center justify-between mb-3">
@@ -532,7 +553,7 @@ const EnhancedSignalModal: React.FC<EnhancedSignalModalProps> = ({
                   <Input
                     type="number"
                     step="0.01"
-                    value={customEntryPrice || ""}
+                    value={customEntryPrice}
                     onChange={(e) => handleCustomEntryChange(e.target.value)}
                     disabled={!useCustomEntry}
                     className={`bg-slate-700 border-slate-600 text-white font-mono ${

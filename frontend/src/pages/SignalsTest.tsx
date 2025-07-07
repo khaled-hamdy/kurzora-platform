@@ -1,9 +1,10 @@
 // ===================================================================
-// ENHANCED SIGNALS TEST WITH DATABASE AUTO-SAVE & REAL PRICES - RESTORED
+// ENHANCED SIGNALS TEST WITH DATABASE AUTO-SAVE & REAL PRICES - RESTORED + EXECUTE TRADE BUTTONS
 // ===================================================================
 // File: src/pages/SignalsTest.tsx
 // Purpose: Test signal generation with automatic database storage and real price display
 // 🛡️ RECOVERY: Restored Session #124 working version with syntax fixes
+// 🎯 NEW: Added Execute Trade buttons with smart entry data
 
 import React, { useState, useEffect } from "react";
 import {
@@ -33,6 +34,9 @@ import {
   SignalStrength,
 } from "../lib/signals/signal-processor";
 import { StockScanner } from "../lib/signals/stock-scanner";
+
+// 🎯 NEW: Import modal for Execute Trade functionality
+import SignalModal from "../components/signals/SignalModal";
 
 // ===================================================================
 // INTERFACES
@@ -64,7 +68,7 @@ interface SystemHealthStatus {
 }
 
 // ===================================================================
-// ENHANCED SIGNALS TEST COMPONENT - RESTORED SESSION #124
+// ENHANCED SIGNALS TEST COMPONENT - RESTORED SESSION #124 + EXECUTE TRADE
 // ===================================================================
 
 const EnhancedSignalsTest: React.FC = () => {
@@ -92,6 +96,63 @@ const EnhancedSignalsTest: React.FC = () => {
   const [minScoreForSave, setMinScoreForSave] = useState(60);
   const [enableDetailedLogging, setEnableDetailedLogging] = useState(true);
   const [fetchRealPrices, setFetchRealPrices] = useState(true);
+
+  // 🎯 NEW: Modal state for Execute Trade functionality
+  const [selectedSignal, setSelectedSignal] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // ===================================================================
+  // MODAL HANDLERS - NEW EXECUTE TRADE FUNCTIONALITY
+  // ===================================================================
+
+  const handleExecuteTrade = (signal: ProcessedSignal) => {
+    // Convert ProcessedSignal to modal format with smart entry data
+    const modalSignal = {
+      symbol: signal.ticker,
+      name: `${signal.ticker} Corporation`, // You can enhance this with real company names
+      price: signal.current_price || 0, // Current market price
+      change: signal.priceChange || 0, // Price change %
+      signalScore: signal.finalScore,
+
+      // 🎯 CRITICAL: Smart entry data from Session #134
+      entryPrice: signal.entryPrice, // Smart entry: $232.98
+      stopLoss: signal.stopLoss, // Calculated stop: $219.11
+      takeProfit: signal.takeProfit, // Calculated target: $267.65
+      riskRewardRatio: signal.riskRewardRatio, // Risk-reward ratio
+
+      // Additional data
+      atr: signal.atr,
+      positionSize: signal.positionSize,
+      sector: signal.sector || "Technology",
+
+      // Raw signals for advanced calculations
+      signals: {
+        "1H": signal.finalScore,
+        "4H": signal.finalScore,
+        "1D": signal.finalScore,
+        "1W": signal.finalScore,
+      },
+    };
+
+    console.log("🎯 Opening modal with smart entry data:", modalSignal);
+    console.log("🎯 Entry Price being passed:", modalSignal.entryPrice);
+    console.log("🎯 Current Price being passed:", modalSignal.price);
+
+    setSelectedSignal(modalSignal);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedSignal(null);
+  };
+
+  const handleTradeExecution = (tradeData: any) => {
+    console.log("🚀 Trade executed from signals-test:", tradeData);
+    // You can add actual trade execution logic here if needed
+    // For now, just close the modal
+    handleCloseModal();
+  };
 
   // ===================================================================
   // SYSTEM TESTING
@@ -263,7 +324,7 @@ const EnhancedSignalsTest: React.FC = () => {
   }, []);
 
   // ===================================================================
-  // RENDER COMPONENT - FIXED JSX STRUCTURE
+  // RENDER COMPONENT - FIXED JSX STRUCTURE + EXECUTE TRADE BUTTONS
   // ===================================================================
 
   return (
@@ -288,7 +349,7 @@ const EnhancedSignalsTest: React.FC = () => {
               </h1>
               <p className="text-slate-400 text-sm">
                 Restored working system • Fallback calculations • Database
-                integration
+                integration • Execute Trade buttons
               </p>
             </div>
 
@@ -324,7 +385,7 @@ const EnhancedSignalsTest: React.FC = () => {
               </h2>
               <p className="text-slate-400">
                 Working fallback system • Entry: $100, Stop: $98, Target: $104,
-                R/R: 2.0
+                R/R: 2.0 • Execute Trade buttons enabled
               </p>
             </div>
 
@@ -647,18 +708,18 @@ const EnhancedSignalsTest: React.FC = () => {
           </div>
         )}
 
-        {/* Signals Table */}
+        {/* Signals Table with Execute Trade Buttons */}
         {processedSignals.length > 0 && (
           <div className="bg-slate-800/50 rounded-lg border border-slate-700 overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-700">
               <h3 className="text-lg font-semibold text-white flex items-center">
                 <BarChart3 className="w-5 h-5 mr-2" />
                 🛡️ Session #124 Intelligent Risk Management Signals (
-                {processedSignals.length})
+                {processedSignals.length}) - Execute Trade Enabled
               </h3>
               <p className="text-xs text-slate-400 mt-1">
                 Restored working system • Fallback calculations • Professional
-                display
+                display • Smart entry prices • Execute Trade buttons
               </p>
             </div>
 
@@ -701,6 +762,9 @@ const EnhancedSignalsTest: React.FC = () => {
                     </th>
                     <th className="px-4 py-3 text-center text-white font-semibold">
                       Saved
+                    </th>
+                    <th className="px-4 py-3 text-center text-white font-semibold">
+                      Action
                     </th>
                   </tr>
                 </thead>
@@ -788,6 +852,14 @@ const EnhancedSignalsTest: React.FC = () => {
                             <XCircle className="w-4 h-4 text-slate-500 mx-auto" />
                           )}
                         </td>
+                        <td className="px-4 py-3 text-center">
+                          <button
+                            onClick={() => handleExecuteTrade(signal)}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors"
+                          >
+                            Execute Trade
+                          </button>
+                        </td>
                       </tr>
                     ))}
                 </tbody>
@@ -797,7 +869,7 @@ const EnhancedSignalsTest: React.FC = () => {
             {processedSignals.length > 50 && (
               <div className="px-6 py-4 bg-slate-700/50 text-center text-sm text-slate-400">
                 Showing top 50 of {processedSignals.length} signals with Session
-                #124 intelligent risk management
+                #124 intelligent risk management and Execute Trade buttons
               </div>
             )}
           </div>
@@ -810,12 +882,24 @@ const EnhancedSignalsTest: React.FC = () => {
               <Zap className="w-16 h-16 mx-auto mb-4 opacity-50" />
               <p className="text-lg">🛡️ Session #124 Recovery Complete</p>
               <p className="text-sm">
-                Working fallback system restored • Ready for signal generation
+                Working fallback system restored • Ready for signal generation •
+                Execute Trade buttons enabled
               </p>
             </div>
           </div>
         )}
       </div>
+
+      {/* Enhanced Signal Modal for Execute Trade */}
+      {isModalOpen && selectedSignal && (
+        <SignalModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          signal={selectedSignal}
+          onExecuteTrade={handleTradeExecution}
+          existingPositions={[]} // You can add position detection here if needed
+        />
+      )}
     </div>
   );
 };
