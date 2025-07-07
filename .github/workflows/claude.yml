@@ -7,8 +7,12 @@ on:
 
 jobs:
   claude:
-    if: contains(github.event.comment.body, '@claude') || github.event_name == 'pull_request_review_comment'
+    if: contains(github.event.comment.body, '@claude')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
