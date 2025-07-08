@@ -1,8 +1,24 @@
 {
+  // 🎯 PURPOSE: TypeScript configuration for Kurzora Trading Platform app
+  // 🔧 SESSION #144: Updated ES2020 → ES2022 to fix Vercel deployment top-level await error
+  // 🛡️ PRESERVATION: All existing TypeScript settings maintained - CRITICAL for Lovable compatibility
+  // 📝 HANDOVER: This file controls TypeScript compilation - runs BEFORE Vite build
+
+  // 🚨 DEPLOYMENT FIX: Changed target and lib from ES2020 to ES2022
+  // 📋 ISSUE FIXED: "Top-level await is not available in chrome87/es2020" Vercel error
+  // 🔍 ROOT CAUSE: TypeScript was transpiling to ES2020, breaking modern JavaScript features
+  // ✅ SOLUTION: Minimal update to ES2022 enables top-level await for deployment
+
   "compilerOptions": {
-    "target": "ES2020",
+    // 🔧 SESSION #144: CHANGED from "ES2020" - enables top-level await for Vercel deployment
+    "target": "ES2022",
+
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+
+    // 🔧 SESSION #144: CHANGED from ["ES2020", "DOM", "DOM.Iterable"] - supports modern features
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+
+    // 🛡️ PRESERVE: All module settings below are from Lovable setup - DO NOT MODIFY
     "module": "ESNext",
     "skipLibCheck": true,
 
@@ -16,21 +32,27 @@
     "jsx": "react-jsx",
 
     /* Linting */
+    // 🛡️ PRESERVE: Strict linting settings from Lovable - maintain code quality
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitAny": true,
     "noFallthroughCasesInSwitch": true,
+
+    // 🛡️ PRESERVE: JavaScript and module settings from Lovable setup
     "allowJs": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
 
+    // 🛡️ PRESERVE: Path resolution from Lovable - CRITICAL for @ imports
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }
   },
+
+  // 🛡️ PRESERVE: Include and references from Lovable setup - DO NOT MODIFY
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
