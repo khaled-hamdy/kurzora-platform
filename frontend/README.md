@@ -1,111 +1,183 @@
-# 📘 Kurzora Project – Comprehensive README
+# Supabase CLI
 
-Welcome to the **Kurzora** project — an AI-powered trading signal platform. This document includes the complete tech stack, developer instructions, syncing protocol, and best practices for using **Lovable**, **Cursor**, and **GitHub** together.
+[![Coverage Status](https://coveralls.io/repos/github/supabase/cli/badge.svg?branch=main)](https://coveralls.io/github/supabase/cli?branch=main) [![Bitbucket Pipelines](https://img.shields.io/bitbucket/pipelines/supabase-cli/setup-cli/master?style=flat-square&label=Bitbucket%20Canary)](https://bitbucket.org/supabase-cli/setup-cli/pipelines) [![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline-status/sweatybridge%2Fsetup-cli?label=Gitlab%20Canary)
+](https://gitlab.com/sweatybridge/setup-cli/-/pipelines)
 
----
+[Supabase](https://supabase.io) is an open source Firebase alternative. We're building the features of Firebase using enterprise-grade open source tools.
 
-## 🔧 Tech Stack Overview
+This repository contains all the functionality for Supabase CLI.
 
-| Area                   | Tool(s) Used                                     | Purpose |
-|------------------------|--------------------------------------------------|---------|
-| Frontend               | React + Vite + Tailwind CSS + TypeScript         | Fast, modular UI |
-| UI Framework           | shadcn/ui (built on Radix)                       | Reusable, accessible components |
-| Charting               | TradingView Widget                               | Real-time stock charts |
-| Backend Runtime        | Node.js                                           | Runs Firebase Cloud Functions |
-| Business Logic         | Firebase Cloud Functions                         | Signal scoring, alerts, scheduling |
-| Database               | PostgreSQL via Supabase                          | Structured user, trade, and signal data |
-| Auth & Payments        | Firebase Auth + Stripe                           | User login and subscription management |
-| APIs                   | Finnhub, Polygon.io, Tiingo, Alpha Vantage       | Market data & indicators |
-| Automation & Alerts    | Make.com + Telegram Bot API + SendGrid           | Send signal notifications via email/Telegram |
-| AI Assistant Tools     | Cursor, GPT-4 Turbo, Claude                      | Code generation and explanation |
-| Deployment             | Vercel                                           | Frontend hosting optimized for Vite |
+- [x] Running Supabase locally
+- [x] Managing database migrations
+- [x] Creating and deploying Supabase Functions
+- [x] Generating types directly from your database schema
+- [x] Making authenticated HTTP requests to [Management API](https://supabase.com/docs/reference/api/introduction)
 
----
+## Getting started
 
-## 👨‍💻 Developer Guide for Cursor (Backend Logic)
+### Install the CLI
 
-Please follow this structure when writing backend logic using Cursor:
+Available via [NPM](https://www.npmjs.com) as dev dependency. To install:
 
-### Folder Structure
-
-| Folder                  | Role                    |
-|-------------------------|-------------------------|
-| `/src/pages/`           | Page routes (Lovable)   |
-| `/src/components/`      | Reusable UI components  |
-| `/src/backend-functions/` | Firebase Cloud Functions and backend logic (Cursor only) |
-
-### Cursor Prompt Template
-
-```
-Please write a Firebase Cloud Function that [your task here].
-
-Save the code in:
-/src/backend-functions/[yourFileName].ts
+```bash
+npm i supabase --save-dev
 ```
 
-✅ Example files:
-- `/src/backend-functions/fetchRSI.ts`
-- `/src/backend-functions/scoreSignal.ts`
-- `/src/backend-functions/sendTelegramAlert.ts`
+To install the beta release channel:
 
-❗ Do NOT modify:
-- `/src/components/`
-- `/src/pages/`
-(Lovable controls those)
+```bash
+npm i supabase@beta --save-dev
+```
 
----
+When installing with yarn 4, you need to disable experimental fetch with the following nodejs config.
 
-## 🖌️ Lovable Instructions (Frontend UI)
+```
+NODE_OPTIONS=--no-experimental-fetch yarn add supabase
+```
 
-When using Lovable to design or update the UI:
+> **Note**
+For Bun versions below v1.0.17, you must add `supabase` as a [trusted dependency](https://bun.sh/guides/install/trusted) before running `bun add -D supabase`.
 
-### ✅ Only Modify:
-- `/src/pages/`
-- `/src/components/`
-- Basic layout and styling
+<details>
+  <summary><b>macOS</b></summary>
 
-### ❌ Do NOT Touch:
-- `/src/backend-functions/`
-- Firebase or Supabase logic
-- Custom backend scripts
+  Available via [Homebrew](https://brew.sh). To install:
 
-If backend logic is needed, insert a placeholder and say:
-> “This should be implemented in `/src/backend-functions/` by Cursor.”
+  ```sh
+  brew install supabase/tap/supabase
+  ```
 
----
+  To install the beta release channel:
+  
+  ```sh
+  brew install supabase/tap/supabase-beta
+  brew link --overwrite supabase-beta
+  ```
+  
+  To upgrade:
 
-## 🔁 Syncing Protocol (Lovable + Cursor + GitHub)
+  ```sh
+  brew upgrade supabase
+  ```
+</details>
 
-To avoid overwriting each other’s code:
+<details>
+  <summary><b>Windows</b></summary>
 
-### Before Using Lovable:
-1. In Cursor:
-   - `Git: Commit`
-   - `Git: Push`
-2. In Lovable:
-   - Make UI changes
-   - Click “Push to GitHub”
+  Available via [Scoop](https://scoop.sh). To install:
 
-### Before Using Cursor:
-1. In Cursor:
-   - `Git: Pull` (to fetch Lovable updates)
-2. Do your logic work
-3. When finished:
-   - `Git: Commit`
-   - `Git: Push`
+  ```powershell
+  scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
+  scoop install supabase
+  ```
 
----
+  To upgrade:
 
-## 🧠 Summary
+  ```powershell
+  scoop update supabase
+  ```
+</details>
 
-| Tool     | Use For                          |
-|----------|----------------------------------|
-| Lovable  | UI design and layout only        |
-| Cursor   | Backend logic, data fetching     |
-| GitHub   | Central sync for all changes     |
+<details>
+  <summary><b>Linux</b></summary>
 
-> Always treat **GitHub as your source of truth** and separate backend logic from UI components.
+  Available via [Homebrew](https://brew.sh) and Linux packages.
 
----
+  #### via Homebrew
 
-Happy building!
+  To install:
+
+  ```sh
+  brew install supabase/tap/supabase
+  ```
+
+  To upgrade:
+
+  ```sh
+  brew upgrade supabase
+  ```
+
+  #### via Linux packages
+
+  Linux packages are provided in [Releases](https://github.com/supabase/cli/releases). To install, download the `.apk`/`.deb`/`.rpm`/`.pkg.tar.zst` file depending on your package manager and run the respective commands.
+
+  ```sh
+  sudo apk add --allow-untrusted <...>.apk
+  ```
+
+  ```sh
+  sudo dpkg -i <...>.deb
+  ```
+
+  ```sh
+  sudo rpm -i <...>.rpm
+  ```
+
+  ```sh
+  sudo pacman -U <...>.pkg.tar.zst
+  ```
+</details>
+
+<details>
+  <summary><b>Other Platforms</b></summary>
+
+  You can also install the CLI via [go modules](https://go.dev/ref/mod#go-install) without the help of package managers.
+
+  ```sh
+  go install github.com/supabase/cli@latest
+  ```
+
+  Add a symlink to the binary in `$PATH` for easier access:
+
+  ```sh
+  ln -s "$(go env GOPATH)/bin/cli" /usr/bin/supabase
+  ```
+
+  This works on other non-standard Linux distros.
+</details>
+
+<details>
+  <summary><b>Community Maintained Packages</b></summary>
+
+  Available via [pkgx](https://pkgx.sh/). Package script [here](https://github.com/pkgxdev/pantry/blob/main/projects/supabase.com/cli/package.yml).
+  To install in your working directory:
+
+  ```bash
+  pkgx install supabase
+  ```
+
+  Available via [Nixpkgs](https://nixos.org/). Package script [here](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/supabase-cli/default.nix).
+</details>
+
+### Run the CLI
+
+```bash
+supabase bootstrap
+```
+
+Or using npx:
+
+```bash
+npx supabase bootstrap
+```
+
+The bootstrap command will guide you through the process of setting up a Supabase project using one of the [starter](https://github.com/supabase-community/supabase-samples/blob/main/samples.json) templates.
+
+## Docs
+
+Command & config reference can be found [here](https://supabase.com/docs/reference/cli/about).
+
+## Breaking changes
+
+We follow semantic versioning for changes that directly impact CLI commands, flags, and configurations.
+
+However, due to dependencies on other service images, we cannot guarantee that schema migrations, seed.sql, and generated types will always work for the same CLI major version. If you need such guarantees, we encourage you to pin a specific version of CLI in package.json.
+
+## Developing
+
+To run from source:
+
+```sh
+# Go >= 1.22
+go run . help
+```

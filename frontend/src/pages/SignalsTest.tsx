@@ -1,10 +1,10 @@
 // ===================================================================
-// ENHANCED SIGNALS TEST WITH DATABASE AUTO-SAVE & REAL PRICES - RESTORED + EXECUTE TRADE BUTTONS
+// ISOLATED SIGNALS TEST - NO DATABASE SAVES (PRODUCTION PROTECTION)
 // ===================================================================
 // File: src/pages/SignalsTest.tsx
-// Purpose: Test signal generation with automatic database storage and real price display
-// 🛡️ RECOVERY: Restored Session #124 working version with syntax fixes
-// 🎯 NEW: Added Execute Trade buttons with smart entry data
+// Purpose: Test signal generation WITHOUT affecting production database
+// 🛡️ CRITICAL: Auto-save DISABLED to prevent production contamination
+// 🎯 TESTING ONLY: Local processing for development verification
 
 import React, { useState, useEffect } from "react";
 import {
@@ -23,6 +23,8 @@ import {
   BarChart3,
   Zap,
   DollarSign,
+  Shield,
+  AlertCircle,
 } from "lucide-react";
 
 import {
@@ -35,7 +37,7 @@ import {
 } from "../lib/signals/signal-processor";
 import { StockScanner } from "../lib/signals/stock-scanner";
 
-// 🎯 NEW: Import modal for Execute Trade functionality
+// 🎯 Import modal for Execute Trade functionality
 import SignalModal from "../components/signals/SignalModal";
 
 // ===================================================================
@@ -68,7 +70,7 @@ interface SystemHealthStatus {
 }
 
 // ===================================================================
-// ENHANCED SIGNALS TEST COMPONENT - RESTORED SESSION #124 + EXECUTE TRADE
+// ISOLATED SIGNALS TEST COMPONENT - NO DATABASE SAVES
 // ===================================================================
 
 const EnhancedSignalsTest: React.FC = () => {
@@ -91,34 +93,34 @@ const EnhancedSignalsTest: React.FC = () => {
   const [progressMessage, setProgressMessage] = useState<string>("");
   const [currentProgress, setCurrentProgress] = useState<any>(null);
 
-  // Configuration state - Session #124 working defaults
-  const [enableAutoSave, setEnableAutoSave] = useState(true);
+  // 🛡️ CRITICAL: Auto-save DISABLED to protect production database
+  const enableAutoSave = false; // LOCKED to false - no state needed
   const [minScoreForSave, setMinScoreForSave] = useState(60);
   const [enableDetailedLogging, setEnableDetailedLogging] = useState(true);
   const [fetchRealPrices, setFetchRealPrices] = useState(true);
 
-  // 🎯 NEW: Modal state for Execute Trade functionality
+  // 🎯 Modal state for Execute Trade functionality
   const [selectedSignal, setSelectedSignal] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // ===================================================================
-  // MODAL HANDLERS - NEW EXECUTE TRADE FUNCTIONALITY
+  // MODAL HANDLERS - EXECUTE TRADE FUNCTIONALITY
   // ===================================================================
 
   const handleExecuteTrade = (signal: ProcessedSignal) => {
     // Convert ProcessedSignal to modal format with smart entry data
     const modalSignal = {
       symbol: signal.ticker,
-      name: `${signal.ticker} Corporation`, // You can enhance this with real company names
-      price: signal.current_price || 0, // Current market price
-      change: signal.priceChange || 0, // Price change %
+      name: `${signal.ticker} Corporation`,
+      price: signal.current_price || 0,
+      change: signal.priceChange || 0,
       signalScore: signal.finalScore,
 
-      // 🎯 CRITICAL: Smart entry data from Session #134
-      entryPrice: signal.entryPrice, // Smart entry: $232.98
-      stopLoss: signal.stopLoss, // Calculated stop: $219.11
-      takeProfit: signal.takeProfit, // Calculated target: $267.65
-      riskRewardRatio: signal.riskRewardRatio, // Risk-reward ratio
+      // Smart entry data from Session #134
+      entryPrice: signal.entryPrice,
+      stopLoss: signal.stopLoss,
+      takeProfit: signal.takeProfit,
+      riskRewardRatio: signal.riskRewardRatio,
 
       // Additional data
       atr: signal.atr,
@@ -135,9 +137,6 @@ const EnhancedSignalsTest: React.FC = () => {
     };
 
     console.log("🎯 Opening modal with smart entry data:", modalSignal);
-    console.log("🎯 Entry Price being passed:", modalSignal.entryPrice);
-    console.log("🎯 Current Price being passed:", modalSignal.price);
-
     setSelectedSignal(modalSignal);
     setIsModalOpen(true);
   };
@@ -149,8 +148,6 @@ const EnhancedSignalsTest: React.FC = () => {
 
   const handleTradeExecution = (tradeData: any) => {
     console.log("🚀 Trade executed from signals-test:", tradeData);
-    // You can add actual trade execution logic here if needed
-    // For now, just close the modal
     handleCloseModal();
   };
 
@@ -167,7 +164,7 @@ const EnhancedSignalsTest: React.FC = () => {
 
       if (health.status === "healthy") {
         setProgressMessage(
-          "✅ All systems operational - Session #124 Recovery Complete"
+          "✅ All systems operational - Test Environment Ready"
         );
       } else {
         setProgressMessage(`⚠️ System issue: ${health.message}`);
@@ -182,7 +179,7 @@ const EnhancedSignalsTest: React.FC = () => {
   };
 
   // ===================================================================
-  // ENHANCED PROCESSING - SESSION #124 RESTORED
+  // ISOLATED PROCESSING - NO DATABASE SAVES
   // ===================================================================
 
   const startEnhancedProcessing = async () => {
@@ -193,34 +190,34 @@ const EnhancedSignalsTest: React.FC = () => {
     setProcessingStats(null);
     setAutoSaveStats(null);
     setProgressMessage(
-      "Initializing Session #124 intelligent risk management..."
+      "🛡️ Initializing ISOLATED test processing (no database saves)..."
     );
 
     try {
       console.log(
-        "🛡️ Starting Session #124 Enhanced Signal Processing (RECOVERY MODE)..."
+        "🛡️ Starting ISOLATED Signal Processing (TEST ONLY - NO DATABASE SAVES)..."
       );
 
       // Get stock universe
       const stockUniverse = StockScanner.getDefaultStockUniverse();
       console.log(
-        `📊 Processing ${stockUniverse.length} stocks from modular universe`
+        `📊 Processing ${stockUniverse.length} stocks in ISOLATED test mode`
       );
 
-      // Session #124 working configuration
+      // 🛡️ CRITICAL: Force auto-save to FALSE
       const result = await processStocksWithIntelligentRiskManagement(
         stockUniverse,
         {
-          enableAutoSave,
+          enableAutoSave: false, // FORCED to false - never save to database
           minScoreForSave,
           enableDetailedLogging,
-          clearOldSignals: true,
+          clearOldSignals: false, // Don't clear production signals
           fetchRealPrices,
         },
         (progress) => {
           setCurrentProgress(progress);
           setProgressMessage(
-            `${progress.stage}: ${progress.currentStock || ""}`
+            `${progress.stage}: ${progress.currentStock || ""} [TEST ONLY]`
           );
         }
       );
@@ -230,20 +227,20 @@ const EnhancedSignalsTest: React.FC = () => {
       setProcessingStats(result.processingStats);
       setAutoSaveStats(result.autoSaveResult);
 
-      console.log("🎉 Session #124 enhanced processing complete!");
+      console.log("🎉 ISOLATED test processing complete!");
       console.log(
-        `📊 Results: ${result.signals.length} signals, ${result.autoSaveResult.signalsSaved} saved to DB`
+        `📊 Results: ${result.signals.length} signals generated (NOT saved to database)`
       );
       console.log(
         `💰 Prices Updated: ${result.processingStats.pricesUpdated} stocks with real prices`
       );
 
       setProgressMessage(
-        `✅ Session #124 processing complete! ${result.autoSaveResult.signalsSaved} signals saved`
+        `✅ Test processing complete! ${result.signals.length} signals generated (NOT saved to database)`
       );
     } catch (error) {
-      console.error("❌ Enhanced processing failed:", error);
-      setProgressMessage(`❌ Processing failed: ${error.message}`);
+      console.error("❌ Test processing failed:", error);
+      setProgressMessage(`❌ Test processing failed: ${error.message}`);
     } finally {
       setIsProcessing(false);
       setCurrentProgress(null);
@@ -324,7 +321,7 @@ const EnhancedSignalsTest: React.FC = () => {
   }, []);
 
   // ===================================================================
-  // RENDER COMPONENT - FIXED JSX STRUCTURE + EXECUTE TRADE BUTTONS
+  // RENDER COMPONENT - ISOLATED TEST MODE
   // ===================================================================
 
   return (
@@ -345,11 +342,11 @@ const EnhancedSignalsTest: React.FC = () => {
 
             <div className="text-center">
               <h1 className="text-2xl font-bold text-white mb-1">
-                🛡️ Session #124 Recovery - Intelligent Risk Management
+                🛡️ Isolated Test Environment - NO Database Saves
               </h1>
               <p className="text-slate-400 text-sm">
-                Restored working system • Fallback calculations • Database
-                integration • Execute Trade buttons
+                Development testing only • No production database impact • Safe
+                testing environment
               </p>
             </div>
 
@@ -374,6 +371,26 @@ const EnhancedSignalsTest: React.FC = () => {
         </div>
       </div>
 
+      {/* Critical Warning Banner */}
+      <div className="bg-red-900/50 border-b border-red-600">
+        <div className="max-w-7xl mx-auto px-6 py-3">
+          <div className="flex items-center justify-center space-x-3">
+            <Shield className="w-5 h-5 text-red-400" />
+            <span className="text-red-400 font-semibold">
+              🛡️ ISOLATED TEST ENVIRONMENT
+            </span>
+            <span className="text-red-300">•</span>
+            <span className="text-slate-300">
+              No database saves • Production data protected • Development only
+            </span>
+            <span className="text-red-300">•</span>
+            <span className="text-red-400 font-semibold">
+              NOT FOR LIVE TRADING
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Control Panel */}
@@ -381,11 +398,11 @@ const EnhancedSignalsTest: React.FC = () => {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-xl font-bold text-white mb-2">
-                🛡️ Session #124 Intelligent Risk Management (RESTORED)
+                🛡️ Isolated Test Processing (NO Database Impact)
               </h2>
               <p className="text-slate-400">
-                Working fallback system • Entry: $100, Stop: $98, Target: $104,
-                R/R: 2.0 • Execute Trade buttons enabled
+                Safe testing environment • Local processing only • Production
+                database protected
               </p>
             </div>
 
@@ -402,57 +419,37 @@ const EnhancedSignalsTest: React.FC = () => {
                     ? "bg-red-600/50 text-red-200 cursor-not-allowed"
                     : isProcessing
                     ? "bg-amber-600 text-white cursor-wait"
-                    : "bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl"
+                    : "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl"
                 }`}
               >
                 {isProcessing ? (
                   <>
                     <RefreshCw className="w-5 h-5 animate-spin" />
-                    <span>Processing...</span>
+                    <span>Testing...</span>
                   </>
                 ) : (
                   <>
-                    <Database className="w-5 h-5" />
-                    <span>🧠 Start Intelligent Processing</span>
+                    <Zap className="w-5 h-5" />
+                    <span>🧪 Start Test Processing</span>
                   </>
                 )}
               </button>
             </div>
           </div>
 
-          {/* Configuration */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-            <div className="flex items-center space-x-3">
-              <input
-                type="checkbox"
-                id="enableAutoSave"
-                checked={enableAutoSave}
-                onChange={(e) => setEnableAutoSave(e.target.checked)}
-                disabled={isProcessing}
-                className="rounded border-slate-600 bg-slate-700 text-blue-600 focus:ring-blue-500"
-              />
-              <label
-                htmlFor="enableAutoSave"
-                className="text-sm text-slate-300"
-              >
-                Enable Database Auto-Save
-              </label>
-            </div>
-
-            <div className="flex items-center space-x-3">
-              <label className="text-sm text-slate-300">
-                Min Score for DB:
-              </label>
-              <select
-                value={minScoreForSave}
-                onChange={(e) => setMinScoreForSave(Number(e.target.value))}
-                disabled={isProcessing}
-                className="px-3 py-1 bg-slate-700 border border-slate-600 rounded text-white text-sm"
-              >
-                <option value={60}>60+</option>
-                <option value={70}>70+</option>
-                <option value={80}>80+</option>
-              </select>
+          {/* Configuration - Limited Options for Test Mode */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            {/* Auto-Save Status - LOCKED DISABLED */}
+            <div className="flex items-center space-x-3 p-3 bg-red-900/20 border border-red-600 rounded-lg">
+              <Shield className="w-5 h-5 text-red-400" />
+              <div>
+                <div className="text-sm font-medium text-red-400">
+                  Database Auto-Save: PERMANENTLY DISABLED
+                </div>
+                <div className="text-xs text-red-300">
+                  🛡️ Production database protected - Cannot be enabled
+                </div>
+              </div>
             </div>
 
             <div className="flex items-center space-x-3">
@@ -508,9 +505,9 @@ const EnhancedSignalsTest: React.FC = () => {
           {(isProcessing || progressMessage) && (
             <div className="mt-4 p-4 bg-slate-700/50 rounded-lg">
               <div className="flex items-center space-x-2 mb-2">
-                <Activity className="w-4 h-4 text-blue-400" />
-                <span className="text-sm font-medium text-blue-400">
-                  Status:
+                <Activity className="w-4 h-4 text-purple-400" />
+                <span className="text-sm font-medium text-purple-400">
+                  Test Status:
                 </span>
                 <span className="text-sm text-slate-300">
                   {progressMessage}
@@ -587,10 +584,10 @@ const EnhancedSignalsTest: React.FC = () => {
             {autoSaveStats && (
               <>
                 <div className="bg-slate-800/50 rounded-lg p-4 text-center">
-                  <div className="text-2xl font-bold text-purple-400">
-                    {autoSaveStats.signalsSaved}
+                  <div className="text-2xl font-bold text-red-400">0</div>
+                  <div className="text-slate-400 text-sm">
+                    DB Saves (Protected)
                   </div>
-                  <div className="text-slate-400 text-sm">Saved to DB</div>
                 </div>
                 <div className="bg-slate-800/50 rounded-lg p-4 text-center">
                   <div className="text-2xl font-bold text-amber-400">
@@ -599,52 +596,44 @@ const EnhancedSignalsTest: React.FC = () => {
                   <div className="text-slate-400 text-sm">Total Time</div>
                 </div>
                 <div className="bg-slate-800/50 rounded-lg p-4 text-center">
-                  <div
-                    className={`text-2xl font-bold ${
-                      autoSaveStats.success
-                        ? "text-emerald-400"
-                        : "text-red-400"
-                    }`}
-                  >
-                    {autoSaveStats.success ? "✅" : "❌"}
-                  </div>
-                  <div className="text-slate-400 text-sm">Auto-Save</div>
+                  <div className="text-2xl font-bold text-purple-400">🛡️</div>
+                  <div className="text-slate-400 text-sm">Isolated</div>
                 </div>
               </>
             )}
           </div>
         )}
 
-        {/* Auto-Save Results */}
+        {/* Test Results Summary */}
         {autoSaveStats && (
           <div className="bg-slate-800/50 rounded-lg p-6 mb-8">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-              <Database className="w-5 h-5 mr-2" />
-              🛡️ Session #124 Intelligent Risk Management Results
+              <Shield className="w-5 h-5 mr-2 text-purple-400" />
+              🛡️ Isolated Test Results (Production Database Protected)
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <div className="text-sm text-slate-400 mb-2">
-                  Processing Summary
+                  Test Processing Summary
                 </div>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span>Signals Processed:</span>
+                    <span>Signals Generated:</span>
                     <span className="text-white">
                       {processedSignals.length}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Quality Filter (≥{minScoreForSave}):</span>
+                    <span>Quality Signals:</span>
                     <span className="text-white">
                       {processingStats?.qualitySignals || 0}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Saved to Database:</span>
-                    <span className="text-emerald-400">
-                      {autoSaveStats.signalsSaved}
+                    <span>Database Saves:</span>
+                    <span className="text-red-400 font-semibold">
+                      0 (PROTECTED)
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -664,37 +653,37 @@ const EnhancedSignalsTest: React.FC = () => {
 
               <div>
                 <div className="text-sm text-slate-400 mb-2">
-                  🛡️ Session #124 Risk Management
+                  🛡️ Production Protection Status
                 </div>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span>Working Fallback System:</span>
-                    <span className="text-emerald-400">✅ Restored</span>
+                    <span>Database Auto-Save:</span>
+                    <span className="text-red-400">🛡️ DISABLED</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Entry/Stop/Target:</span>
-                    <span className="text-emerald-400">✅ Functional</span>
+                    <span>Production Data:</span>
+                    <span className="text-emerald-400">✅ Protected</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Error Handling:</span>
-                    <span className="text-emerald-400">
-                      ✅ Preventing Crashes
-                    </span>
+                    <span>Subscriber Impact:</span>
+                    <span className="text-emerald-400">✅ None</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Database Integration:</span>
-                    <span className="text-emerald-400">✅ Working</span>
+                    <span>Test Environment:</span>
+                    <span className="text-purple-400">✅ Isolated</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Risk/Reward Ratios:</span>
-                    <span className="text-emerald-400">✅ 2.0:1 Default</span>
+                    <span>Safe for Development:</span>
+                    <span className="text-emerald-400">✅ Yes</span>
                   </div>
                 </div>
               </div>
 
               {autoSaveStats.errors.length > 0 && (
                 <div className="col-span-2">
-                  <div className="text-sm text-slate-400 mb-2">Errors</div>
+                  <div className="text-sm text-slate-400 mb-2">
+                    Test Errors (Non-Critical)
+                  </div>
                   <div className="space-y-1 text-sm text-red-400 max-h-32 overflow-y-auto">
                     {autoSaveStats.errors.map((error, index) => (
                       <div key={index} className="text-xs">
@@ -708,18 +697,18 @@ const EnhancedSignalsTest: React.FC = () => {
           </div>
         )}
 
-        {/* Signals Table with Execute Trade Buttons */}
+        {/* Signals Table - Test Results Only */}
         {processedSignals.length > 0 && (
           <div className="bg-slate-800/50 rounded-lg border border-slate-700 overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-700">
               <h3 className="text-lg font-semibold text-white flex items-center">
                 <BarChart3 className="w-5 h-5 mr-2" />
-                🛡️ Session #124 Intelligent Risk Management Signals (
-                {processedSignals.length}) - Execute Trade Enabled
+                🛡️ Test Signals ({processedSignals.length}) - NOT Saved to
+                Database
               </h3>
               <p className="text-xs text-slate-400 mt-1">
-                Restored working system • Fallback calculations • Professional
-                display • Smart entry prices • Execute Trade buttons
+                Development testing only • Local processing • No production
+                impact • Execute Trade available for UI testing
               </p>
             </div>
 
@@ -761,10 +750,10 @@ const EnhancedSignalsTest: React.FC = () => {
                       Type
                     </th>
                     <th className="px-4 py-3 text-center text-white font-semibold">
-                      Saved
+                      DB Status
                     </th>
                     <th className="px-4 py-3 text-center text-white font-semibold">
-                      Action
+                      Test Action
                     </th>
                   </tr>
                 </thead>
@@ -846,18 +835,19 @@ const EnhancedSignalsTest: React.FC = () => {
                           </span>
                         </td>
                         <td className="px-4 py-3 text-center">
-                          {signal.finalScore >= minScoreForSave ? (
-                            <CheckCircle className="w-4 h-4 text-emerald-400 mx-auto" />
-                          ) : (
-                            <XCircle className="w-4 h-4 text-slate-500 mx-auto" />
-                          )}
+                          <div className="flex items-center justify-center space-x-1">
+                            <Shield className="w-4 h-4 text-red-400" />
+                            <span className="text-red-400 text-xs font-medium">
+                              NOT SAVED
+                            </span>
+                          </div>
                         </td>
                         <td className="px-4 py-3 text-center">
                           <button
                             onClick={() => handleExecuteTrade(signal)}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors"
+                            className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors"
                           >
-                            Execute Trade
+                            Test Modal
                           </button>
                         </td>
                       </tr>
@@ -868,8 +858,8 @@ const EnhancedSignalsTest: React.FC = () => {
 
             {processedSignals.length > 50 && (
               <div className="px-6 py-4 bg-slate-700/50 text-center text-sm text-slate-400">
-                Showing top 50 of {processedSignals.length} signals with Session
-                #124 intelligent risk management and Execute Trade buttons
+                Showing top 50 of {processedSignals.length} test signals (not
+                saved to production database)
               </div>
             )}
           </div>
@@ -879,25 +869,25 @@ const EnhancedSignalsTest: React.FC = () => {
         {!isProcessing && processedSignals.length === 0 && (
           <div className="text-center py-12">
             <div className="text-slate-400 mb-4">
-              <Zap className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <p className="text-lg">🛡️ Session #124 Recovery Complete</p>
+              <Shield className="w-16 h-16 mx-auto mb-4 opacity-50 text-purple-400" />
+              <p className="text-lg">🛡️ Isolated Test Environment Ready</p>
               <p className="text-sm">
-                Working fallback system restored • Ready for signal generation •
-                Execute Trade buttons enabled
+                Safe development testing • No production database impact •
+                Execute Trade UI testing available
               </p>
             </div>
           </div>
         )}
       </div>
 
-      {/* Enhanced Signal Modal for Execute Trade */}
+      {/* Enhanced Signal Modal for Execute Trade Testing */}
       {isModalOpen && selectedSignal && (
         <SignalModal
           isOpen={isModalOpen}
           onClose={handleCloseModal}
           signal={selectedSignal}
           onExecuteTrade={handleTradeExecution}
-          existingPositions={[]} // You can add position detection here if needed
+          existingPositions={[]}
         />
       )}
     </div>
