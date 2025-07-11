@@ -43,8 +43,6 @@ import PolygonTest from "./pages/PolygonTest";
 import SignalsTest from "./pages/SignalsTest";
 // 🚀 SESSION #169: Backtesting System - Complete 30-day simulation
 import BacktestAnalyzer from "./components/BacktestAnalyzer";
-// 🚀 SESSION #171: Daily Breakdown Report Generator - Professional investor reports
-import DailyBreakdownReportGenerator from "./components/DailyBreakdownReportGenerator";
 
 // Create QueryClient with default options
 const queryClient = new QueryClient({
@@ -95,12 +93,6 @@ function App() {
 
                   {/* 🚀 SESSION #169: BACKTESTING SYSTEM - Complete 30-Day Trading Simulation */}
                   <Route path="/backtest" element={<BacktestAnalyzer />} />
-
-                  {/* 🚀 SESSION #171: DAILY BREAKDOWN REPORTS - Professional investor reports */}
-                  <Route
-                    path="/daily-reports"
-                    element={<DailyBreakdownReportGenerator />}
-                  />
 
                   {/* 🧪 SUBSCRIPTION TIER TEST PAGE */}
                   <Route

@@ -880,3 +880,1502 @@
 [2025-07-11T15:46:16.673Z] 
 📊 Processing DLTR (55/196) for year 2024
 [2025-07-11T15:46:16.740Z] 📈 Fetching 400 missing dates for DLTR (0 existing)
+[2025-07-11T15:46:33.315Z] 📊 DLTR progress: 12.5% (47/50 successful)
+[2025-07-11T15:46:49.886Z] 📊 DLTR progress: 25.0% (89/100 successful)
+[2025-07-11T15:47:06.222Z] 📊 DLTR progress: 37.5% (126/150 successful)
+[2025-07-11T15:47:22.851Z] 📊 DLTR progress: 50.0% (165/200 successful)
+[2025-07-11T15:47:39.212Z] 📊 DLTR progress: 62.5% (211/250 successful)
+[2025-07-11T15:47:55.675Z] 📊 DLTR progress: 75.0% (256/300 successful)
+[2025-07-11T15:48:12.054Z] 📊 DLTR progress: 87.5% (301/350 successful)
+[2025-07-11T15:48:28.275Z] 📊 DLTR progress: 100.0% (339/400 successful)
+[2025-07-11T15:48:28.978Z] ✅ DLTR complete: 400 API calls, 339 records saved
+[2025-07-11T15:48:28.979Z] 
+📊 OVERALL PROGRESS: 28.1% (55/196)
+[2025-07-11T15:48:28.979Z] ⏱️  Elapsed: 316.9 min, Remaining: ~812.3 min
+[2025-07-11T15:48:28.979Z] 💰 API calls so far: 22000, Cost: $44.00
+[2025-07-11T15:48:28.979Z] 
+📊 Processing DOV (56/196) for year 2024
+[2025-07-11T15:48:29.086Z] 📈 Fetching 400 missing dates for DOV (0 existing)
+[2025-07-11T15:48:44.832Z] 📊 DOV progress: 12.5% (47/50 successful)
+[2025-07-11T15:49:00.905Z] 📊 DOV progress: 25.0% (89/100 successful)
+[2025-07-11T15:49:16.929Z] 📊 DOV progress: 37.5% (126/150 successful)
+[2025-07-11T15:49:33.402Z] 📊 DOV progress: 50.0% (165/200 successful)
+[2025-07-11T15:49:49.400Z] 📊 DOV progress: 62.5% (211/250 successful)
+[2025-07-11T15:50:05.755Z] 📊 DOV progress: 75.0% (256/300 successful)
+[2025-07-11T15:50:22.825Z] 📊 DOV progress: 87.5% (301/350 successful)
+[2025-07-11T15:50:39.147Z] 📊 DOV progress: 100.0% (339/400 successful)
+[2025-07-11T15:50:39.913Z] ✅ DOV complete: 400 API calls, 339 records saved
+[2025-07-11T15:50:39.914Z] 
+📊 OVERALL PROGRESS: 28.6% (56/196)
+[2025-07-11T15:50:39.914Z] ⏱️  Elapsed: 319.1 min, Remaining: ~797.6 min
+[2025-07-11T15:50:39.914Z] 💰 API calls so far: 22400, Cost: $44.80
+[2025-07-11T15:50:39.914Z] 
+📊 Processing DOW (57/196) for year 2024
+[2025-07-11T15:50:39.994Z] 📈 Fetching 400 missing dates for DOW (0 existing)
+[2025-07-11T15:50:56.056Z] 📊 DOW progress: 12.5% (47/50 successful)
+[2025-07-11T15:51:12.288Z] 📊 DOW progress: 25.0% (89/100 successful)
+[2025-07-11T15:51:28.157Z] 📊 DOW progress: 37.5% (126/150 successful)
+[2025-07-11T15:51:44.837Z] 📊 DOW progress: 50.0% (165/200 successful)
+[2025-07-11T15:52:00.923Z] 📊 DOW progress: 62.5% (211/250 successful)
+[2025-07-11T15:52:17.868Z] 📊 DOW progress: 75.0% (256/300 successful)
+[2025-07-11T15:52:33.819Z] 📊 DOW progress: 87.5% (301/350 successful)
+[2025-07-11T15:52:49.931Z] 📊 DOW progress: 100.0% (339/400 successful)
+[2025-07-11T15:52:50.594Z] ✅ DOW complete: 400 API calls, 339 records saved
+[2025-07-11T15:52:50.596Z] 
+📊 OVERALL PROGRESS: 29.1% (57/196)
+[2025-07-11T15:52:50.596Z] ⏱️  Elapsed: 321.2 min, Remaining: ~783.4 min
+[2025-07-11T15:52:50.596Z] 💰 API calls so far: 22800, Cost: $45.60
+[2025-07-11T15:52:50.596Z] 
+📊 Processing DPZ (58/196) for year 2024
+[2025-07-11T15:52:50.681Z] 📈 Fetching 400 missing dates for DPZ (0 existing)
+[2025-07-11T15:53:06.505Z] 📊 DPZ progress: 12.5% (47/50 successful)
+[2025-07-11T15:53:22.620Z] 📊 DPZ progress: 25.0% (89/100 successful)
+[2025-07-11T15:53:38.333Z] 📊 DPZ progress: 37.5% (126/150 successful)
+[2025-07-11T15:53:54.272Z] 📊 DPZ progress: 50.0% (165/200 successful)
+[2025-07-11T15:54:10.554Z] 📊 DPZ progress: 62.5% (211/250 successful)
+[2025-07-11T15:54:26.837Z] 📊 DPZ progress: 75.0% (256/300 successful)
+[2025-07-11T15:54:44.619Z] 📊 DPZ progress: 87.5% (301/350 successful)
+[2025-07-11T15:55:00.464Z] 📊 DPZ progress: 100.0% (339/400 successful)
+[2025-07-11T15:55:01.188Z] ✅ DPZ complete: 400 API calls, 339 records saved
+[2025-07-11T15:55:01.188Z] 
+📊 OVERALL PROGRESS: 29.6% (58/196)
+[2025-07-11T15:55:01.188Z] ⏱️  Elapsed: 323.4 min, Remaining: ~769.5 min
+[2025-07-11T15:55:01.188Z] 💰 API calls so far: 23200, Cost: $46.40
+[2025-07-11T15:55:01.189Z] 
+📊 Processing DUK (59/196) for year 2024
+[2025-07-11T15:55:01.299Z] 📈 Fetching 400 missing dates for DUK (0 existing)
+[2025-07-11T15:55:17.436Z] 📊 DUK progress: 12.5% (47/50 successful)
+[2025-07-11T15:55:33.734Z] 📊 DUK progress: 25.0% (89/100 successful)
+[2025-07-11T15:55:49.254Z] 📊 DUK progress: 37.5% (126/150 successful)
+[2025-07-11T15:56:07.460Z] 📊 DUK progress: 50.0% (165/200 successful)
+[2025-07-11T15:56:23.555Z] 📊 DUK progress: 62.5% (211/250 successful)
+[2025-07-11T15:56:39.746Z] 📊 DUK progress: 75.0% (256/300 successful)
+[2025-07-11T15:56:55.721Z] 📊 DUK progress: 87.5% (301/350 successful)
+[2025-07-11T15:57:12.017Z] 📊 DUK progress: 100.0% (339/400 successful)
+[2025-07-11T15:57:12.718Z] ✅ DUK complete: 400 API calls, 339 records saved
+[2025-07-11T15:57:12.719Z] 
+📊 OVERALL PROGRESS: 30.1% (59/196)
+[2025-07-11T15:57:12.719Z] ⏱️  Elapsed: 325.6 min, Remaining: ~756.1 min
+[2025-07-11T15:57:12.719Z] 💰 API calls so far: 23600, Cost: $47.20
+[2025-07-11T15:57:12.719Z] 
+📊 Processing ECL (60/196) for year 2024
+[2025-07-11T15:57:12.811Z] 📈 Fetching 400 missing dates for ECL (0 existing)
+[2025-07-11T15:57:30.620Z] 📊 ECL progress: 12.5% (47/50 successful)
+[2025-07-11T15:57:46.980Z] 📊 ECL progress: 25.0% (89/100 successful)
+[2025-07-11T15:58:03.909Z] 📊 ECL progress: 37.5% (126/150 successful)
+[2025-07-11T15:58:20.075Z] 📊 ECL progress: 50.0% (165/200 successful)
+[2025-07-11T15:58:35.995Z] 📊 ECL progress: 62.5% (211/250 successful)
+[2025-07-11T15:58:52.422Z] 📊 ECL progress: 75.0% (256/300 successful)
+[2025-07-11T15:59:08.525Z] 📊 ECL progress: 87.5% (301/350 successful)
+[2025-07-11T15:59:24.780Z] 📊 ECL progress: 100.0% (339/400 successful)
+[2025-07-11T15:59:25.470Z] ✅ ECL complete: 400 API calls, 339 records saved
+[2025-07-11T15:59:25.471Z] 
+📊 OVERALL PROGRESS: 30.6% (60/196)
+[2025-07-11T15:59:25.471Z] ⏱️  Elapsed: 327.8 min, Remaining: ~743.0 min
+[2025-07-11T15:59:25.472Z] 💰 API calls so far: 24000, Cost: $48.00
+[2025-07-11T15:59:25.472Z] 
+📊 Processing EL (61/196) for year 2024
+[2025-07-11T15:59:25.547Z] 📈 Fetching 400 missing dates for EL (0 existing)
+[2025-07-11T15:59:43.943Z] 📊 EL progress: 12.5% (47/50 successful)
+[2025-07-11T16:00:02.872Z] 📊 EL progress: 25.0% (89/100 successful)
+[2025-07-11T16:00:20.606Z] 📊 EL progress: 37.5% (126/150 successful)
+[2025-07-11T16:00:38.084Z] 📊 EL progress: 50.0% (165/200 successful)
+[2025-07-11T16:00:54.880Z] 📊 EL progress: 62.5% (211/250 successful)
+[2025-07-11T16:01:11.977Z] 📊 EL progress: 75.0% (256/300 successful)
+[2025-07-11T16:01:28.784Z] 📊 EL progress: 87.5% (301/350 successful)
+[2025-07-11T16:01:45.462Z] 📊 EL progress: 100.0% (339/400 successful)
+[2025-07-11T16:01:46.139Z] ✅ EL complete: 400 API calls, 339 records saved
+[2025-07-11T16:01:46.140Z] 
+📊 OVERALL PROGRESS: 31.1% (61/196)
+[2025-07-11T16:01:46.141Z] ⏱️  Elapsed: 330.2 min, Remaining: ~730.7 min
+[2025-07-11T16:01:46.141Z] 💰 API calls so far: 24400, Cost: $48.80
+[2025-07-11T16:01:46.141Z] 
+📊 Processing EMR (62/196) for year 2024
+[2025-07-11T16:01:46.209Z] 📈 Fetching 400 missing dates for EMR (0 existing)
+[2025-07-11T16:02:02.710Z] 📊 EMR progress: 12.5% (47/50 successful)
+[2025-07-11T16:02:19.738Z] 📊 EMR progress: 25.0% (89/100 successful)
+[2025-07-11T16:02:36.413Z] 📊 EMR progress: 37.5% (126/150 successful)
+[2025-07-11T16:02:53.108Z] 📊 EMR progress: 50.0% (165/200 successful)
+[2025-07-11T16:03:10.174Z] 📊 EMR progress: 62.5% (211/250 successful)
+[2025-07-11T16:03:27.126Z] 📊 EMR progress: 75.0% (256/300 successful)
+[2025-07-11T16:03:43.517Z] 📊 EMR progress: 87.5% (301/350 successful)
+[2025-07-11T16:04:20.771Z] 📊 EMR progress: 100.0% (339/400 successful)
+[2025-07-11T16:04:21.312Z] ✅ EMR complete: 400 API calls, 339 records saved
+[2025-07-11T16:04:21.312Z] 
+📊 OVERALL PROGRESS: 31.6% (62/196)
+[2025-07-11T16:04:21.312Z] ⏱️  Elapsed: 332.7 min, Remaining: ~719.2 min
+[2025-07-11T16:04:21.312Z] 💰 API calls so far: 24800, Cost: $49.60
+[2025-07-11T16:04:21.313Z] 
+📊 Processing ENPH (63/196) for year 2024
+[2025-07-11T16:04:21.397Z] 📈 Fetching 400 missing dates for ENPH (0 existing)
+[2025-07-11T16:04:38.531Z] 📊 ENPH progress: 12.5% (47/50 successful)
+[2025-07-11T16:04:55.086Z] 📊 ENPH progress: 25.0% (89/100 successful)
+[2025-07-11T16:05:11.601Z] 📊 ENPH progress: 37.5% (126/150 successful)
+[2025-07-11T16:05:28.811Z] 📊 ENPH progress: 50.0% (165/200 successful)
+[2025-07-11T16:05:45.275Z] 📊 ENPH progress: 62.5% (211/250 successful)
+[2025-07-11T16:06:02.230Z] 📊 ENPH progress: 75.0% (256/300 successful)
+[2025-07-11T16:06:18.888Z] 📊 ENPH progress: 87.5% (301/350 successful)
+[2025-07-11T16:06:36.357Z] 📊 ENPH progress: 100.0% (339/400 successful)
+[2025-07-11T16:06:37.068Z] ✅ ENPH complete: 400 API calls, 339 records saved
+[2025-07-11T16:06:37.069Z] 
+📊 OVERALL PROGRESS: 32.1% (63/196)
+[2025-07-11T16:06:37.070Z] ⏱️  Elapsed: 335.0 min, Remaining: ~707.2 min
+[2025-07-11T16:06:37.071Z] 💰 API calls so far: 25200, Cost: $50.40
+[2025-07-11T16:06:37.072Z] 
+📊 Processing EOG (64/196) for year 2024
+[2025-07-11T16:06:37.195Z] 📈 Fetching 400 missing dates for EOG (0 existing)
+[2025-07-11T16:06:53.105Z] 📊 EOG progress: 12.5% (47/50 successful)
+[2025-07-11T16:07:09.941Z] 📊 EOG progress: 25.0% (89/100 successful)
+[2025-07-11T16:07:26.668Z] 📊 EOG progress: 37.5% (126/150 successful)
+[2025-07-11T16:07:42.915Z] 📊 EOG progress: 50.0% (165/200 successful)
+[2025-07-11T16:07:58.997Z] 📊 EOG progress: 62.5% (211/250 successful)
+[2025-07-11T16:08:15.485Z] 📊 EOG progress: 75.0% (256/300 successful)
+[2025-07-11T16:08:32.228Z] 📊 EOG progress: 87.5% (301/350 successful)
+[2025-07-11T16:08:49.390Z] 📊 EOG progress: 100.0% (339/400 successful)
+[2025-07-11T16:08:50.211Z] ✅ EOG complete: 400 API calls, 339 records saved
+[2025-07-11T16:08:50.212Z] 
+📊 OVERALL PROGRESS: 32.7% (64/196)
+[2025-07-11T16:08:50.212Z] ⏱️  Elapsed: 337.2 min, Remaining: ~695.5 min
+[2025-07-11T16:08:50.212Z] 💰 API calls so far: 25600, Cost: $51.20
+[2025-07-11T16:08:50.213Z] 
+📊 Processing EPD (65/196) for year 2024
+[2025-07-11T16:08:50.296Z] 📈 Fetching 400 missing dates for EPD (0 existing)
+[2025-07-11T16:09:07.061Z] 📊 EPD progress: 12.5% (47/50 successful)
+[2025-07-11T16:09:24.287Z] 📊 EPD progress: 25.0% (89/100 successful)
+[2025-07-11T16:09:40.488Z] 📊 EPD progress: 37.5% (126/150 successful)
+[2025-07-11T16:09:56.987Z] 📊 EPD progress: 50.0% (165/200 successful)
+[2025-07-11T16:10:13.992Z] 📊 EPD progress: 62.5% (211/250 successful)
+[2025-07-11T16:10:30.511Z] 📊 EPD progress: 75.0% (256/300 successful)
+[2025-07-11T16:10:47.176Z] 📊 EPD progress: 87.5% (301/350 successful)
+[2025-07-11T16:11:03.401Z] 📊 EPD progress: 100.0% (339/400 successful)
+[2025-07-11T16:11:04.225Z] ✅ EPD complete: 400 API calls, 339 records saved
+[2025-07-11T16:11:04.227Z] 
+📊 OVERALL PROGRESS: 33.2% (65/196)
+[2025-07-11T16:11:04.227Z] ⏱️  Elapsed: 339.5 min, Remaining: ~684.1 min
+[2025-07-11T16:11:04.228Z] 💰 API calls so far: 26000, Cost: $52.00
+[2025-07-11T16:11:04.228Z] 
+📊 Processing EQIX (66/196) for year 2024
+[2025-07-11T16:11:04.303Z] 📈 Fetching 400 missing dates for EQIX (0 existing)
+[2025-07-11T16:11:20.396Z] 📊 EQIX progress: 12.5% (47/50 successful)
+[2025-07-11T16:11:36.673Z] 📊 EQIX progress: 25.0% (89/100 successful)
+[2025-07-11T16:11:52.365Z] 📊 EQIX progress: 37.5% (126/150 successful)
+[2025-07-11T16:12:10.494Z] 📊 EQIX progress: 50.0% (165/200 successful)
+[2025-07-11T16:12:26.510Z] 📊 EQIX progress: 62.5% (211/250 successful)
+[2025-07-11T16:12:42.676Z] 📊 EQIX progress: 75.0% (256/300 successful)
+[2025-07-11T16:12:58.752Z] 📊 EQIX progress: 87.5% (301/350 successful)
+[2025-07-11T16:13:15.899Z] 📊 EQIX progress: 100.0% (339/400 successful)
+[2025-07-11T16:13:16.424Z] ✅ EQIX complete: 400 API calls, 339 records saved
+[2025-07-11T16:13:16.425Z] 
+📊 OVERALL PROGRESS: 33.7% (66/196)
+[2025-07-11T16:13:16.425Z] ⏱️  Elapsed: 341.7 min, Remaining: ~673.0 min
+[2025-07-11T16:13:16.425Z] 💰 API calls so far: 26400, Cost: $52.80
+[2025-07-11T16:13:16.425Z] 
+📊 Processing EQR (67/196) for year 2024
+[2025-07-11T16:13:16.498Z] 📈 Fetching 400 missing dates for EQR (0 existing)
+[2025-07-11T16:13:32.205Z] 📊 EQR progress: 12.5% (47/50 successful)
+[2025-07-11T16:13:48.611Z] 📊 EQR progress: 25.0% (89/100 successful)
+[2025-07-11T16:14:04.800Z] 📊 EQR progress: 37.5% (126/150 successful)
+[2025-07-11T16:14:22.048Z] 📊 EQR progress: 50.0% (165/200 successful)
+[2025-07-11T16:14:38.366Z] 📊 EQR progress: 62.5% (211/250 successful)
+[2025-07-11T16:14:54.599Z] 📊 EQR progress: 75.0% (256/300 successful)
+[2025-07-11T16:15:11.185Z] 📊 EQR progress: 87.5% (301/350 successful)
+[2025-07-11T16:15:28.039Z] 📊 EQR progress: 100.0% (339/400 successful)
+[2025-07-11T16:15:28.722Z] ✅ EQR complete: 400 API calls, 339 records saved
+[2025-07-11T16:15:28.722Z] 
+📊 OVERALL PROGRESS: 34.2% (67/196)
+[2025-07-11T16:15:28.723Z] ⏱️  Elapsed: 343.9 min, Remaining: ~662.1 min
+[2025-07-11T16:15:28.723Z] 💰 API calls so far: 26800, Cost: $53.60
+[2025-07-11T16:15:28.723Z] 
+📊 Processing ES (68/196) for year 2024
+[2025-07-11T16:15:28.807Z] 📈 Fetching 400 missing dates for ES (0 existing)
+[2025-07-11T16:15:45.138Z] 📊 ES progress: 12.5% (47/50 successful)
+[2025-07-11T16:16:01.838Z] 📊 ES progress: 25.0% (89/100 successful)
+[2025-07-11T16:16:18.236Z] 📊 ES progress: 37.5% (126/150 successful)
+[2025-07-11T16:16:34.864Z] 📊 ES progress: 50.0% (165/200 successful)
+[2025-07-11T16:16:51.401Z] 📊 ES progress: 62.5% (211/250 successful)
+[2025-07-11T16:17:08.030Z] 📊 ES progress: 75.0% (256/300 successful)
+[2025-07-11T16:17:24.453Z] 📊 ES progress: 87.5% (301/350 successful)
+[2025-07-11T16:17:40.877Z] 📊 ES progress: 100.0% (339/400 successful)
+[2025-07-11T16:17:41.597Z] ✅ ES complete: 400 API calls, 339 records saved
+[2025-07-11T16:17:41.599Z] 
+📊 OVERALL PROGRESS: 34.7% (68/196)
+[2025-07-11T16:17:41.599Z] ⏱️  Elapsed: 346.1 min, Remaining: ~651.4 min
+[2025-07-11T16:17:41.599Z] 💰 API calls so far: 27200, Cost: $54.40
+[2025-07-11T16:17:41.599Z] 
+📊 Processing ESS (69/196) for year 2024
+[2025-07-11T16:17:41.674Z] 📈 Fetching 400 missing dates for ESS (0 existing)
+[2025-07-11T16:17:59.107Z] 📊 ESS progress: 12.5% (47/50 successful)
+[2025-07-11T16:18:15.378Z] 📊 ESS progress: 25.0% (89/100 successful)
+[2025-07-11T16:18:32.085Z] 📊 ESS progress: 37.5% (126/150 successful)
+[2025-07-11T16:18:47.841Z] 📊 ESS progress: 50.0% (165/200 successful)
+[2025-07-11T16:19:03.543Z] 📊 ESS progress: 62.5% (211/250 successful)
+[2025-07-11T16:19:19.563Z] 📊 ESS progress: 75.0% (256/300 successful)
+[2025-07-11T16:19:35.610Z] 📊 ESS progress: 87.5% (301/350 successful)
+[2025-07-11T16:19:51.517Z] 📊 ESS progress: 100.0% (339/400 successful)
+[2025-07-11T16:19:52.000Z] ✅ ESS complete: 400 API calls, 339 records saved
+[2025-07-11T16:19:52.001Z] 
+📊 OVERALL PROGRESS: 35.2% (69/196)
+[2025-07-11T16:19:52.001Z] ⏱️  Elapsed: 348.3 min, Remaining: ~641.0 min
+[2025-07-11T16:19:52.001Z] 💰 API calls so far: 27600, Cost: $55.20
+[2025-07-11T16:19:52.002Z] 
+📊 Processing ET (70/196) for year 2024
+[2025-07-11T16:19:52.076Z] 📈 Fetching 400 missing dates for ET (0 existing)
+[2025-07-11T16:20:08.438Z] 📊 ET progress: 12.5% (47/50 successful)
+[2025-07-11T16:20:25.758Z] 📊 ET progress: 25.0% (89/100 successful)
+[2025-07-11T16:20:42.246Z] 📊 ET progress: 37.5% (126/150 successful)
+[2025-07-11T16:20:58.943Z] 📊 ET progress: 50.0% (165/200 successful)
+[2025-07-11T16:21:15.888Z] 📊 ET progress: 62.5% (211/250 successful)
+[2025-07-11T16:21:32.428Z] 📊 ET progress: 75.0% (256/300 successful)
+[2025-07-11T16:21:48.488Z] 📊 ET progress: 87.5% (301/350 successful)
+[2025-07-11T16:22:04.854Z] 📊 ET progress: 100.0% (339/400 successful)
+[2025-07-11T16:22:05.473Z] ✅ ET complete: 400 API calls, 339 records saved
+[2025-07-11T16:22:05.475Z] 
+📊 OVERALL PROGRESS: 35.7% (70/196)
+[2025-07-11T16:22:05.475Z] ⏱️  Elapsed: 350.5 min, Remaining: ~630.9 min
+[2025-07-11T16:22:05.475Z] 💰 API calls so far: 28000, Cost: $56.00
+[2025-07-11T16:22:05.475Z] 
+📊 Processing ETN (71/196) for year 2024
+[2025-07-11T16:22:05.556Z] 📈 Fetching 400 missing dates for ETN (0 existing)
+[2025-07-11T16:22:21.894Z] 📊 ETN progress: 12.5% (47/50 successful)
+[2025-07-11T16:22:37.954Z] 📊 ETN progress: 25.0% (89/100 successful)
+[2025-07-11T16:22:53.934Z] 📊 ETN progress: 37.5% (126/150 successful)
+[2025-07-11T16:23:10.144Z] 📊 ETN progress: 50.0% (165/200 successful)
+[2025-07-11T16:23:26.011Z] 📊 ETN progress: 62.5% (211/250 successful)
+[2025-07-11T16:23:42.118Z] 📊 ETN progress: 75.0% (256/300 successful)
+[2025-07-11T16:23:57.866Z] 📊 ETN progress: 87.5% (301/350 successful)
+[2025-07-11T16:24:13.894Z] 📊 ETN progress: 100.0% (339/400 successful)
+[2025-07-11T16:24:14.406Z] ✅ ETN complete: 400 API calls, 339 records saved
+[2025-07-11T16:24:14.407Z] 
+📊 OVERALL PROGRESS: 36.2% (71/196)
+[2025-07-11T16:24:14.407Z] ⏱️  Elapsed: 352.6 min, Remaining: ~620.8 min
+[2025-07-11T16:24:14.408Z] 💰 API calls so far: 28400, Cost: $56.80
+[2025-07-11T16:24:14.408Z] 
+📊 Processing ETR (72/196) for year 2024
+[2025-07-11T16:24:14.500Z] 📈 Fetching 400 missing dates for ETR (0 existing)
+[2025-07-11T16:24:30.088Z] 📊 ETR progress: 12.5% (47/50 successful)
+[2025-07-11T16:24:46.036Z] 📊 ETR progress: 25.0% (89/100 successful)
+[2025-07-11T16:25:01.821Z] 📊 ETR progress: 37.5% (126/150 successful)
+[2025-07-11T16:25:17.925Z] 📊 ETR progress: 50.0% (165/200 successful)
+[2025-07-11T16:25:34.133Z] 📊 ETR progress: 62.5% (211/250 successful)
+[2025-07-11T16:25:49.970Z] 📊 ETR progress: 75.0% (256/300 successful)
+[2025-07-11T16:26:05.968Z] 📊 ETR progress: 87.5% (301/350 successful)
+[2025-07-11T16:26:21.973Z] 📊 ETR progress: 100.0% (339/400 successful)
+[2025-07-11T16:26:22.589Z] ✅ ETR complete: 400 API calls, 339 records saved
+[2025-07-11T16:26:22.590Z] 
+📊 OVERALL PROGRESS: 36.7% (72/196)
+[2025-07-11T16:26:22.590Z] ⏱️  Elapsed: 354.8 min, Remaining: ~611.0 min
+[2025-07-11T16:26:22.590Z] 💰 API calls so far: 28800, Cost: $57.60
+[2025-07-11T16:26:22.591Z] 
+📊 Processing EXC (73/196) for year 2024
+[2025-07-11T16:26:22.657Z] 📈 Fetching 400 missing dates for EXC (0 existing)
+[2025-07-11T16:26:38.309Z] 📊 EXC progress: 12.5% (47/50 successful)
+[2025-07-11T16:26:54.019Z] 📊 EXC progress: 25.0% (89/100 successful)
+[2025-07-11T16:27:11.806Z] 📊 EXC progress: 37.5% (126/150 successful)
+[2025-07-11T16:27:27.959Z] 📊 EXC progress: 50.0% (165/200 successful)
+[2025-07-11T16:27:44.102Z] 📊 EXC progress: 62.5% (211/250 successful)
+[2025-07-11T16:28:00.380Z] 📊 EXC progress: 75.0% (256/300 successful)
+[2025-07-11T16:28:16.455Z] 📊 EXC progress: 87.5% (301/350 successful)
+[2025-07-11T16:28:32.611Z] 📊 EXC progress: 100.0% (339/400 successful)
+[2025-07-11T16:28:33.154Z] ✅ EXC complete: 400 API calls, 339 records saved
+[2025-07-11T16:28:33.155Z] 
+📊 OVERALL PROGRESS: 37.2% (73/196)
+[2025-07-11T16:28:33.155Z] ⏱️  Elapsed: 356.9 min, Remaining: ~601.4 min
+[2025-07-11T16:28:33.155Z] 💰 API calls so far: 29200, Cost: $58.40
+[2025-07-11T16:28:33.155Z] 
+📊 Processing EXR (74/196) for year 2024
+[2025-07-11T16:28:33.226Z] 📈 Fetching 400 missing dates for EXR (0 existing)
+[2025-07-11T16:28:48.728Z] 📊 EXR progress: 12.5% (47/50 successful)
+[2025-07-11T16:29:05.086Z] 📊 EXR progress: 25.0% (89/100 successful)
+[2025-07-11T16:29:21.324Z] 📊 EXR progress: 37.5% (126/150 successful)
+[2025-07-11T16:29:37.003Z] 📊 EXR progress: 50.0% (165/200 successful)
+[2025-07-11T16:29:52.638Z] 📊 EXR progress: 62.5% (211/250 successful)
+[2025-07-11T16:30:09.150Z] 📊 EXR progress: 75.0% (256/300 successful)
+[2025-07-11T16:30:26.210Z] 📊 EXR progress: 87.5% (301/350 successful)
+[2025-07-11T16:30:42.839Z] 📊 EXR progress: 100.0% (339/400 successful)
+[2025-07-11T16:30:43.373Z] ✅ EXR complete: 400 API calls, 339 records saved
+[2025-07-11T16:30:43.375Z] 
+📊 OVERALL PROGRESS: 37.8% (74/196)
+[2025-07-11T16:30:43.375Z] ⏱️  Elapsed: 359.1 min, Remaining: ~592.0 min
+[2025-07-11T16:30:43.375Z] 💰 API calls so far: 29600, Cost: $59.20
+[2025-07-11T16:30:43.375Z] 
+📊 Processing FCX (75/196) for year 2024
+[2025-07-11T16:30:43.455Z] 📈 Fetching 400 missing dates for FCX (0 existing)
+[2025-07-11T16:30:59.488Z] 📊 FCX progress: 12.5% (47/50 successful)
+[2025-07-11T16:31:16.282Z] 📊 FCX progress: 25.0% (89/100 successful)
+[2025-07-11T16:31:32.430Z] 📊 FCX progress: 37.5% (126/150 successful)
+[2025-07-11T16:31:49.105Z] 📊 FCX progress: 50.0% (165/200 successful)
+[2025-07-11T16:32:05.597Z] 📊 FCX progress: 62.5% (211/250 successful)
+[2025-07-11T16:32:22.553Z] 📊 FCX progress: 75.0% (256/300 successful)
+[2025-07-11T16:32:38.886Z] 📊 FCX progress: 87.5% (301/350 successful)
+[2025-07-11T16:32:55.436Z] 📊 FCX progress: 100.0% (339/400 successful)
+[2025-07-11T16:32:56.027Z] ✅ FCX complete: 400 API calls, 339 records saved
+[2025-07-11T16:32:56.027Z] 
+📊 OVERALL PROGRESS: 38.3% (75/196)
+[2025-07-11T16:32:56.027Z] ⏱️  Elapsed: 361.3 min, Remaining: ~582.9 min
+[2025-07-11T16:32:56.028Z] 💰 API calls so far: 30000, Cost: $60.00
+[2025-07-11T16:32:56.028Z] 
+📊 Processing FDX (76/196) for year 2024
+[2025-07-11T16:32:56.116Z] 📈 Fetching 400 missing dates for FDX (0 existing)
+[2025-07-11T16:33:12.545Z] 📊 FDX progress: 12.5% (47/50 successful)
+[2025-07-11T16:33:29.190Z] 📊 FDX progress: 25.0% (89/100 successful)
+[2025-07-11T16:33:45.240Z] 📊 FDX progress: 37.5% (126/150 successful)
+[2025-07-11T16:34:01.620Z] 📊 FDX progress: 50.0% (165/200 successful)
+[2025-07-11T16:34:17.956Z] 📊 FDX progress: 62.5% (211/250 successful)
+[2025-07-11T16:34:34.272Z] 📊 FDX progress: 75.0% (256/300 successful)
+[2025-07-11T16:34:50.651Z] 📊 FDX progress: 87.5% (301/350 successful)
+[2025-07-11T16:35:07.424Z] 📊 FDX progress: 100.0% (339/400 successful)
+[2025-07-11T16:35:07.916Z] ✅ FDX complete: 400 API calls, 339 records saved
+[2025-07-11T16:35:07.916Z] 
+📊 OVERALL PROGRESS: 38.8% (76/196)
+[2025-07-11T16:35:07.917Z] ⏱️  Elapsed: 363.5 min, Remaining: ~574.0 min
+[2025-07-11T16:35:07.917Z] 💰 API calls so far: 30400, Cost: $60.80
+[2025-07-11T16:35:07.917Z] 
+📊 Processing FE (77/196) for year 2024
+[2025-07-11T16:35:07.995Z] 📈 Fetching 400 missing dates for FE (0 existing)
+[2025-07-11T16:35:24.425Z] 📊 FE progress: 12.5% (47/50 successful)
+[2025-07-11T16:35:41.020Z] 📊 FE progress: 25.0% (89/100 successful)
+[2025-07-11T16:35:56.664Z] 📊 FE progress: 37.5% (126/150 successful)
+[2025-07-11T16:36:13.729Z] 📊 FE progress: 50.0% (165/200 successful)
+[2025-07-11T16:36:29.869Z] 📊 FE progress: 62.5% (211/250 successful)
+[2025-07-11T16:36:46.686Z] 📊 FE progress: 75.0% (256/300 successful)
+[2025-07-11T16:37:03.286Z] 📊 FE progress: 87.5% (301/350 successful)
+[2025-07-11T16:37:19.713Z] 📊 FE progress: 100.0% (339/400 successful)
+[2025-07-11T16:37:20.284Z] ✅ FE complete: 400 API calls, 339 records saved
+[2025-07-11T16:37:20.284Z] 
+📊 OVERALL PROGRESS: 39.3% (77/196)
+[2025-07-11T16:37:20.284Z] ⏱️  Elapsed: 365.7 min, Remaining: ~565.2 min
+[2025-07-11T16:37:20.285Z] 💰 API calls so far: 30800, Cost: $61.60
+[2025-07-11T16:37:20.285Z] 
+📊 Processing FOXA (78/196) for year 2024
+[2025-07-11T16:37:20.354Z] 📈 Fetching 400 missing dates for FOXA (0 existing)
+[2025-07-11T16:37:36.453Z] 📊 FOXA progress: 12.5% (47/50 successful)
+[2025-07-11T16:37:52.435Z] 📊 FOXA progress: 25.0% (89/100 successful)
+[2025-07-11T16:38:08.356Z] 📊 FOXA progress: 37.5% (126/150 successful)
+[2025-07-11T16:38:24.376Z] 📊 FOXA progress: 50.0% (165/200 successful)
+[2025-07-11T16:38:40.140Z] 📊 FOXA progress: 62.5% (211/250 successful)
+[2025-07-11T16:38:58.271Z] 📊 FOXA progress: 75.0% (256/300 successful)
+[2025-07-11T16:39:14.371Z] 📊 FOXA progress: 87.5% (301/350 successful)
+[2025-07-11T16:39:30.501Z] 📊 FOXA progress: 100.0% (339/400 successful)
+[2025-07-11T16:39:30.963Z] ✅ FOXA complete: 400 API calls, 339 records saved
+[2025-07-11T16:39:30.964Z] 
+📊 OVERALL PROGRESS: 39.8% (78/196)
+[2025-07-11T16:39:30.964Z] ⏱️  Elapsed: 367.9 min, Remaining: ~556.6 min
+[2025-07-11T16:39:30.964Z] 💰 API calls so far: 31200, Cost: $62.40
+[2025-07-11T16:39:30.964Z] 
+📊 Processing FSLR (79/196) for year 2024
+[2025-07-11T16:39:31.043Z] 📈 Fetching 400 missing dates for FSLR (0 existing)
+[2025-07-11T16:39:46.974Z] 📊 FSLR progress: 12.5% (47/50 successful)
+[2025-07-11T16:40:03.338Z] 📊 FSLR progress: 25.0% (89/100 successful)
+[2025-07-11T16:40:20.214Z] 📊 FSLR progress: 37.5% (126/150 successful)
+[2025-07-11T16:40:36.498Z] 📊 FSLR progress: 50.0% (165/200 successful)
+[2025-07-11T16:40:52.981Z] 📊 FSLR progress: 62.5% (211/250 successful)
+[2025-07-11T16:41:09.655Z] 📊 FSLR progress: 75.0% (256/300 successful)
+[2025-07-11T16:41:26.404Z] 📊 FSLR progress: 87.5% (301/350 successful)
+[2025-07-11T16:41:44.299Z] 📊 FSLR progress: 100.0% (339/400 successful)
+[2025-07-11T16:41:44.833Z] ✅ FSLR complete: 400 API calls, 339 records saved
+[2025-07-11T16:41:44.834Z] 
+📊 OVERALL PROGRESS: 40.3% (79/196)
+[2025-07-11T16:41:44.834Z] ⏱️  Elapsed: 370.1 min, Remaining: ~548.2 min
+[2025-07-11T16:41:44.834Z] 💰 API calls so far: 31600, Cost: $63.20
+[2025-07-11T16:41:44.834Z] 
+📊 Processing GD (80/196) for year 2024
+[2025-07-11T16:41:44.913Z] 📈 Fetching 400 missing dates for GD (0 existing)
+[2025-07-11T16:42:00.989Z] 📊 GD progress: 12.5% (47/50 successful)
+[2025-07-11T16:42:17.611Z] 📊 GD progress: 25.0% (89/100 successful)
+[2025-07-11T16:42:33.668Z] 📊 GD progress: 37.5% (126/150 successful)
+[2025-07-11T16:42:49.904Z] 📊 GD progress: 50.0% (165/200 successful)
+[2025-07-11T16:43:05.935Z] 📊 GD progress: 62.5% (211/250 successful)
+[2025-07-11T16:43:22.058Z] 📊 GD progress: 75.0% (256/300 successful)
+[2025-07-11T16:43:37.981Z] 📊 GD progress: 87.5% (301/350 successful)
+[2025-07-11T16:43:54.045Z] 📊 GD progress: 100.0% (339/400 successful)
+[2025-07-11T16:43:54.713Z] ✅ GD complete: 400 API calls, 339 records saved
+[2025-07-11T16:43:54.715Z] 
+📊 OVERALL PROGRESS: 40.8% (80/196)
+[2025-07-11T16:43:54.715Z] ⏱️  Elapsed: 372.3 min, Remaining: ~539.8 min
+[2025-07-11T16:43:54.716Z] 💰 API calls so far: 32000, Cost: $64.00
+[2025-07-11T16:43:54.716Z] 
+📊 Processing GE (81/196) for year 2024
+[2025-07-11T16:43:54.786Z] 📈 Fetching 400 missing dates for GE (0 existing)
+[2025-07-11T16:44:10.870Z] 📊 GE progress: 12.5% (47/50 successful)
+[2025-07-11T16:44:27.388Z] 📊 GE progress: 25.0% (89/100 successful)
+[2025-07-11T16:44:43.668Z] 📊 GE progress: 37.5% (126/150 successful)
+[2025-07-11T16:45:00.078Z] 📊 GE progress: 50.0% (165/200 successful)
+[2025-07-11T16:45:17.195Z] 📊 GE progress: 62.5% (211/250 successful)
+[2025-07-11T16:45:34.196Z] 📊 GE progress: 75.0% (256/300 successful)
+[2025-07-11T16:45:50.955Z] 📊 GE progress: 87.5% (301/350 successful)
+[2025-07-11T16:46:07.695Z] 📊 GE progress: 100.0% (339/400 successful)
+[2025-07-11T16:46:08.085Z] ❌ Database insert error: invalid input syntax for type bigint: "5189686.677"
+[2025-07-11T16:46:08.085Z] ❌ Failed to save batch for GE: invalid input syntax for type bigint: "5189686.677"
+[2025-07-11T16:46:08.421Z] ✅ GE complete: 400 API calls, 239 records saved
+[2025-07-11T16:46:08.422Z] 
+📊 OVERALL PROGRESS: 41.3% (81/196)
+[2025-07-11T16:46:08.423Z] ⏱️  Elapsed: 374.5 min, Remaining: ~531.7 min
+[2025-07-11T16:46:08.423Z] 💰 API calls so far: 32400, Cost: $64.80
+[2025-07-11T16:46:08.423Z] 
+📊 Processing GILD (82/196) for year 2024
+[2025-07-11T16:46:08.511Z] 📈 Fetching 400 missing dates for GILD (0 existing)
+[2025-07-11T16:46:25.595Z] 📊 GILD progress: 12.5% (47/50 successful)
+[2025-07-11T16:46:42.106Z] 📊 GILD progress: 25.0% (89/100 successful)
+[2025-07-11T16:46:58.266Z] 📊 GILD progress: 37.5% (126/150 successful)
+[2025-07-11T16:47:14.919Z] 📊 GILD progress: 50.0% (165/200 successful)
+[2025-07-11T16:47:31.462Z] 📊 GILD progress: 62.5% (211/250 successful)
+[2025-07-11T16:47:48.386Z] 📊 GILD progress: 75.0% (256/300 successful)
+[2025-07-11T16:48:05.253Z] 📊 GILD progress: 87.5% (301/350 successful)
+[2025-07-11T16:48:21.980Z] 📊 GILD progress: 100.0% (339/400 successful)
+[2025-07-11T16:48:22.812Z] ✅ GILD complete: 400 API calls, 339 records saved
+[2025-07-11T16:48:22.813Z] 
+📊 OVERALL PROGRESS: 41.8% (82/196)
+[2025-07-11T16:48:22.814Z] ⏱️  Elapsed: 376.8 min, Remaining: ~523.8 min
+[2025-07-11T16:48:22.814Z] 💰 API calls so far: 32800, Cost: $65.60
+[2025-07-11T16:48:22.814Z] 
+📊 Processing GIS (83/196) for year 2024
+[2025-07-11T16:48:22.902Z] 📈 Fetching 400 missing dates for GIS (0 existing)
+[2025-07-11T16:48:38.812Z] 📊 GIS progress: 12.5% (47/50 successful)
+[2025-07-11T16:48:55.216Z] 📊 GIS progress: 25.0% (89/100 successful)
+[2025-07-11T16:49:11.587Z] 📊 GIS progress: 37.5% (126/150 successful)
+[2025-07-11T16:49:27.901Z] 📊 GIS progress: 50.0% (165/200 successful)
+[2025-07-11T16:49:44.111Z] 📊 GIS progress: 62.5% (211/250 successful)
+[2025-07-11T16:50:00.711Z] 📊 GIS progress: 75.0% (256/300 successful)
+[2025-07-11T16:50:17.750Z] 📊 GIS progress: 87.5% (301/350 successful)
+[2025-07-11T16:50:34.100Z] 📊 GIS progress: 100.0% (339/400 successful)
+[2025-07-11T16:50:34.782Z] ✅ GIS complete: 400 API calls, 339 records saved
+[2025-07-11T16:50:34.783Z] 
+📊 OVERALL PROGRESS: 42.3% (83/196)
+[2025-07-11T16:50:34.783Z] ⏱️  Elapsed: 379.0 min, Remaining: ~515.9 min
+[2025-07-11T16:50:34.784Z] 💰 API calls so far: 33200, Cost: $66.40
+[2025-07-11T16:50:34.784Z] 
+📊 Processing GOOGL (84/196) for year 2024
+[2025-07-11T16:50:34.860Z] 📈 Fetching 400 missing dates for GOOGL (0 existing)
+[2025-07-11T16:50:51.212Z] 📊 GOOGL progress: 12.5% (47/50 successful)
+[2025-07-11T16:51:08.367Z] 📊 GOOGL progress: 25.0% (89/100 successful)
+[2025-07-11T16:51:24.408Z] 📊 GOOGL progress: 37.5% (126/150 successful)
+[2025-07-11T16:51:40.897Z] 📊 GOOGL progress: 50.0% (165/200 successful)
+[2025-07-11T16:51:57.400Z] 📊 GOOGL progress: 62.5% (211/250 successful)
+[2025-07-11T16:52:14.435Z] 📊 GOOGL progress: 75.0% (256/300 successful)
+[2025-07-11T16:52:30.892Z] 📊 GOOGL progress: 87.5% (301/350 successful)
+[2025-07-11T16:52:47.440Z] 📊 GOOGL progress: 100.0% (339/400 successful)
+[2025-07-11T16:52:48.219Z] ✅ GOOGL complete: 400 API calls, 339 records saved
+[2025-07-11T16:52:48.219Z] 
+📊 OVERALL PROGRESS: 42.9% (84/196)
+[2025-07-11T16:52:48.220Z] ⏱️  Elapsed: 381.2 min, Remaining: ~508.3 min
+[2025-07-11T16:52:48.220Z] 💰 API calls so far: 33600, Cost: $67.20
+[2025-07-11T16:52:48.220Z] 
+📊 Processing GS (85/196) for year 2024
+[2025-07-11T16:52:48.317Z] 📈 Fetching 400 missing dates for GS (0 existing)
+[2025-07-11T16:53:04.658Z] 📊 GS progress: 12.5% (47/50 successful)
+[2025-07-11T16:53:20.898Z] 📊 GS progress: 25.0% (89/100 successful)
+[2025-07-11T16:53:36.851Z] 📊 GS progress: 37.5% (126/150 successful)
+[2025-07-11T16:53:52.886Z] 📊 GS progress: 50.0% (165/200 successful)
+[2025-07-11T16:54:09.164Z] 📊 GS progress: 62.5% (211/250 successful)
+[2025-07-11T16:54:25.606Z] 📊 GS progress: 75.0% (256/300 successful)
+[2025-07-11T16:54:41.573Z] 📊 GS progress: 87.5% (301/350 successful)
+[2025-07-11T16:54:58.136Z] 📊 GS progress: 100.0% (339/400 successful)
+[2025-07-11T16:54:58.845Z] ✅ GS complete: 400 API calls, 339 records saved
+[2025-07-11T16:54:58.846Z] 
+📊 OVERALL PROGRESS: 43.4% (85/196)
+[2025-07-11T16:54:58.846Z] ⏱️  Elapsed: 383.4 min, Remaining: ~500.6 min
+[2025-07-11T16:54:58.846Z] 💰 API calls so far: 34000, Cost: $68.00
+[2025-07-11T16:54:58.847Z] 
+📊 Processing HD (86/196) for year 2024
+[2025-07-11T16:54:58.920Z] 📈 Fetching 400 missing dates for HD (0 existing)
+[2025-07-11T16:55:15.383Z] 📊 HD progress: 12.5% (47/50 successful)
+[2025-07-11T16:55:32.147Z] 📊 HD progress: 25.0% (89/100 successful)
+[2025-07-11T16:55:48.687Z] 📊 HD progress: 37.5% (126/150 successful)
+[2025-07-11T16:56:07.098Z] 📊 HD progress: 50.0% (165/200 successful)
+[2025-07-11T16:56:23.448Z] 📊 HD progress: 62.5% (211/250 successful)
+[2025-07-11T16:56:40.076Z] 📊 HD progress: 75.0% (256/300 successful)
+[2025-07-11T16:56:56.156Z] 📊 HD progress: 87.5% (301/350 successful)
+[2025-07-11T16:57:12.019Z] 📊 HD progress: 100.0% (339/400 successful)
+[2025-07-11T16:57:12.764Z] ✅ HD complete: 400 API calls, 339 records saved
+[2025-07-11T16:57:12.765Z] 
+📊 OVERALL PROGRESS: 43.9% (86/196)
+[2025-07-11T16:57:12.765Z] ⏱️  Elapsed: 385.6 min, Remaining: ~493.2 min
+[2025-07-11T16:57:12.765Z] 💰 API calls so far: 34400, Cost: $68.80
+[2025-07-11T16:57:12.765Z] 
+📊 Processing HON (87/196) for year 2024
+[2025-07-11T16:57:12.832Z] 📈 Fetching 400 missing dates for HON (0 existing)
+[2025-07-11T16:57:28.961Z] 📊 HON progress: 12.5% (47/50 successful)
+[2025-07-11T16:57:47.250Z] 📊 HON progress: 25.0% (89/100 successful)
+[2025-07-11T16:58:03.556Z] 📊 HON progress: 37.5% (126/150 successful)
+[2025-07-11T16:58:19.993Z] 📊 HON progress: 50.0% (165/200 successful)
+[2025-07-11T16:58:35.964Z] 📊 HON progress: 62.5% (211/250 successful)
+[2025-07-11T16:58:52.546Z] 📊 HON progress: 75.0% (256/300 successful)
+[2025-07-11T16:59:08.512Z] 📊 HON progress: 87.5% (301/350 successful)
+[2025-07-11T16:59:25.080Z] 📊 HON progress: 100.0% (339/400 successful)
+[2025-07-11T16:59:25.740Z] ✅ HON complete: 400 API calls, 339 records saved
+[2025-07-11T16:59:25.741Z] 
+📊 OVERALL PROGRESS: 44.4% (87/196)
+[2025-07-11T16:59:25.741Z] ⏱️  Elapsed: 387.8 min, Remaining: ~485.9 min
+[2025-07-11T16:59:25.742Z] 💰 API calls so far: 34800, Cost: $69.60
+[2025-07-11T16:59:25.742Z] 
+📊 Processing HRL (88/196) for year 2024
+[2025-07-11T16:59:25.814Z] 📈 Fetching 400 missing dates for HRL (0 existing)
+[2025-07-11T16:59:43.295Z] 📊 HRL progress: 12.5% (47/50 successful)
+[2025-07-11T17:00:01.860Z] 📊 HRL progress: 25.0% (89/100 successful)
+[2025-07-11T17:00:20.401Z] 📊 HRL progress: 37.5% (126/150 successful)
+[2025-07-11T17:00:37.830Z] 📊 HRL progress: 50.0% (165/200 successful)
+[2025-07-11T17:00:54.425Z] 📊 HRL progress: 62.5% (211/250 successful)
+[2025-07-11T17:01:11.288Z] 📊 HRL progress: 75.0% (256/300 successful)
+[2025-07-11T17:01:28.253Z] 📊 HRL progress: 87.5% (301/350 successful)
+[2025-07-11T17:01:45.731Z] 📊 HRL progress: 100.0% (339/400 successful)
+[2025-07-11T17:01:46.425Z] ✅ HRL complete: 400 API calls, 339 records saved
+[2025-07-11T17:01:46.427Z] 
+📊 OVERALL PROGRESS: 44.9% (88/196)
+[2025-07-11T17:01:46.427Z] ⏱️  Elapsed: 390.2 min, Remaining: ~478.8 min
+[2025-07-11T17:01:46.428Z] 💰 API calls so far: 35200, Cost: $70.40
+[2025-07-11T17:01:46.428Z] 
+📊 Processing HST (89/196) for year 2024
+[2025-07-11T17:01:46.504Z] 📈 Fetching 400 missing dates for HST (0 existing)
+[2025-07-11T17:02:05.242Z] 📊 HST progress: 12.5% (47/50 successful)
+[2025-07-11T17:02:22.959Z] 📊 HST progress: 25.0% (89/100 successful)
+[2025-07-11T17:02:38.661Z] 📊 HST progress: 37.5% (126/150 successful)
+[2025-07-11T17:02:55.501Z] 📊 HST progress: 50.0% (165/200 successful)
+[2025-07-11T17:03:12.485Z] 📊 HST progress: 62.5% (211/250 successful)
+[2025-07-11T17:03:29.092Z] 📊 HST progress: 75.0% (256/300 successful)
+[2025-07-11T17:03:45.326Z] 📊 HST progress: 87.5% (301/350 successful)
+[2025-07-11T17:04:01.333Z] 📊 HST progress: 100.0% (339/400 successful)
+[2025-07-11T17:04:01.993Z] ✅ HST complete: 400 API calls, 339 records saved
+[2025-07-11T17:04:01.994Z] 
+📊 OVERALL PROGRESS: 45.4% (89/196)
+[2025-07-11T17:04:01.994Z] ⏱️  Elapsed: 392.4 min, Remaining: ~471.8 min
+[2025-07-11T17:04:01.994Z] 💰 API calls so far: 35600, Cost: $71.20
+[2025-07-11T17:04:01.994Z] 
+📊 Processing HSY (90/196) for year 2024
+[2025-07-11T17:04:02.089Z] 📈 Fetching 400 missing dates for HSY (0 existing)
+[2025-07-11T17:04:18.637Z] 📊 HSY progress: 12.5% (47/50 successful)
+[2025-07-11T17:04:34.673Z] 📊 HSY progress: 25.0% (89/100 successful)
+[2025-07-11T17:04:50.296Z] 📊 HSY progress: 37.5% (126/150 successful)
+[2025-07-11T17:05:06.140Z] 📊 HSY progress: 50.0% (165/200 successful)
+[2025-07-11T17:05:22.298Z] 📊 HSY progress: 62.5% (211/250 successful)
+[2025-07-11T17:05:38.505Z] 📊 HSY progress: 75.0% (256/300 successful)
+[2025-07-11T17:05:54.684Z] 📊 HSY progress: 87.5% (301/350 successful)
+[2025-07-11T17:06:12.922Z] 📊 HSY progress: 100.0% (339/400 successful)
+[2025-07-11T17:06:13.974Z] ✅ HSY complete: 400 API calls, 339 records saved
+[2025-07-11T17:06:13.976Z] 
+📊 OVERALL PROGRESS: 45.9% (90/196)
+[2025-07-11T17:06:13.976Z] ⏱️  Elapsed: 394.6 min, Remaining: ~464.8 min
+[2025-07-11T17:06:13.976Z] 💰 API calls so far: 36000, Cost: $72.00
+[2025-07-11T17:06:13.977Z] 
+📊 Processing HUM (91/196) for year 2024
+[2025-07-11T17:06:14.044Z] 📈 Fetching 400 missing dates for HUM (0 existing)
+[2025-07-11T17:06:29.673Z] 📊 HUM progress: 12.5% (47/50 successful)
+[2025-07-11T17:06:45.588Z] 📊 HUM progress: 25.0% (89/100 successful)
+[2025-07-11T17:07:01.038Z] 📊 HUM progress: 37.5% (126/150 successful)
+[2025-07-11T17:07:17.908Z] 📊 HUM progress: 50.0% (165/200 successful)
+[2025-07-11T17:07:33.633Z] 📊 HUM progress: 62.5% (211/250 successful)
+[2025-07-11T17:07:49.582Z] 📊 HUM progress: 75.0% (256/300 successful)
+[2025-07-11T17:08:05.392Z] 📊 HUM progress: 87.5% (301/350 successful)
+[2025-07-11T17:08:21.058Z] 📊 HUM progress: 100.0% (339/400 successful)
+[2025-07-11T17:08:21.606Z] ✅ HUM complete: 400 API calls, 339 records saved
+[2025-07-11T17:08:21.607Z] 
+📊 OVERALL PROGRESS: 46.4% (91/196)
+[2025-07-11T17:08:21.608Z] ⏱️  Elapsed: 396.7 min, Remaining: ~457.8 min
+[2025-07-11T17:08:21.608Z] 💰 API calls so far: 36400, Cost: $72.80
+[2025-07-11T17:08:21.608Z] 
+📊 Processing IBM (92/196) for year 2024
+[2025-07-11T17:08:21.674Z] 📈 Fetching 400 missing dates for IBM (0 existing)
+[2025-07-11T17:08:37.313Z] 📊 IBM progress: 12.5% (47/50 successful)
+[2025-07-11T17:08:53.409Z] 📊 IBM progress: 25.0% (89/100 successful)
+[2025-07-11T17:09:09.164Z] 📊 IBM progress: 37.5% (126/150 successful)
+[2025-07-11T17:09:25.685Z] 📊 IBM progress: 50.0% (165/200 successful)
+[2025-07-11T17:09:48.802Z] 📊 IBM progress: 62.5% (211/250 successful)
+[2025-07-11T17:10:05.640Z] 📊 IBM progress: 75.0% (256/300 successful)
+[2025-07-11T17:10:22.515Z] 📊 IBM progress: 87.5% (301/350 successful)
+[2025-07-11T17:10:38.570Z] 📊 IBM progress: 100.0% (339/400 successful)
+[2025-07-11T17:10:39.236Z] ✅ IBM complete: 400 API calls, 339 records saved
+[2025-07-11T17:10:39.238Z] 
+📊 OVERALL PROGRESS: 46.9% (92/196)
+[2025-07-11T17:10:39.238Z] ⏱️  Elapsed: 399.0 min, Remaining: ~451.1 min
+[2025-07-11T17:10:39.238Z] 💰 API calls so far: 36800, Cost: $73.60
+[2025-07-11T17:10:39.238Z] 
+📊 Processing IFF (93/196) for year 2024
+[2025-07-11T17:10:39.325Z] 📈 Fetching 400 missing dates for IFF (0 existing)
+[2025-07-11T17:10:57.059Z] 📊 IFF progress: 12.5% (47/50 successful)
+[2025-07-11T17:11:13.557Z] 📊 IFF progress: 25.0% (89/100 successful)
+[2025-07-11T17:11:29.132Z] 📊 IFF progress: 37.5% (126/150 successful)
+[2025-07-11T17:11:45.176Z] 📊 IFF progress: 50.0% (165/200 successful)
+[2025-07-11T17:12:01.067Z] 📊 IFF progress: 62.5% (211/250 successful)
+[2025-07-11T17:12:17.969Z] 📊 IFF progress: 75.0% (256/300 successful)
+[2025-07-11T17:12:35.231Z] 📊 IFF progress: 87.5% (301/350 successful)
+[2025-07-11T17:12:52.216Z] 📊 IFF progress: 100.0% (339/400 successful)
+[2025-07-11T17:12:52.848Z] ✅ IFF complete: 400 API calls, 339 records saved
+[2025-07-11T17:12:52.849Z] 
+📊 OVERALL PROGRESS: 47.4% (93/196)
+[2025-07-11T17:12:52.849Z] ⏱️  Elapsed: 401.3 min, Remaining: ~444.4 min
+[2025-07-11T17:12:52.849Z] 💰 API calls so far: 37200, Cost: $74.40
+[2025-07-11T17:12:52.849Z] 
+📊 Processing INTC (94/196) for year 2024
+[2025-07-11T17:12:52.922Z] 📈 Fetching 400 missing dates for INTC (0 existing)
+[2025-07-11T17:13:10.767Z] 📊 INTC progress: 12.5% (47/50 successful)
+[2025-07-11T17:13:30.890Z] 📊 INTC progress: 25.0% (89/100 successful)
+[2025-07-11T17:13:47.714Z] 📊 INTC progress: 37.5% (126/150 successful)
+[2025-07-11T17:14:06.901Z] 📊 INTC progress: 50.0% (165/200 successful)
+[2025-07-11T17:14:23.641Z] 📊 INTC progress: 62.5% (211/250 successful)
+[2025-07-11T17:14:40.390Z] 📊 INTC progress: 75.0% (256/300 successful)
+[2025-07-11T17:14:56.990Z] 📊 INTC progress: 87.5% (301/350 successful)
+[2025-07-11T17:15:14.495Z] 📊 INTC progress: 100.0% (339/400 successful)
+[2025-07-11T17:15:15.078Z] ✅ INTC complete: 400 API calls, 339 records saved
+[2025-07-11T17:15:15.079Z] 
+📊 OVERALL PROGRESS: 48.0% (94/196)
+[2025-07-11T17:15:15.080Z] ⏱️  Elapsed: 403.6 min, Remaining: ~438.0 min
+[2025-07-11T17:15:15.080Z] 💰 API calls so far: 37600, Cost: $75.20
+[2025-07-11T17:15:15.080Z] 
+📊 Processing IR (95/196) for year 2024
+[2025-07-11T17:15:15.151Z] 📈 Fetching 400 missing dates for IR (0 existing)
+[2025-07-11T17:15:31.191Z] 📊 IR progress: 12.5% (47/50 successful)
+[2025-07-11T17:15:47.448Z] 📊 IR progress: 25.0% (89/100 successful)
+[2025-07-11T17:16:03.527Z] 📊 IR progress: 37.5% (126/150 successful)
+[2025-07-11T17:16:19.738Z] 📊 IR progress: 50.0% (165/200 successful)
+[2025-07-11T17:16:37.208Z] 📊 IR progress: 62.5% (211/250 successful)
+[2025-07-11T17:16:54.095Z] 📊 IR progress: 75.0% (256/300 successful)
+[2025-07-11T17:17:11.564Z] 📊 IR progress: 87.5% (301/350 successful)
+[2025-07-11T17:38:17.629Z] 🔄 Retry 1/3 for IR 2025-05-07: request to https://api.polygon.io/v1/open-close/IR/2025-05-07?adjusted=true&apikey=SBhhGVNtL5yTr_ordVMKDQKt3Zdim6bJ failed, reason: read ECONNRESET
+[2025-07-11T17:38:35.386Z] 📊 IR progress: 100.0% (339/400 successful)
+[2025-07-11T17:38:35.947Z] ✅ IR complete: 400 API calls, 339 records saved
+[2025-07-11T17:38:35.950Z] 
+📊 OVERALL PROGRESS: 48.5% (95/196)
+[2025-07-11T17:38:35.951Z] ⏱️  Elapsed: 427.0 min, Remaining: ~454.0 min
+[2025-07-11T17:38:35.952Z] 💰 API calls so far: 38000, Cost: $76.00
+[2025-07-11T17:38:35.954Z] 
+📊 Processing ISRG (96/196) for year 2024
+[2025-07-11T17:38:36.042Z] 📈 Fetching 400 missing dates for ISRG (0 existing)
+[2025-07-11T17:38:54.326Z] 📊 ISRG progress: 12.5% (47/50 successful)
+[2025-07-11T17:39:13.477Z] 📊 ISRG progress: 25.0% (89/100 successful)
+[2025-07-11T17:39:29.862Z] 📊 ISRG progress: 37.5% (126/150 successful)
+[2025-07-11T17:39:48.190Z] 📊 ISRG progress: 50.0% (165/200 successful)
+[2025-07-11T19:12:06.840Z] 🔄 Retry 1/3 for ISRG 2024-12-06: request to https://api.polygon.io/v1/open-close/ISRG/2024-12-06?adjusted=true&apikey=SBhhGVNtL5yTr_ordVMKDQKt3Zdim6bJ failed, reason: read ETIMEDOUT
+[2025-07-11T19:12:13.919Z] 📊 ISRG progress: 62.5% (211/250 successful)
+[2025-07-11T19:43:25.938Z] 🔄 Retry 1/3 for ISRG 2025-02-13: request to https://api.polygon.io/v1/open-close/ISRG/2025-02-13?adjusted=true&apikey=SBhhGVNtL5yTr_ordVMKDQKt3Zdim6bJ failed, reason: read ETIMEDOUT
+[2025-07-11T19:43:29.295Z] 📊 ISRG progress: 75.0% (256/300 successful)
+[2025-07-11T19:43:46.997Z] 📊 ISRG progress: 87.5% (301/350 successful)
+[2025-07-11T19:44:08.163Z] 📊 ISRG progress: 100.0% (339/400 successful)
+[2025-07-11T21:14:13.825Z] ❌ Database insert error: TypeError: fetch failed
+[2025-07-11T21:14:13.841Z] ❌ Failed to save batch for ISRG: TypeError: fetch failed
+[2025-07-11T21:14:14.217Z] ✅ ISRG complete: 400 API calls, 239 records saved
+[2025-07-11T21:14:14.219Z] 
+📊 OVERALL PROGRESS: 49.0% (96/196)
+[2025-07-11T21:14:14.220Z] ⏱️  Elapsed: 642.6 min, Remaining: ~669.4 min
+[2025-07-11T21:14:14.221Z] 💰 API calls so far: 38400, Cost: $76.80
+[2025-07-11T21:14:14.221Z] 
+📊 Processing ITW (97/196) for year 2024
+[2025-07-11T21:14:14.294Z] 📈 Fetching 400 missing dates for ITW (0 existing)
+[2025-07-11T21:14:30.359Z] 📊 ITW progress: 12.5% (47/50 successful)
+[2025-07-11T21:14:46.849Z] 📊 ITW progress: 25.0% (89/100 successful)
+[2025-07-11T21:40:42.671Z] 🔄 Retry 1/3 for ITW 2024-06-25: request to https://api.polygon.io/v1/open-close/ITW/2024-06-25?adjusted=true&apikey=SBhhGVNtL5yTr_ordVMKDQKt3Zdim6bJ failed, reason: read ECONNRESET
+[2025-07-11T21:40:52.382Z] 📊 ITW progress: 37.5% (126/150 successful)
+[2025-07-11T21:41:09.574Z] 📊 ITW progress: 50.0% (165/200 successful)
+[2025-07-11T21:41:26.179Z] 📊 ITW progress: 62.5% (211/250 successful)
+[2025-07-11T21:41:41.326Z] 📊 ITW progress: 75.0% (256/300 successful)
+[2025-07-11T21:41:56.403Z] 📊 ITW progress: 87.5% (301/350 successful)
+[2025-07-11T21:42:11.178Z] 📊 ITW progress: 100.0% (339/400 successful)
+[2025-07-11T21:42:11.790Z] ✅ ITW complete: 400 API calls, 339 records saved
+[2025-07-11T21:42:11.791Z] 
+📊 OVERALL PROGRESS: 49.5% (97/196)
+[2025-07-11T21:42:11.791Z] ⏱️  Elapsed: 670.6 min, Remaining: ~684.4 min
+[2025-07-11T21:42:11.791Z] 💰 API calls so far: 38800, Cost: $77.60
+[2025-07-11T21:42:11.791Z] 
+📊 Processing JNJ (98/196) for year 2024
+[2025-07-11T21:42:11.866Z] 📈 Fetching 400 missing dates for JNJ (0 existing)
+[2025-07-11T21:42:26.951Z] 📊 JNJ progress: 12.5% (47/50 successful)
+[2025-07-11T21:42:41.777Z] 📊 JNJ progress: 25.0% (89/100 successful)
+[2025-07-11T21:42:56.833Z] 📊 JNJ progress: 37.5% (126/150 successful)
+[2025-07-11T21:43:11.613Z] 📊 JNJ progress: 50.0% (165/200 successful)
+[2025-07-11T21:43:26.900Z] 📊 JNJ progress: 62.5% (211/250 successful)
+[2025-07-11T21:43:43.615Z] 📊 JNJ progress: 75.0% (256/300 successful)
+[2025-07-11T21:43:59.273Z] 📊 JNJ progress: 87.5% (301/350 successful)
+[2025-07-11T21:44:14.156Z] 📊 JNJ progress: 100.0% (339/400 successful)
+[2025-07-11T21:44:14.848Z] ✅ JNJ complete: 400 API calls, 339 records saved
+[2025-07-11T21:44:14.849Z] 
+📊 OVERALL PROGRESS: 50.0% (98/196)
+[2025-07-11T21:44:14.849Z] ⏱️  Elapsed: 672.6 min, Remaining: ~672.6 min
+[2025-07-11T21:44:14.849Z] 💰 API calls so far: 39200, Cost: $78.40
+[2025-07-11T21:44:14.849Z] 
+📊 Processing JPM (99/196) for year 2024
+[2025-07-11T21:44:14.931Z] 📈 Fetching 400 missing dates for JPM (0 existing)
+[2025-07-11T21:44:30.364Z] 📊 JPM progress: 12.5% (47/50 successful)
+[2025-07-11T21:44:46.264Z] 📊 JPM progress: 25.0% (89/100 successful)
+[2025-07-11T21:45:01.635Z] 📊 JPM progress: 37.5% (126/150 successful)
+[2025-07-11T21:45:16.699Z] 📊 JPM progress: 50.0% (165/200 successful)
+[2025-07-11T21:45:32.268Z] 📊 JPM progress: 62.5% (211/250 successful)
+[2025-07-11T21:45:47.130Z] 📊 JPM progress: 75.0% (256/300 successful)
+[2025-07-11T21:46:03.077Z] 📊 JPM progress: 87.5% (301/350 successful)
+[2025-07-11T21:46:17.930Z] 📊 JPM progress: 100.0% (339/400 successful)
+[2025-07-11T21:46:18.429Z] ✅ JPM complete: 400 API calls, 339 records saved
+[2025-07-11T21:46:18.430Z] 
+📊 OVERALL PROGRESS: 50.5% (99/196)
+[2025-07-11T21:46:18.430Z] ⏱️  Elapsed: 674.7 min, Remaining: ~661.1 min
+[2025-07-11T21:46:18.430Z] 💰 API calls so far: 39600, Cost: $79.20
+[2025-07-11T21:46:18.430Z] 
+📊 Processing K (100/196) for year 2024
+[2025-07-11T21:46:18.511Z] 📈 Fetching 400 missing dates for K (0 existing)
+[2025-07-11T21:46:33.550Z] 📊 K progress: 12.5% (47/50 successful)
+[2025-07-11T21:46:48.807Z] 📊 K progress: 25.0% (89/100 successful)
+[2025-07-11T21:47:03.768Z] 📊 K progress: 37.5% (126/150 successful)
+[2025-07-11T21:47:19.531Z] 📊 K progress: 50.0% (165/200 successful)
+[2025-07-11T21:47:34.805Z] 📊 K progress: 62.5% (211/250 successful)
+[2025-07-11T21:47:49.827Z] 📊 K progress: 75.0% (256/300 successful)
+[2025-07-11T21:48:04.686Z] 📊 K progress: 87.5% (301/350 successful)
+[2025-07-11T21:48:19.738Z] 📊 K progress: 100.0% (339/400 successful)
+[2025-07-11T21:48:20.238Z] ✅ K complete: 400 API calls, 339 records saved
+[2025-07-11T21:48:20.238Z] 
+📊 OVERALL PROGRESS: 51.0% (100/196)
+[2025-07-11T21:48:20.238Z] ⏱️  Elapsed: 676.7 min, Remaining: ~649.7 min
+[2025-07-11T21:48:20.239Z] 💰 API calls so far: 40000, Cost: $80.00
+[2025-07-11T21:48:20.239Z] 
+📊 Processing KHC (101/196) for year 2024
+[2025-07-11T21:48:20.327Z] 📈 Fetching 400 missing dates for KHC (0 existing)
+[2025-07-11T21:48:35.799Z] 📊 KHC progress: 12.5% (47/50 successful)
+[2025-07-11T21:48:52.103Z] 📊 KHC progress: 25.0% (89/100 successful)
+[2025-07-11T21:49:07.889Z] 📊 KHC progress: 37.5% (126/150 successful)
+[2025-07-11T21:49:22.787Z] 📊 KHC progress: 50.0% (165/200 successful)
+[2025-07-11T21:49:38.035Z] 📊 KHC progress: 62.5% (211/250 successful)
+[2025-07-11T21:49:52.936Z] 📊 KHC progress: 75.0% (256/300 successful)
+[2025-07-11T21:50:09.014Z] 📊 KHC progress: 87.5% (301/350 successful)
+[2025-07-11T21:50:23.890Z] 📊 KHC progress: 100.0% (339/400 successful)
+[2025-07-11T21:50:24.402Z] ✅ KHC complete: 400 API calls, 339 records saved
+[2025-07-11T21:50:24.402Z] 
+📊 OVERALL PROGRESS: 51.5% (101/196)
+[2025-07-11T21:50:24.403Z] ⏱️  Elapsed: 678.8 min, Remaining: ~638.5 min
+[2025-07-11T21:50:24.403Z] 💰 API calls so far: 40400, Cost: $80.80
+[2025-07-11T21:50:24.403Z] 
+📊 Processing KMB (102/196) for year 2024
+[2025-07-11T21:50:24.471Z] 📈 Fetching 400 missing dates for KMB (0 existing)
+[2025-07-11T21:50:39.610Z] 📊 KMB progress: 12.5% (47/50 successful)
+[2025-07-11T21:50:54.548Z] 📊 KMB progress: 25.0% (89/100 successful)
+[2025-07-11T21:51:09.596Z] 📊 KMB progress: 37.5% (126/150 successful)
+[2025-07-11T21:51:24.376Z] 📊 KMB progress: 50.0% (165/200 successful)
+[2025-07-11T21:51:39.580Z] 📊 KMB progress: 62.5% (211/250 successful)
+[2025-07-11T21:51:54.370Z] 📊 KMB progress: 75.0% (256/300 successful)
+[2025-07-11T21:52:09.426Z] 📊 KMB progress: 87.5% (301/350 successful)
+[2025-07-11T21:52:24.323Z] 📊 KMB progress: 100.0% (339/400 successful)
+[2025-07-11T21:52:24.835Z] ✅ KMB complete: 400 API calls, 339 records saved
+[2025-07-11T21:52:24.836Z] 
+📊 OVERALL PROGRESS: 52.0% (102/196)
+[2025-07-11T21:52:24.836Z] ⏱️  Elapsed: 680.8 min, Remaining: ~627.4 min
+[2025-07-11T21:52:24.836Z] 💰 API calls so far: 40800, Cost: $81.60
+[2025-07-11T21:52:24.836Z] 
+📊 Processing KMI (103/196) for year 2024
+[2025-07-11T21:52:24.927Z] 📈 Fetching 400 missing dates for KMI (0 existing)
+[2025-07-11T21:52:40.187Z] 📊 KMI progress: 12.5% (47/50 successful)
+[2025-07-11T21:52:58.496Z] 📊 KMI progress: 25.0% (89/100 successful)
+[2025-07-11T21:53:13.715Z] 📊 KMI progress: 37.5% (126/150 successful)
+[2025-07-11T21:53:29.215Z] 📊 KMI progress: 50.0% (165/200 successful)
+[2025-07-11T21:53:45.029Z] 📊 KMI progress: 62.5% (211/250 successful)
+[2025-07-11T21:54:00.382Z] 📊 KMI progress: 75.0% (256/300 successful)
+[2025-07-11T21:54:16.373Z] 📊 KMI progress: 87.5% (301/350 successful)
+[2025-07-11T21:54:31.811Z] 📊 KMI progress: 100.0% (339/400 successful)
+[2025-07-11T21:54:32.388Z] ✅ KMI complete: 400 API calls, 339 records saved
+[2025-07-11T21:54:32.388Z] 
+📊 OVERALL PROGRESS: 52.6% (103/196)
+[2025-07-11T21:54:32.389Z] ⏱️  Elapsed: 682.9 min, Remaining: ~616.6 min
+[2025-07-11T21:54:32.389Z] 💰 API calls so far: 41200, Cost: $82.40
+[2025-07-11T21:54:32.389Z] 
+📊 Processing KO (104/196) for year 2024
+[2025-07-11T21:54:32.476Z] 📈 Fetching 400 missing dates for KO (0 existing)
+[2025-07-11T21:54:48.359Z] 📊 KO progress: 12.5% (47/50 successful)
+[2025-07-11T21:55:04.195Z] 📊 KO progress: 25.0% (89/100 successful)
+[2025-07-11T21:55:20.122Z] 📊 KO progress: 37.5% (126/150 successful)
+[2025-07-11T21:55:35.090Z] 📊 KO progress: 50.0% (165/200 successful)
+[2025-07-11T21:55:50.617Z] 📊 KO progress: 62.5% (211/250 successful)
+[2025-07-11T21:56:05.790Z] 📊 KO progress: 75.0% (256/300 successful)
+[2025-07-11T21:56:21.289Z] 📊 KO progress: 87.5% (301/350 successful)
+[2025-07-11T21:56:35.965Z] 📊 KO progress: 100.0% (339/400 successful)
+[2025-07-11T21:56:36.450Z] ✅ KO complete: 400 API calls, 339 records saved
+[2025-07-11T21:56:36.451Z] 
+📊 OVERALL PROGRESS: 53.1% (104/196)
+[2025-07-11T21:56:36.451Z] ⏱️  Elapsed: 685.0 min, Remaining: ~606.0 min
+[2025-07-11T21:56:36.451Z] 💰 API calls so far: 41600, Cost: $83.20
+[2025-07-11T21:56:36.451Z] 
+📊 Processing KR (105/196) for year 2024
+[2025-07-11T21:56:36.515Z] 📈 Fetching 400 missing dates for KR (0 existing)
+[2025-07-11T21:56:51.996Z] 📊 KR progress: 12.5% (47/50 successful)
+[2025-07-11T21:57:07.014Z] 📊 KR progress: 25.0% (89/100 successful)
+[2025-07-11T21:57:21.887Z] 📊 KR progress: 37.5% (126/150 successful)
+[2025-07-11T21:57:36.560Z] 📊 KR progress: 50.0% (165/200 successful)
+[2025-07-11T21:57:51.557Z] 📊 KR progress: 62.5% (211/250 successful)
+[2025-07-11T21:58:06.552Z] 📊 KR progress: 75.0% (256/300 successful)
+[2025-07-11T21:58:52.636Z] 📊 KR progress: 87.5% (301/350 successful)
+[2025-07-11T21:59:07.485Z] 📊 KR progress: 100.0% (339/400 successful)
+[2025-07-11T21:59:08.001Z] ✅ KR complete: 400 API calls, 339 records saved
+[2025-07-11T21:59:08.001Z] 
+📊 OVERALL PROGRESS: 53.6% (105/196)
+[2025-07-11T21:59:08.002Z] ⏱️  Elapsed: 687.5 min, Remaining: ~595.9 min
+[2025-07-11T21:59:08.002Z] 💰 API calls so far: 42000, Cost: $84.00
+[2025-07-11T21:59:08.002Z] 
+📊 Processing LIN (106/196) for year 2024
+[2025-07-11T21:59:08.063Z] 📈 Fetching 400 missing dates for LIN (0 existing)
+[2025-07-11T21:59:23.062Z] 📊 LIN progress: 12.5% (47/50 successful)
+[2025-07-11T21:59:37.800Z] 📊 LIN progress: 25.0% (89/100 successful)
+[2025-07-11T21:59:52.797Z] 📊 LIN progress: 37.5% (126/150 successful)
+[2025-07-11T22:00:08.527Z] 📊 LIN progress: 50.0% (165/200 successful)
+[2025-07-11T22:00:24.545Z] 📊 LIN progress: 62.5% (211/250 successful)
+[2025-07-11T22:00:39.909Z] 📊 LIN progress: 75.0% (256/300 successful)
+[2025-07-11T22:00:55.780Z] 📊 LIN progress: 87.5% (301/350 successful)
+[2025-07-11T22:01:11.284Z] 📊 LIN progress: 100.0% (339/400 successful)
+[2025-07-11T22:01:11.822Z] ✅ LIN complete: 400 API calls, 339 records saved
+[2025-07-11T22:01:11.823Z] 
+📊 OVERALL PROGRESS: 54.1% (106/196)
+[2025-07-11T22:01:11.823Z] ⏱️  Elapsed: 689.6 min, Remaining: ~585.5 min
+[2025-07-11T22:01:11.823Z] 💰 API calls so far: 42400, Cost: $84.80
+[2025-07-11T22:01:11.823Z] 
+📊 Processing LLY (107/196) for year 2024
+[2025-07-11T22:01:11.903Z] 📈 Fetching 400 missing dates for LLY (0 existing)
+[2025-07-11T22:01:28.133Z] 📊 LLY progress: 12.5% (47/50 successful)
+[2025-07-11T22:01:43.839Z] 📊 LLY progress: 25.0% (89/100 successful)
+[2025-07-11T22:01:59.794Z] 📊 LLY progress: 37.5% (126/150 successful)
+[2025-07-11T22:02:15.339Z] 📊 LLY progress: 50.0% (165/200 successful)
+[2025-07-11T22:02:30.862Z] 📊 LLY progress: 62.5% (211/250 successful)
+[2025-07-11T22:02:45.757Z] 📊 LLY progress: 75.0% (256/300 successful)
+[2025-07-11T22:03:00.928Z] 📊 LLY progress: 87.5% (301/350 successful)
+[2025-07-11T22:03:15.993Z] 📊 LLY progress: 100.0% (339/400 successful)
+[2025-07-11T22:03:16.529Z] ✅ LLY complete: 400 API calls, 339 records saved
+[2025-07-11T22:03:16.529Z] 
+📊 OVERALL PROGRESS: 54.6% (107/196)
+[2025-07-11T22:03:16.529Z] ⏱️  Elapsed: 691.7 min, Remaining: ~575.3 min
+[2025-07-11T22:03:16.530Z] 💰 API calls so far: 42800, Cost: $85.60
+[2025-07-11T22:03:16.530Z] 
+📊 Processing LMT (108/196) for year 2024
+[2025-07-11T22:03:16.610Z] 📈 Fetching 400 missing dates for LMT (0 existing)
+[2025-07-11T22:03:31.516Z] 📊 LMT progress: 12.5% (47/50 successful)
+[2025-07-11T22:03:46.243Z] 📊 LMT progress: 25.0% (89/100 successful)
+[2025-07-11T22:04:01.168Z] 📊 LMT progress: 37.5% (126/150 successful)
+[2025-07-11T22:04:16.033Z] 📊 LMT progress: 50.0% (165/200 successful)
+[2025-07-11T22:04:31.206Z] 📊 LMT progress: 62.5% (211/250 successful)
+[2025-07-11T22:04:46.608Z] 📊 LMT progress: 75.0% (256/300 successful)
+[2025-07-11T22:05:01.607Z] 📊 LMT progress: 87.5% (301/350 successful)
+[2025-07-11T22:05:16.499Z] 📊 LMT progress: 100.0% (339/400 successful)
+[2025-07-11T22:05:17.014Z] ✅ LMT complete: 400 API calls, 339 records saved
+[2025-07-11T22:05:17.015Z] 
+📊 OVERALL PROGRESS: 55.1% (108/196)
+[2025-07-11T22:05:17.015Z] ⏱️  Elapsed: 693.7 min, Remaining: ~565.2 min
+[2025-07-11T22:05:17.015Z] 💰 API calls so far: 43200, Cost: $86.40
+[2025-07-11T22:05:17.015Z] 
+📊 Processing LOW (109/196) for year 2024
+[2025-07-11T22:05:17.092Z] 📈 Fetching 400 missing dates for LOW (0 existing)
+[2025-07-11T22:05:31.988Z] 📊 LOW progress: 12.5% (47/50 successful)
+[2025-07-11T22:05:46.910Z] 📊 LOW progress: 25.0% (89/100 successful)
+[2025-07-11T22:06:02.167Z] 📊 LOW progress: 37.5% (126/150 successful)
+[2025-07-11T22:06:16.878Z] 📊 LOW progress: 50.0% (165/200 successful)
+[2025-07-11T22:06:32.324Z] 📊 LOW progress: 62.5% (211/250 successful)
+[2025-07-11T22:07:17.224Z] 📊 LOW progress: 75.0% (256/300 successful)
+[2025-07-11T22:07:32.426Z] 📊 LOW progress: 87.5% (301/350 successful)
+[2025-07-11T22:07:47.936Z] 📊 LOW progress: 100.0% (339/400 successful)
+[2025-07-11T22:07:48.434Z] ✅ LOW complete: 400 API calls, 339 records saved
+[2025-07-11T22:07:48.435Z] 
+📊 OVERALL PROGRESS: 55.6% (109/196)
+[2025-07-11T22:07:48.435Z] ⏱️  Elapsed: 696.2 min, Remaining: ~555.7 min
+[2025-07-11T22:07:48.435Z] 💰 API calls so far: 43600, Cost: $87.20
+[2025-07-11T22:07:48.435Z] 
+📊 Processing LULU (110/196) for year 2024
+[2025-07-11T22:07:48.497Z] 📈 Fetching 400 missing dates for LULU (0 existing)
+[2025-07-11T22:08:03.422Z] 📊 LULU progress: 12.5% (47/50 successful)
+[2025-07-11T22:08:18.571Z] 📊 LULU progress: 25.0% (89/100 successful)
+[2025-07-11T22:08:33.506Z] 📊 LULU progress: 37.5% (126/150 successful)
+[2025-07-11T22:08:48.202Z] 📊 LULU progress: 50.0% (165/200 successful)
+[2025-07-11T22:09:03.343Z] 📊 LULU progress: 62.5% (211/250 successful)
+[2025-07-11T22:09:18.275Z] 📊 LULU progress: 75.0% (256/300 successful)
+[2025-07-11T22:09:33.640Z] 📊 LULU progress: 87.5% (301/350 successful)
+[2025-07-11T22:09:48.447Z] 📊 LULU progress: 100.0% (339/400 successful)
+[2025-07-11T22:09:48.973Z] ✅ LULU complete: 400 API calls, 339 records saved
+[2025-07-11T22:09:48.974Z] 
+📊 OVERALL PROGRESS: 56.1% (110/196)
+[2025-07-11T22:09:48.974Z] ⏱️  Elapsed: 698.2 min, Remaining: ~545.9 min
+[2025-07-11T22:09:48.974Z] 💰 API calls so far: 44000, Cost: $88.00
+[2025-07-11T22:09:48.974Z] 
+📊 Processing LYB (111/196) for year 2024
+[2025-07-11T22:09:49.063Z] 📈 Fetching 400 missing dates for LYB (0 existing)
+[2025-07-11T22:10:04.075Z] 📊 LYB progress: 12.5% (47/50 successful)
+[2025-07-11T22:10:19.038Z] 📊 LYB progress: 25.0% (89/100 successful)
+[2025-07-11T22:10:33.873Z] 📊 LYB progress: 37.5% (126/150 successful)
+[2025-07-11T22:10:48.522Z] 📊 LYB progress: 50.0% (165/200 successful)
+[2025-07-11T22:11:03.346Z] 📊 LYB progress: 62.5% (211/250 successful)
+[2025-07-11T22:11:18.058Z] 📊 LYB progress: 75.0% (256/300 successful)
+[2025-07-11T22:11:32.927Z] 📊 LYB progress: 87.5% (301/350 successful)
+[2025-07-11T22:11:47.969Z] 📊 LYB progress: 100.0% (339/400 successful)
+[2025-07-11T22:11:48.431Z] ✅ LYB complete: 400 API calls, 339 records saved
+[2025-07-11T22:11:48.431Z] 
+📊 OVERALL PROGRESS: 56.6% (111/196)
+[2025-07-11T22:11:48.431Z] ⏱️  Elapsed: 700.2 min, Remaining: ~536.2 min
+[2025-07-11T22:11:48.432Z] 💰 API calls so far: 44400, Cost: $88.80
+[2025-07-11T22:11:48.432Z] 
+📊 Processing MA (112/196) for year 2024
+[2025-07-11T22:11:48.507Z] 📈 Fetching 400 missing dates for MA (0 existing)
+[2025-07-11T22:12:03.416Z] 📊 MA progress: 12.5% (47/50 successful)
+[2025-07-11T22:12:19.224Z] 📊 MA progress: 25.0% (89/100 successful)
+[2025-07-11T22:12:34.128Z] 📊 MA progress: 37.5% (126/150 successful)
+[2025-07-11T22:12:48.931Z] 📊 MA progress: 50.0% (165/200 successful)
+[2025-07-11T22:13:04.176Z] 📊 MA progress: 62.5% (211/250 successful)
+[2025-07-11T22:13:19.185Z] 📊 MA progress: 75.0% (256/300 successful)
+[2025-07-11T22:13:35.268Z] 📊 MA progress: 87.5% (301/350 successful)
+[2025-07-11T22:13:50.128Z] 📊 MA progress: 100.0% (339/400 successful)
+[2025-07-11T22:13:50.724Z] ✅ MA complete: 400 API calls, 339 records saved
+[2025-07-11T22:13:50.725Z] 
+📊 OVERALL PROGRESS: 57.1% (112/196)
+[2025-07-11T22:13:50.725Z] ⏱️  Elapsed: 702.2 min, Remaining: ~526.7 min
+[2025-07-11T22:13:50.725Z] 💰 API calls so far: 44800, Cost: $89.60
+[2025-07-11T22:13:50.725Z] 
+📊 Processing MAA (113/196) for year 2024
+[2025-07-11T22:13:50.807Z] 📈 Fetching 400 missing dates for MAA (0 existing)
+[2025-07-11T22:14:06.231Z] 📊 MAA progress: 12.5% (47/50 successful)
+[2025-07-11T22:14:21.139Z] 📊 MAA progress: 25.0% (89/100 successful)
+[2025-07-11T22:14:36.171Z] 📊 MAA progress: 37.5% (126/150 successful)
+[2025-07-11T22:14:51.033Z] 📊 MAA progress: 50.0% (165/200 successful)
+[2025-07-11T22:15:06.042Z] 📊 MAA progress: 62.5% (211/250 successful)
+[2025-07-11T22:15:20.879Z] 📊 MAA progress: 75.0% (256/300 successful)
+[2025-07-11T22:15:35.873Z] 📊 MAA progress: 87.5% (301/350 successful)
+[2025-07-11T22:15:50.434Z] 📊 MAA progress: 100.0% (339/400 successful)
+[2025-07-11T22:15:50.967Z] ✅ MAA complete: 400 API calls, 339 records saved
+[2025-07-11T22:15:50.967Z] 
+📊 OVERALL PROGRESS: 57.7% (113/196)
+[2025-07-11T22:15:50.968Z] ⏱️  Elapsed: 704.2 min, Remaining: ~517.3 min
+[2025-07-11T22:15:50.969Z] 💰 API calls so far: 45200, Cost: $90.40
+[2025-07-11T22:15:50.969Z] 
+📊 Processing MCD (114/196) for year 2024
+[2025-07-11T22:15:51.043Z] 📈 Fetching 400 missing dates for MCD (0 existing)
+[2025-07-11T22:16:05.898Z] 📊 MCD progress: 12.5% (47/50 successful)
+[2025-07-11T22:16:20.800Z] 📊 MCD progress: 25.0% (89/100 successful)
+[2025-07-11T22:16:36.197Z] 📊 MCD progress: 37.5% (126/150 successful)
+[2025-07-11T22:16:51.135Z] 📊 MCD progress: 50.0% (165/200 successful)
+[2025-07-11T22:17:06.456Z] 📊 MCD progress: 62.5% (211/250 successful)
+[2025-07-11T22:17:24.504Z] 📊 MCD progress: 75.0% (256/300 successful)
+[2025-07-11T22:17:39.466Z] 📊 MCD progress: 87.5% (301/350 successful)
+[2025-07-11T22:17:57.527Z] 📊 MCD progress: 100.0% (339/400 successful)
+[2025-07-11T22:17:58.098Z] ✅ MCD complete: 400 API calls, 339 records saved
+[2025-07-11T22:17:58.099Z] 
+📊 OVERALL PROGRESS: 58.2% (114/196)
+[2025-07-11T22:17:58.099Z] ⏱️  Elapsed: 706.4 min, Remaining: ~508.1 min
+[2025-07-11T22:17:58.099Z] 💰 API calls so far: 45600, Cost: $91.20
+[2025-07-11T22:17:58.100Z] 
+📊 Processing MDLZ (115/196) for year 2024
+[2025-07-11T22:17:58.181Z] 📈 Fetching 400 missing dates for MDLZ (0 existing)
+[2025-07-11T22:18:13.365Z] 📊 MDLZ progress: 12.5% (47/50 successful)
+[2025-07-11T22:18:28.411Z] 📊 MDLZ progress: 25.0% (89/100 successful)
+[2025-07-11T22:18:43.329Z] 📊 MDLZ progress: 37.5% (126/150 successful)
+[2025-07-11T22:18:58.091Z] 📊 MDLZ progress: 50.0% (165/200 successful)
+[2025-07-11T22:19:13.088Z] 📊 MDLZ progress: 62.5% (211/250 successful)
+[2025-07-11T22:19:27.864Z] 📊 MDLZ progress: 75.0% (256/300 successful)
+[2025-07-11T22:19:42.928Z] 📊 MDLZ progress: 87.5% (301/350 successful)
+[2025-07-11T22:19:57.697Z] 📊 MDLZ progress: 100.0% (339/400 successful)
+[2025-07-11T22:19:58.432Z] ✅ MDLZ complete: 400 API calls, 339 records saved
+[2025-07-11T22:19:58.435Z] 
+📊 OVERALL PROGRESS: 58.7% (115/196)
+[2025-07-11T22:19:58.435Z] ⏱️  Elapsed: 708.4 min, Remaining: ~498.9 min
+[2025-07-11T22:19:58.436Z] 💰 API calls so far: 46000, Cost: $92.00
+[2025-07-11T22:19:58.436Z] 
+📊 Processing MDT (116/196) for year 2024
+[2025-07-11T22:19:58.521Z] 📈 Fetching 400 missing dates for MDT (0 existing)
+[2025-07-11T22:20:14.023Z] 📊 MDT progress: 12.5% (47/50 successful)
+[2025-07-11T22:20:28.949Z] 📊 MDT progress: 25.0% (89/100 successful)
+[2025-07-11T22:20:43.894Z] 📊 MDT progress: 37.5% (126/150 successful)
+[2025-07-11T22:20:58.436Z] 📊 MDT progress: 50.0% (165/200 successful)
+[2025-07-11T22:21:13.798Z] 📊 MDT progress: 62.5% (211/250 successful)
+[2025-07-11T22:21:28.597Z] 📊 MDT progress: 75.0% (256/300 successful)
+[2025-07-11T22:21:43.603Z] 📊 MDT progress: 87.5% (301/350 successful)
+[2025-07-11T22:21:58.541Z] 📊 MDT progress: 100.0% (339/400 successful)
+[2025-07-11T22:21:59.261Z] ✅ MDT complete: 400 API calls, 339 records saved
+[2025-07-11T22:21:59.262Z] 
+📊 OVERALL PROGRESS: 59.2% (116/196)
+[2025-07-11T22:21:59.262Z] ⏱️  Elapsed: 710.4 min, Remaining: ~489.9 min
+[2025-07-11T22:21:59.262Z] 💰 API calls so far: 46400, Cost: $92.80
+[2025-07-11T22:21:59.262Z] 
+📊 Processing META (117/196) for year 2024
+[2025-07-11T22:21:59.333Z] 📈 Fetching 400 missing dates for META (0 existing)
+[2025-07-11T22:22:14.364Z] 📊 META progress: 12.5% (47/50 successful)
+[2025-07-11T22:22:29.285Z] 📊 META progress: 25.0% (89/100 successful)
+[2025-07-11T22:22:44.357Z] 📊 META progress: 37.5% (126/150 successful)
+[2025-07-11T22:22:59.139Z] 📊 META progress: 50.0% (165/200 successful)
+[2025-07-11T22:23:14.324Z] 📊 META progress: 62.5% (211/250 successful)
+[2025-07-11T22:23:31.061Z] 📊 META progress: 75.0% (256/300 successful)
+[2025-07-11T22:24:16.193Z] 📊 META progress: 87.5% (301/350 successful)
+[2025-07-11T22:24:30.992Z] 📊 META progress: 100.0% (339/400 successful)
+[2025-07-11T22:24:31.640Z] ✅ META complete: 400 API calls, 339 records saved
+[2025-07-11T22:24:31.641Z] 
+📊 OVERALL PROGRESS: 59.7% (117/196)
+[2025-07-11T22:24:31.641Z] ⏱️  Elapsed: 712.9 min, Remaining: ~481.4 min
+[2025-07-11T22:24:31.641Z] 💰 API calls so far: 46800, Cost: $93.60
+[2025-07-11T22:24:31.641Z] 
+📊 Processing MKC (118/196) for year 2024
+[2025-07-11T22:24:31.703Z] 📈 Fetching 400 missing dates for MKC (0 existing)
+[2025-07-11T22:24:46.468Z] 📊 MKC progress: 12.5% (47/50 successful)
+[2025-07-11T22:25:01.480Z] 📊 MKC progress: 25.0% (89/100 successful)
+[2025-07-11T22:25:16.341Z] 📊 MKC progress: 37.5% (126/150 successful)
+[2025-07-11T22:25:32.229Z] 📊 MKC progress: 50.0% (165/200 successful)
+[2025-07-11T22:25:47.376Z] 📊 MKC progress: 62.5% (211/250 successful)
+[2025-07-11T22:26:02.119Z] 📊 MKC progress: 75.0% (256/300 successful)
+[2025-07-11T22:26:17.205Z] 📊 MKC progress: 87.5% (301/350 successful)
+[2025-07-11T22:26:32.123Z] 📊 MKC progress: 100.0% (339/400 successful)
+[2025-07-11T22:26:32.744Z] ✅ MKC complete: 400 API calls, 339 records saved
+[2025-07-11T22:26:32.745Z] 
+📊 OVERALL PROGRESS: 60.2% (118/196)
+[2025-07-11T22:26:32.745Z] ⏱️  Elapsed: 714.9 min, Remaining: ~472.6 min
+[2025-07-11T22:26:32.746Z] 💰 API calls so far: 47200, Cost: $94.40
+[2025-07-11T22:26:32.746Z] 
+📊 Processing MLM (119/196) for year 2024
+[2025-07-11T22:26:32.804Z] 📈 Fetching 400 missing dates for MLM (0 existing)
+[2025-07-11T22:26:48.717Z] 📊 MLM progress: 12.5% (47/50 successful)
+[2025-07-11T22:27:03.513Z] 📊 MLM progress: 25.0% (89/100 successful)
+[2025-07-11T22:27:18.188Z] 📊 MLM progress: 37.5% (126/150 successful)
+[2025-07-11T22:27:33.098Z] 📊 MLM progress: 50.0% (165/200 successful)
+[2025-07-11T22:27:48.211Z] 📊 MLM progress: 62.5% (211/250 successful)
+[2025-07-11T22:28:03.022Z] 📊 MLM progress: 75.0% (256/300 successful)
+[2025-07-11T22:28:18.120Z] 📊 MLM progress: 87.5% (301/350 successful)
+[2025-07-11T22:28:32.781Z] 📊 MLM progress: 100.0% (339/400 successful)
+[2025-07-11T22:28:33.414Z] ✅ MLM complete: 400 API calls, 339 records saved
+[2025-07-11T22:28:33.415Z] 
+📊 OVERALL PROGRESS: 60.7% (119/196)
+[2025-07-11T22:28:33.415Z] ⏱️  Elapsed: 716.9 min, Remaining: ~463.9 min
+[2025-07-11T22:28:33.415Z] 💰 API calls so far: 47600, Cost: $95.20
+[2025-07-11T22:28:33.416Z] 
+📊 Processing MMM (120/196) for year 2024
+[2025-07-11T22:28:33.488Z] 📈 Fetching 400 missing dates for MMM (0 existing)
+[2025-07-11T22:28:48.640Z] 📊 MMM progress: 12.5% (47/50 successful)
+[2025-07-11T22:29:03.361Z] 📊 MMM progress: 25.0% (89/100 successful)
+[2025-07-11T22:29:18.429Z] 📊 MMM progress: 37.5% (126/150 successful)
+[2025-07-11T22:29:33.228Z] 📊 MMM progress: 50.0% (165/200 successful)
+[2025-07-11T22:29:48.648Z] 📊 MMM progress: 62.5% (211/250 successful)
+[2025-07-11T22:30:03.872Z] 📊 MMM progress: 75.0% (256/300 successful)
+[2025-07-11T22:30:19.187Z] 📊 MMM progress: 87.5% (301/350 successful)
+[2025-07-11T22:30:33.948Z] 📊 MMM progress: 100.0% (339/400 successful)
+[2025-07-11T22:30:34.300Z] ❌ Database insert error: invalid input syntax for type bigint: "3321081.504"
+[2025-07-11T22:30:34.301Z] ❌ Failed to save batch for MMM: invalid input syntax for type bigint: "3321081.504"
+[2025-07-11T22:30:34.579Z] ✅ MMM complete: 400 API calls, 239 records saved
+[2025-07-11T22:30:34.580Z] 
+📊 OVERALL PROGRESS: 61.2% (120/196)
+[2025-07-11T22:30:34.580Z] ⏱️  Elapsed: 719.0 min, Remaining: ~455.3 min
+[2025-07-11T22:30:34.580Z] 💰 API calls so far: 48000, Cost: $96.00
+[2025-07-11T22:30:34.581Z] 
+📊 Processing MOS (121/196) for year 2024
+[2025-07-11T22:30:34.644Z] 📈 Fetching 400 missing dates for MOS (0 existing)
+[2025-07-11T22:30:49.646Z] 📊 MOS progress: 12.5% (47/50 successful)
+[2025-07-11T22:31:04.678Z] 📊 MOS progress: 25.0% (89/100 successful)
+[2025-07-11T22:31:19.655Z] 📊 MOS progress: 37.5% (126/150 successful)
+[2025-07-11T22:31:34.401Z] 📊 MOS progress: 50.0% (165/200 successful)
+[2025-07-11T22:31:49.725Z] 📊 MOS progress: 62.5% (211/250 successful)
+[2025-07-11T22:32:04.526Z] 📊 MOS progress: 75.0% (256/300 successful)
+[2025-07-11T22:32:19.675Z] 📊 MOS progress: 87.5% (301/350 successful)
+[2025-07-11T22:32:34.439Z] 📊 MOS progress: 100.0% (339/400 successful)
+[2025-07-11T22:32:35.106Z] ✅ MOS complete: 400 API calls, 339 records saved
+[2025-07-11T22:32:35.107Z] 
+📊 OVERALL PROGRESS: 61.7% (121/196)
+[2025-07-11T22:32:35.107Z] ⏱️  Elapsed: 721.0 min, Remaining: ~446.9 min
+[2025-07-11T22:32:35.107Z] 💰 API calls so far: 48400, Cost: $96.80
+[2025-07-11T22:32:35.107Z] 
+📊 Processing MPC (122/196) for year 2024
+[2025-07-11T22:32:35.187Z] 📈 Fetching 400 missing dates for MPC (0 existing)
+[2025-07-11T22:32:50.126Z] 📊 MPC progress: 12.5% (47/50 successful)
+[2025-07-11T22:33:04.891Z] 📊 MPC progress: 25.0% (89/100 successful)
+[2025-07-11T22:33:19.960Z] 📊 MPC progress: 37.5% (126/150 successful)
+[2025-07-11T22:33:34.633Z] 📊 MPC progress: 50.0% (165/200 successful)
+[2025-07-11T22:33:49.692Z] 📊 MPC progress: 62.5% (211/250 successful)
+[2025-07-11T22:34:04.435Z] 📊 MPC progress: 75.0% (256/300 successful)
+[2025-07-11T22:34:19.636Z] 📊 MPC progress: 87.5% (301/350 successful)
+[2025-07-11T22:34:34.603Z] 📊 MPC progress: 100.0% (339/400 successful)
+[2025-07-11T22:34:35.150Z] ✅ MPC complete: 400 API calls, 339 records saved
+[2025-07-11T22:34:35.150Z] 
+📊 OVERALL PROGRESS: 62.2% (122/196)
+[2025-07-11T22:34:35.150Z] ⏱️  Elapsed: 723.0 min, Remaining: ~438.5 min
+[2025-07-11T22:34:35.151Z] 💰 API calls so far: 48800, Cost: $97.60
+[2025-07-11T22:34:35.151Z] 
+📊 Processing MRK (123/196) for year 2024
+[2025-07-11T22:34:35.245Z] 📈 Fetching 400 missing dates for MRK (0 existing)
+[2025-07-11T22:34:50.485Z] 📊 MRK progress: 12.5% (47/50 successful)
+[2025-07-11T22:35:05.750Z] 📊 MRK progress: 25.0% (89/100 successful)
+[2025-07-11T22:35:20.775Z] 📊 MRK progress: 37.5% (126/150 successful)
+[2025-07-11T22:35:35.842Z] 📊 MRK progress: 50.0% (165/200 successful)
+[2025-07-11T22:35:51.149Z] 📊 MRK progress: 62.5% (211/250 successful)
+[2025-07-11T22:36:06.517Z] 📊 MRK progress: 75.0% (256/300 successful)
+[2025-07-11T22:36:26.227Z] 📊 MRK progress: 87.5% (301/350 successful)
+[2025-07-11T22:36:41.004Z] 📊 MRK progress: 100.0% (339/400 successful)
+[2025-07-11T22:36:41.647Z] ✅ MRK complete: 400 API calls, 339 records saved
+[2025-07-11T22:36:41.648Z] 
+📊 OVERALL PROGRESS: 62.8% (123/196)
+[2025-07-11T22:36:41.648Z] ⏱️  Elapsed: 725.1 min, Remaining: ~430.3 min
+[2025-07-11T22:36:41.648Z] 💰 API calls so far: 49200, Cost: $98.40
+[2025-07-11T22:36:41.648Z] 
+📊 Processing MSFT (124/196) for year 2024
+[2025-07-11T22:36:41.748Z] 📈 Fetching 400 missing dates for MSFT (0 existing)
+[2025-07-11T22:36:57.418Z] 📊 MSFT progress: 12.5% (47/50 successful)
+[2025-07-11T22:37:12.262Z] 📊 MSFT progress: 25.0% (89/100 successful)
+[2025-07-11T22:37:27.345Z] 📊 MSFT progress: 37.5% (126/150 successful)
+[2025-07-11T22:37:45.363Z] 📊 MSFT progress: 50.0% (165/200 successful)
+[2025-07-11T22:38:00.792Z] 📊 MSFT progress: 62.5% (211/250 successful)
+[2025-07-11T22:38:15.881Z] 📊 MSFT progress: 75.0% (256/300 successful)
+[2025-07-11T22:38:31.802Z] 📊 MSFT progress: 87.5% (301/350 successful)
+[2025-07-11T22:38:46.516Z] 📊 MSFT progress: 100.0% (339/400 successful)
+[2025-07-11T22:38:47.102Z] ✅ MSFT complete: 400 API calls, 339 records saved
+[2025-07-11T22:38:47.103Z] 
+📊 OVERALL PROGRESS: 63.3% (124/196)
+[2025-07-11T22:38:47.103Z] ⏱️  Elapsed: 727.2 min, Remaining: ~422.2 min
+[2025-07-11T22:38:47.103Z] 💰 API calls so far: 49600, Cost: $99.20
+[2025-07-11T22:38:47.103Z] 
+📊 Processing MTCH (125/196) for year 2024
+[2025-07-11T22:38:47.166Z] 📈 Fetching 400 missing dates for MTCH (0 existing)
+[2025-07-11T22:39:01.856Z] 📊 MTCH progress: 12.5% (47/50 successful)
+[2025-07-11T22:39:16.546Z] 📊 MTCH progress: 25.0% (89/100 successful)
+[2025-07-11T22:39:31.279Z] 📊 MTCH progress: 37.5% (126/150 successful)
+[2025-07-11T22:39:45.905Z] 📊 MTCH progress: 50.0% (165/200 successful)
+[2025-07-11T22:40:01.009Z] 📊 MTCH progress: 62.5% (211/250 successful)
+[2025-07-11T22:40:15.778Z] 📊 MTCH progress: 75.0% (256/300 successful)
+[2025-07-11T22:40:30.794Z] 📊 MTCH progress: 87.5% (301/350 successful)
+[2025-07-11T22:40:46.011Z] 📊 MTCH progress: 100.0% (339/400 successful)
+[2025-07-11T22:40:46.495Z] ✅ MTCH complete: 400 API calls, 339 records saved
+[2025-07-11T22:40:46.496Z] 
+📊 OVERALL PROGRESS: 63.8% (125/196)
+[2025-07-11T22:40:46.496Z] ⏱️  Elapsed: 729.2 min, Remaining: ~414.2 min
+[2025-07-11T22:40:46.496Z] 💰 API calls so far: 50000, Cost: $100.00
+[2025-07-11T22:40:46.496Z] 
+📊 Processing MU (126/196) for year 2024
+[2025-07-11T22:40:46.564Z] 📈 Fetching 400 missing dates for MU (0 existing)
+[2025-07-11T22:41:01.510Z] 📊 MU progress: 12.5% (47/50 successful)
+[2025-07-11T22:41:16.408Z] 📊 MU progress: 25.0% (89/100 successful)
+[2025-07-11T22:41:31.468Z] 📊 MU progress: 37.5% (126/150 successful)
+[2025-07-11T22:41:46.593Z] 📊 MU progress: 50.0% (165/200 successful)
+[2025-07-11T22:42:01.941Z] 📊 MU progress: 62.5% (211/250 successful)
+[2025-07-11T22:42:16.954Z] 📊 MU progress: 75.0% (256/300 successful)
+[2025-07-11T22:42:32.152Z] 📊 MU progress: 87.5% (301/350 successful)
+[2025-07-11T22:42:46.900Z] 📊 MU progress: 100.0% (339/400 successful)
+[2025-07-11T22:42:47.507Z] ✅ MU complete: 400 API calls, 339 records saved
+[2025-07-11T22:42:47.512Z] 
+📊 OVERALL PROGRESS: 64.3% (126/196)
+[2025-07-11T22:42:47.532Z] ⏱️  Elapsed: 731.2 min, Remaining: ~406.2 min
+[2025-07-11T22:42:47.532Z] 💰 API calls so far: 50400, Cost: $100.80
+[2025-07-11T22:42:47.554Z] 
+📊 Processing NEE (127/196) for year 2024
+[2025-07-11T22:42:47.640Z] 📈 Fetching 400 missing dates for NEE (0 existing)
+[2025-07-11T22:43:02.489Z] 📊 NEE progress: 12.5% (47/50 successful)
+[2025-07-11T22:43:17.331Z] 📊 NEE progress: 25.0% (89/100 successful)
+[2025-07-11T22:43:32.276Z] 📊 NEE progress: 37.5% (126/150 successful)
+[2025-07-11T22:43:46.953Z] 📊 NEE progress: 50.0% (165/200 successful)
+[2025-07-11T22:44:01.903Z] 📊 NEE progress: 62.5% (211/250 successful)
+[2025-07-11T22:44:16.650Z] 📊 NEE progress: 75.0% (256/300 successful)
+[2025-07-11T22:44:31.996Z] 📊 NEE progress: 87.5% (301/350 successful)
+[2025-07-11T22:44:46.540Z] 📊 NEE progress: 100.0% (339/400 successful)
+[2025-07-11T22:44:47.295Z] ✅ NEE complete: 400 API calls, 339 records saved
+[2025-07-11T22:44:47.296Z] 
+📊 OVERALL PROGRESS: 64.8% (127/196)
+[2025-07-11T22:44:47.297Z] ⏱️  Elapsed: 733.2 min, Remaining: ~398.3 min
+[2025-07-11T22:44:47.297Z] 💰 API calls so far: 50800, Cost: $101.60
+[2025-07-11T22:44:47.297Z] 
+📊 Processing NEM (128/196) for year 2024
+[2025-07-11T22:44:47.387Z] 📈 Fetching 400 missing dates for NEM (0 existing)
+[2025-07-11T22:45:02.339Z] 📊 NEM progress: 12.5% (47/50 successful)
+[2025-07-11T22:45:17.226Z] 📊 NEM progress: 25.0% (89/100 successful)
+[2025-07-11T22:45:32.138Z] 📊 NEM progress: 37.5% (126/150 successful)
+[2025-07-11T22:45:46.779Z] 📊 NEM progress: 50.0% (165/200 successful)
+[2025-07-11T22:46:01.794Z] 📊 NEM progress: 62.5% (211/250 successful)
+[2025-07-11T22:46:16.544Z] 📊 NEM progress: 75.0% (256/300 successful)
+[2025-07-11T22:46:31.542Z] 📊 NEM progress: 87.5% (301/350 successful)
+[2025-07-11T22:46:46.401Z] 📊 NEM progress: 100.0% (339/400 successful)
+[2025-07-11T22:46:46.889Z] ✅ NEM complete: 400 API calls, 339 records saved
+[2025-07-11T22:46:46.890Z] 
+📊 OVERALL PROGRESS: 65.3% (128/196)
+[2025-07-11T22:46:46.890Z] ⏱️  Elapsed: 735.2 min, Remaining: ~390.6 min
+[2025-07-11T22:46:46.890Z] 💰 API calls so far: 51200, Cost: $102.40
+[2025-07-11T22:46:46.890Z] 
+📊 Processing NFLX (129/196) for year 2024
+[2025-07-11T22:46:46.958Z] 📈 Fetching 400 missing dates for NFLX (0 existing)
+[2025-07-11T22:47:01.905Z] 📊 NFLX progress: 12.5% (47/50 successful)
+[2025-07-11T22:47:16.727Z] 📊 NFLX progress: 25.0% (89/100 successful)
+[2025-07-11T22:47:31.622Z] 📊 NFLX progress: 37.5% (126/150 successful)
+[2025-07-11T22:47:46.319Z] 📊 NFLX progress: 50.0% (165/200 successful)
+[2025-07-11T22:48:01.208Z] 📊 NFLX progress: 62.5% (211/250 successful)
+[2025-07-11T22:48:16.369Z] 📊 NFLX progress: 75.0% (256/300 successful)
+[2025-07-11T22:48:31.513Z] 📊 NFLX progress: 87.5% (301/350 successful)
+[2025-07-11T22:48:46.289Z] 📊 NFLX progress: 100.0% (339/400 successful)
+[2025-07-11T22:48:46.978Z] ✅ NFLX complete: 400 API calls, 339 records saved
+[2025-07-11T22:48:46.979Z] 
+📊 OVERALL PROGRESS: 65.8% (129/196)
+[2025-07-11T22:48:46.979Z] ⏱️  Elapsed: 737.2 min, Remaining: ~382.9 min
+[2025-07-11T22:48:46.979Z] 💰 API calls so far: 51600, Cost: $103.20
+[2025-07-11T22:48:46.980Z] 
+📊 Processing NKE (130/196) for year 2024
+[2025-07-11T22:48:47.051Z] 📈 Fetching 400 missing dates for NKE (0 existing)
+[2025-07-11T22:49:02.224Z] 📊 NKE progress: 12.5% (47/50 successful)
+[2025-07-11T22:49:17.018Z] 📊 NKE progress: 25.0% (89/100 successful)
+[2025-07-11T22:49:37.653Z] 📊 NKE progress: 37.5% (126/150 successful)
+[2025-07-11T22:49:52.471Z] 📊 NKE progress: 50.0% (165/200 successful)
+[2025-07-11T22:50:07.585Z] 📊 NKE progress: 62.5% (211/250 successful)
+[2025-07-11T22:50:22.679Z] 📊 NKE progress: 75.0% (256/300 successful)
+[2025-07-11T22:50:37.953Z] 📊 NKE progress: 87.5% (301/350 successful)
+[2025-07-11T22:50:55.666Z] 📊 NKE progress: 100.0% (339/400 successful)
+[2025-07-11T22:50:56.376Z] ✅ NKE complete: 400 API calls, 339 records saved
+[2025-07-11T22:50:56.378Z] 
+📊 OVERALL PROGRESS: 66.3% (130/196)
+[2025-07-11T22:50:56.378Z] ⏱️  Elapsed: 739.3 min, Remaining: ~375.4 min
+[2025-07-11T22:50:56.378Z] 💰 API calls so far: 52000, Cost: $104.00
+[2025-07-11T22:50:56.378Z] 
+📊 Processing NOC (131/196) for year 2024
+[2025-07-11T22:50:56.461Z] 📈 Fetching 400 missing dates for NOC (0 existing)
+[2025-07-11T22:51:11.280Z] 📊 NOC progress: 12.5% (47/50 successful)
+[2025-07-11T22:51:25.999Z] 📊 NOC progress: 25.0% (89/100 successful)
+[2025-07-11T22:51:40.751Z] 📊 NOC progress: 37.5% (126/150 successful)
+[2025-07-11T22:51:55.330Z] 📊 NOC progress: 50.0% (165/200 successful)
+[2025-07-11T22:52:10.114Z] 📊 NOC progress: 62.5% (211/250 successful)
+[2025-07-11T22:52:24.705Z] 📊 NOC progress: 75.0% (256/300 successful)
+[2025-07-11T22:52:39.590Z] 📊 NOC progress: 87.5% (301/350 successful)
+[2025-07-11T22:52:54.212Z] 📊 NOC progress: 100.0% (339/400 successful)
+[2025-07-11T22:52:54.703Z] ✅ NOC complete: 400 API calls, 339 records saved
+[2025-07-11T22:52:54.704Z] 
+📊 OVERALL PROGRESS: 66.8% (131/196)
+[2025-07-11T22:52:54.704Z] ⏱️  Elapsed: 741.3 min, Remaining: ~367.8 min
+[2025-07-11T22:52:54.704Z] 💰 API calls so far: 52400, Cost: $104.80
+[2025-07-11T22:52:54.705Z] 
+📊 Processing NOVA (132/196) for year 2024
+[2025-07-11T22:52:54.771Z] 📈 Fetching 400 missing dates for NOVA (0 existing)
+[2025-07-11T22:53:09.639Z] 📊 NOVA progress: 12.5% (47/50 successful)
+[2025-07-11T22:53:24.563Z] 📊 NOVA progress: 25.0% (89/100 successful)
+[2025-07-11T22:53:39.465Z] 📊 NOVA progress: 37.5% (126/150 successful)
+[2025-07-11T22:53:54.245Z] 📊 NOVA progress: 50.0% (165/200 successful)
+[2025-07-11T22:54:12.439Z] 📊 NOVA progress: 62.5% (211/250 successful)
+[2025-07-11T22:54:27.778Z] 📊 NOVA progress: 75.0% (256/300 successful)
+[2025-07-11T22:54:42.719Z] 📊 NOVA progress: 87.5% (301/350 successful)
+[2025-07-11T22:54:57.161Z] 📊 NOVA progress: 100.0% (320/400 successful)
+[2025-07-11T22:54:57.706Z] ✅ NOVA complete: 400 API calls, 320 records saved
+[2025-07-11T22:54:57.707Z] 
+📊 OVERALL PROGRESS: 67.3% (132/196)
+[2025-07-11T22:54:57.707Z] ⏱️  Elapsed: 743.4 min, Remaining: ~360.4 min
+[2025-07-11T22:54:57.707Z] 💰 API calls so far: 52800, Cost: $105.60
+[2025-07-11T22:54:57.708Z] 
+📊 Processing NUE (133/196) for year 2024
+[2025-07-11T22:54:57.768Z] 📈 Fetching 400 missing dates for NUE (0 existing)
+[2025-07-11T22:55:12.483Z] 📊 NUE progress: 12.5% (47/50 successful)
+[2025-07-11T22:55:27.114Z] 📊 NUE progress: 25.0% (89/100 successful)
+[2025-07-11T22:55:41.891Z] 📊 NUE progress: 37.5% (126/150 successful)
+[2025-07-11T22:55:56.447Z] 📊 NUE progress: 50.0% (165/200 successful)
+[2025-07-11T22:56:11.356Z] 📊 NUE progress: 62.5% (211/250 successful)
+[2025-07-11T22:56:26.162Z] 📊 NUE progress: 75.0% (256/300 successful)
+[2025-07-11T22:56:41.184Z] 📊 NUE progress: 87.5% (301/350 successful)
+[2025-07-11T22:56:55.728Z] 📊 NUE progress: 100.0% (339/400 successful)
+[2025-07-11T22:56:56.213Z] ✅ NUE complete: 400 API calls, 339 records saved
+[2025-07-11T22:56:56.214Z] 
+📊 OVERALL PROGRESS: 67.9% (133/196)
+[2025-07-11T22:56:56.214Z] ⏱️  Elapsed: 745.3 min, Remaining: ~353.0 min
+[2025-07-11T22:56:56.214Z] 💰 API calls so far: 53200, Cost: $106.40
+[2025-07-11T22:56:56.214Z] 
+📊 Processing NVDA (134/196) for year 2024
+[2025-07-11T22:56:56.291Z] 📈 Fetching 400 missing dates for NVDA (0 existing)
+[2025-07-11T22:57:11.599Z] 📊 NVDA progress: 12.5% (47/50 successful)
+[2025-07-11T22:57:26.687Z] 📊 NVDA progress: 25.0% (89/100 successful)
+[2025-07-11T22:57:41.835Z] 📊 NVDA progress: 37.5% (126/150 successful)
+[2025-07-11T22:57:56.863Z] 📊 NVDA progress: 50.0% (165/200 successful)
+[2025-07-11T22:58:12.149Z] 📊 NVDA progress: 62.5% (211/250 successful)
+[2025-07-11T22:58:27.547Z] 📊 NVDA progress: 75.0% (256/300 successful)
+[2025-07-11T22:58:43.121Z] 📊 NVDA progress: 87.5% (301/350 successful)
+[2025-07-11T22:58:58.100Z] 📊 NVDA progress: 100.0% (339/400 successful)
+[2025-07-11T22:58:58.629Z] ✅ NVDA complete: 400 API calls, 339 records saved
+[2025-07-11T22:58:58.631Z] 
+📊 OVERALL PROGRESS: 68.4% (134/196)
+[2025-07-11T22:58:58.631Z] ⏱️  Elapsed: 747.4 min, Remaining: ~345.8 min
+[2025-07-11T22:58:58.632Z] 💰 API calls so far: 53600, Cost: $107.20
+[2025-07-11T22:58:58.632Z] 
+📊 Processing NWSA (135/196) for year 2024
+[2025-07-11T22:58:58.710Z] 📈 Fetching 400 missing dates for NWSA (0 existing)
+[2025-07-11T22:59:13.435Z] 📊 NWSA progress: 12.5% (47/50 successful)
+[2025-07-11T22:59:28.077Z] 📊 NWSA progress: 25.0% (89/100 successful)
+[2025-07-11T22:59:42.734Z] 📊 NWSA progress: 37.5% (126/150 successful)
+[2025-07-11T22:59:57.317Z] 📊 NWSA progress: 50.0% (165/200 successful)
+[2025-07-11T23:00:12.364Z] 📊 NWSA progress: 62.5% (211/250 successful)
+[2025-07-11T23:00:27.014Z] 📊 NWSA progress: 75.0% (256/300 successful)
+[2025-07-11T23:00:42.177Z] 📊 NWSA progress: 87.5% (301/350 successful)
+[2025-07-11T23:00:56.694Z] 📊 NWSA progress: 100.0% (339/400 successful)
+[2025-07-11T23:00:57.170Z] ✅ NWSA complete: 400 API calls, 339 records saved
+[2025-07-11T23:00:57.171Z] 
+📊 OVERALL PROGRESS: 68.9% (135/196)
+[2025-07-11T23:00:57.171Z] ⏱️  Elapsed: 749.3 min, Remaining: ~338.6 min
+[2025-07-11T23:00:57.171Z] 💰 API calls so far: 54000, Cost: $108.00
+[2025-07-11T23:00:57.171Z] 
+📊 Processing O (136/196) for year 2024
+[2025-07-11T23:00:57.237Z] 📈 Fetching 400 missing dates for O (0 existing)
+[2025-07-11T23:01:12.144Z] 📊 O progress: 12.5% (47/50 successful)
+[2025-07-11T23:01:27.164Z] 📊 O progress: 25.0% (89/100 successful)
+[2025-07-11T23:01:41.952Z] 📊 O progress: 37.5% (126/150 successful)
+[2025-07-11T23:01:57.119Z] 📊 O progress: 50.0% (165/200 successful)
+[2025-07-11T23:02:12.137Z] 📊 O progress: 62.5% (211/250 successful)
+[2025-07-11T23:02:26.840Z] 📊 O progress: 75.0% (256/300 successful)
+[2025-07-11T23:02:41.937Z] 📊 O progress: 87.5% (301/350 successful)
+[2025-07-11T23:02:56.507Z] 📊 O progress: 100.0% (339/400 successful)
+[2025-07-11T23:02:57.009Z] ✅ O complete: 400 API calls, 339 records saved
+[2025-07-11T23:02:57.011Z] 
+📊 OVERALL PROGRESS: 69.4% (136/196)
+[2025-07-11T23:02:57.011Z] ⏱️  Elapsed: 751.3 min, Remaining: ~331.5 min
+[2025-07-11T23:02:57.011Z] 💰 API calls so far: 54400, Cost: $108.80
+[2025-07-11T23:02:57.011Z] 
+📊 Processing OKE (137/196) for year 2024
+[2025-07-11T23:02:57.088Z] 📈 Fetching 400 missing dates for OKE (0 existing)
+[2025-07-11T23:03:11.926Z] 📊 OKE progress: 12.5% (47/50 successful)
+[2025-07-11T23:03:26.596Z] 📊 OKE progress: 25.0% (89/100 successful)
+[2025-07-11T23:03:41.427Z] 📊 OKE progress: 37.5% (126/150 successful)
+[2025-07-11T23:03:56.094Z] 📊 OKE progress: 50.0% (165/200 successful)
+[2025-07-11T23:04:11.359Z] 📊 OKE progress: 62.5% (211/250 successful)
+[2025-07-11T23:04:25.974Z] 📊 OKE progress: 75.0% (256/300 successful)
+[2025-07-11T23:04:41.347Z] 📊 OKE progress: 87.5% (301/350 successful)
+[2025-07-11T23:04:56.012Z] 📊 OKE progress: 100.0% (339/400 successful)
+[2025-07-11T23:04:56.659Z] ✅ OKE complete: 400 API calls, 339 records saved
+[2025-07-11T23:04:56.662Z] 
+📊 OVERALL PROGRESS: 69.9% (137/196)
+[2025-07-11T23:04:56.662Z] ⏱️  Elapsed: 753.3 min, Remaining: ~324.4 min
+[2025-07-11T23:04:56.662Z] 💰 API calls so far: 54800, Cost: $109.60
+[2025-07-11T23:04:56.663Z] 
+📊 Processing ORCL (138/196) for year 2024
+[2025-07-11T23:04:56.752Z] 📈 Fetching 400 missing dates for ORCL (0 existing)
+[2025-07-11T23:05:11.728Z] 📊 ORCL progress: 12.5% (47/50 successful)
+[2025-07-11T23:05:26.349Z] 📊 ORCL progress: 25.0% (89/100 successful)
+[2025-07-11T23:05:41.255Z] 📊 ORCL progress: 37.5% (126/150 successful)
+[2025-07-11T23:05:57.274Z] 📊 ORCL progress: 50.0% (165/200 successful)
+[2025-07-11T23:06:13.808Z] 📊 ORCL progress: 62.5% (211/250 successful)
+[2025-07-11T23:06:34.707Z] 📊 ORCL progress: 75.0% (256/300 successful)
+[2025-07-11T23:06:49.978Z] 📊 ORCL progress: 87.5% (301/350 successful)
+[2025-07-11T23:07:05.409Z] 📊 ORCL progress: 100.0% (339/400 successful)
+[2025-07-11T23:07:06.097Z] ✅ ORCL complete: 400 API calls, 339 records saved
+[2025-07-11T23:07:06.100Z] 
+📊 OVERALL PROGRESS: 70.4% (138/196)
+[2025-07-11T23:07:06.101Z] ⏱️  Elapsed: 755.5 min, Remaining: ~317.5 min
+[2025-07-11T23:07:06.101Z] 💰 API calls so far: 55200, Cost: $110.40
+[2025-07-11T23:07:06.101Z] 
+📊 Processing ORLY (139/196) for year 2024
+[2025-07-11T23:07:06.165Z] 📈 Fetching 400 missing dates for ORLY (0 existing)
+[2025-07-11T23:07:21.027Z] 📊 ORLY progress: 12.5% (47/50 successful)
+[2025-07-11T23:07:35.714Z] 📊 ORLY progress: 25.0% (89/100 successful)
+[2025-07-11T23:07:50.535Z] 📊 ORLY progress: 37.5% (126/150 successful)
+[2025-07-11T23:08:05.274Z] 📊 ORLY progress: 50.0% (165/200 successful)
+[2025-07-11T23:08:20.166Z] 📊 ORLY progress: 62.5% (211/250 successful)
+[2025-07-11T23:08:40.758Z] 📊 ORLY progress: 75.0% (256/300 successful)
+[2025-07-11T23:08:55.594Z] 📊 ORLY progress: 87.5% (301/350 successful)
+[2025-07-11T23:09:10.066Z] 📊 ORLY progress: 100.0% (339/400 successful)
+[2025-07-11T23:09:10.535Z] ✅ ORLY complete: 400 API calls, 339 records saved
+[2025-07-11T23:09:10.536Z] 
+📊 OVERALL PROGRESS: 70.9% (139/196)
+[2025-07-11T23:09:10.536Z] ⏱️  Elapsed: 757.6 min, Remaining: ~310.7 min
+[2025-07-11T23:09:10.536Z] 💰 API calls so far: 55600, Cost: $111.20
+[2025-07-11T23:09:10.536Z] 
+📊 Processing PARA (140/196) for year 2024
+[2025-07-11T23:09:10.607Z] 📈 Fetching 400 missing dates for PARA (0 existing)
+[2025-07-11T23:09:25.506Z] 📊 PARA progress: 12.5% (47/50 successful)
+[2025-07-11T23:09:40.422Z] 📊 PARA progress: 25.0% (89/100 successful)
+[2025-07-11T23:09:55.257Z] 📊 PARA progress: 37.5% (126/150 successful)
+[2025-07-11T23:10:09.913Z] 📊 PARA progress: 50.0% (165/200 successful)
+[2025-07-11T23:10:24.942Z] 📊 PARA progress: 62.5% (211/250 successful)
+[2025-07-11T23:10:39.779Z] 📊 PARA progress: 75.0% (256/300 successful)
+[2025-07-11T23:10:54.678Z] 📊 PARA progress: 87.5% (301/350 successful)
+[2025-07-11T23:11:09.224Z] 📊 PARA progress: 100.0% (339/400 successful)
+[2025-07-11T23:11:09.750Z] ✅ PARA complete: 400 API calls, 339 records saved
+[2025-07-11T23:11:09.751Z] 
+📊 OVERALL PROGRESS: 71.4% (140/196)
+[2025-07-11T23:11:09.751Z] ⏱️  Elapsed: 759.6 min, Remaining: ~303.8 min
+[2025-07-11T23:11:09.751Z] 💰 API calls so far: 56000, Cost: $112.00
+[2025-07-11T23:11:09.751Z] 
+📊 Processing PEP (141/196) for year 2024
+[2025-07-11T23:11:09.823Z] 📈 Fetching 400 missing dates for PEP (0 existing)
+[2025-07-11T23:11:24.648Z] 📊 PEP progress: 12.5% (47/50 successful)
+[2025-07-11T23:11:40.050Z] 📊 PEP progress: 25.0% (89/100 successful)
+[2025-07-11T23:11:55.261Z] 📊 PEP progress: 37.5% (126/150 successful)
+[2025-07-11T23:12:10.284Z] 📊 PEP progress: 50.0% (165/200 successful)
+[2025-07-11T23:12:25.312Z] 📊 PEP progress: 62.5% (211/250 successful)
+[2025-07-11T23:12:40.097Z] 📊 PEP progress: 75.0% (256/300 successful)
+[2025-07-11T23:12:55.075Z] 📊 PEP progress: 87.5% (301/350 successful)
+[2025-07-11T23:13:09.778Z] 📊 PEP progress: 100.0% (339/400 successful)
+[2025-07-11T23:13:10.311Z] ✅ PEP complete: 400 API calls, 339 records saved
+[2025-07-11T23:13:10.313Z] 
+📊 OVERALL PROGRESS: 71.9% (141/196)
+[2025-07-11T23:13:10.313Z] ⏱️  Elapsed: 761.6 min, Remaining: ~297.1 min
+[2025-07-11T23:13:10.313Z] 💰 API calls so far: 56400, Cost: $112.80
+[2025-07-11T23:13:10.313Z] 
+📊 Processing PFE (142/196) for year 2024
+[2025-07-11T23:13:10.410Z] 📈 Fetching 400 missing dates for PFE (0 existing)
+[2025-07-11T23:13:25.659Z] 📊 PFE progress: 12.5% (47/50 successful)
+[2025-07-11T23:13:40.629Z] 📊 PFE progress: 25.0% (89/100 successful)
+[2025-07-11T23:13:55.580Z] 📊 PFE progress: 37.5% (126/150 successful)
+[2025-07-11T23:14:10.197Z] 📊 PFE progress: 50.0% (165/200 successful)
+[2025-07-11T23:14:26.957Z] 📊 PFE progress: 62.5% (211/250 successful)
+[2025-07-11T23:14:41.932Z] 📊 PFE progress: 75.0% (256/300 successful)
+[2025-07-11T23:14:57.253Z] 📊 PFE progress: 87.5% (301/350 successful)
+[2025-07-11T23:15:12.376Z] 📊 PFE progress: 100.0% (339/400 successful)
+[2025-07-11T23:15:12.914Z] ✅ PFE complete: 400 API calls, 339 records saved
+[2025-07-11T23:15:12.915Z] 
+📊 OVERALL PROGRESS: 72.4% (142/196)
+[2025-07-11T23:15:12.915Z] ⏱️  Elapsed: 763.6 min, Remaining: ~290.4 min
+[2025-07-11T23:15:12.916Z] 💰 API calls so far: 56800, Cost: $113.60
+[2025-07-11T23:15:12.916Z] 
+📊 Processing PG (143/196) for year 2024
+[2025-07-11T23:15:12.984Z] 📈 Fetching 400 missing dates for PG (0 existing)
+[2025-07-11T23:15:27.926Z] 📊 PG progress: 12.5% (47/50 successful)
+[2025-07-11T23:15:42.538Z] 📊 PG progress: 25.0% (89/100 successful)
+[2025-07-11T23:15:57.309Z] 📊 PG progress: 37.5% (126/150 successful)
+[2025-07-11T23:16:12.094Z] 📊 PG progress: 50.0% (165/200 successful)
+[2025-07-11T23:16:27.047Z] 📊 PG progress: 62.5% (211/250 successful)
+[2025-07-11T23:16:41.949Z] 📊 PG progress: 75.0% (256/300 successful)
+[2025-07-11T23:16:57.174Z] 📊 PG progress: 87.5% (301/350 successful)
+[2025-07-11T23:17:11.758Z] 📊 PG progress: 100.0% (339/400 successful)
+[2025-07-11T23:17:12.279Z] ✅ PG complete: 400 API calls, 339 records saved
+[2025-07-11T23:17:12.291Z] 
+📊 OVERALL PROGRESS: 73.0% (143/196)
+[2025-07-11T23:17:12.292Z] ⏱️  Elapsed: 765.6 min, Remaining: ~283.8 min
+[2025-07-11T23:17:12.292Z] 💰 API calls so far: 57200, Cost: $114.40
+[2025-07-11T23:17:12.292Z] 
+📊 Processing PH (144/196) for year 2024
+[2025-07-11T23:17:12.359Z] 📈 Fetching 400 missing dates for PH (0 existing)
+[2025-07-11T23:17:27.181Z] 📊 PH progress: 12.5% (47/50 successful)
+[2025-07-11T23:17:41.879Z] 📊 PH progress: 25.0% (89/100 successful)
+[2025-07-11T23:17:56.818Z] 📊 PH progress: 37.5% (126/150 successful)
+[2025-07-11T23:18:11.745Z] 📊 PH progress: 50.0% (165/200 successful)
+[2025-07-11T23:18:26.742Z] 📊 PH progress: 62.5% (211/250 successful)
+[2025-07-11T23:18:41.643Z] 📊 PH progress: 75.0% (256/300 successful)
+[2025-07-11T23:18:56.820Z] 📊 PH progress: 87.5% (301/350 successful)
+[2025-07-11T23:19:11.399Z] 📊 PH progress: 100.0% (339/400 successful)
+[2025-07-11T23:19:12.147Z] ✅ PH complete: 400 API calls, 339 records saved
+[2025-07-11T23:19:12.148Z] 
+📊 OVERALL PROGRESS: 73.5% (144/196)
+[2025-07-11T23:19:12.148Z] ⏱️  Elapsed: 767.6 min, Remaining: ~277.2 min
+[2025-07-11T23:19:12.148Z] 💰 API calls so far: 57600, Cost: $115.20
+[2025-07-11T23:19:12.148Z] 
+📊 Processing PINS (145/196) for year 2024
+[2025-07-11T23:19:12.210Z] 📈 Fetching 400 missing dates for PINS (0 existing)
+[2025-07-11T23:19:27.620Z] 📊 PINS progress: 12.5% (47/50 successful)
+[2025-07-11T23:19:42.351Z] 📊 PINS progress: 25.0% (89/100 successful)
+[2025-07-11T23:19:58.434Z] 📊 PINS progress: 37.5% (126/150 successful)
+[2025-07-11T23:20:13.189Z] 📊 PINS progress: 50.0% (165/200 successful)
+[2025-07-11T23:20:28.305Z] 📊 PINS progress: 62.5% (211/250 successful)
+[2025-07-11T23:20:44.087Z] 📊 PINS progress: 75.0% (256/300 successful)
+[2025-07-11T23:20:59.639Z] 📊 PINS progress: 87.5% (301/350 successful)
+[2025-07-11T23:21:14.921Z] 📊 PINS progress: 100.0% (339/400 successful)
+[2025-07-11T23:21:15.585Z] ✅ PINS complete: 400 API calls, 339 records saved
+[2025-07-11T23:21:15.587Z] 
+📊 OVERALL PROGRESS: 74.0% (145/196)
+[2025-07-11T23:21:15.587Z] ⏱️  Elapsed: 769.6 min, Remaining: ~270.7 min
+[2025-07-11T23:21:15.588Z] 💰 API calls so far: 58000, Cost: $116.00
+[2025-07-11T23:21:15.588Z] 
+📊 Processing PLD (146/196) for year 2024
+[2025-07-11T23:21:15.652Z] 📈 Fetching 400 missing dates for PLD (0 existing)
+[2025-07-11T23:21:30.638Z] 📊 PLD progress: 12.5% (47/50 successful)
+[2025-07-11T23:21:45.595Z] 📊 PLD progress: 25.0% (89/100 successful)
+[2025-07-11T23:22:00.476Z] 📊 PLD progress: 37.5% (126/150 successful)
+[2025-07-11T23:22:15.229Z] 📊 PLD progress: 50.0% (165/200 successful)
+[2025-07-11T23:22:30.405Z] 📊 PLD progress: 62.5% (211/250 successful)
+[2025-07-11T23:22:45.340Z] 📊 PLD progress: 75.0% (256/300 successful)
+[2025-07-11T23:23:00.511Z] 📊 PLD progress: 87.5% (301/350 successful)
+[2025-07-11T23:23:16.758Z] 📊 PLD progress: 100.0% (339/400 successful)
+[2025-07-11T23:23:17.415Z] ✅ PLD complete: 400 API calls, 339 records saved
+[2025-07-11T23:23:17.415Z] 
+📊 OVERALL PROGRESS: 74.5% (146/196)
+[2025-07-11T23:23:17.415Z] ⏱️  Elapsed: 771.7 min, Remaining: ~264.3 min
+[2025-07-11T23:23:17.416Z] 💰 API calls so far: 58400, Cost: $116.80
+[2025-07-11T23:23:17.416Z] 
+📊 Processing PPG (147/196) for year 2024
+[2025-07-11T23:23:17.480Z] 📈 Fetching 400 missing dates for PPG (0 existing)
+[2025-07-11T23:23:32.981Z] 📊 PPG progress: 12.5% (47/50 successful)
+[2025-07-11T23:23:47.905Z] 📊 PPG progress: 25.0% (89/100 successful)
+[2025-07-11T23:24:03.033Z] 📊 PPG progress: 37.5% (126/150 successful)
+[2025-07-11T23:24:18.023Z] 📊 PPG progress: 50.0% (165/200 successful)
+[2025-07-11T23:24:33.619Z] 📊 PPG progress: 62.5% (211/250 successful)
+[2025-07-11T23:24:48.638Z] 📊 PPG progress: 75.0% (256/300 successful)
+[2025-07-11T23:25:03.930Z] 📊 PPG progress: 87.5% (301/350 successful)
+[2025-07-11T23:25:18.682Z] 📊 PPG progress: 100.0% (339/400 successful)
+[2025-07-11T23:25:19.302Z] ✅ PPG complete: 400 API calls, 339 records saved
+[2025-07-11T23:25:19.304Z] 
+📊 OVERALL PROGRESS: 75.0% (147/196)
+[2025-07-11T23:25:19.305Z] ⏱️  Elapsed: 773.7 min, Remaining: ~257.9 min
+[2025-07-11T23:25:19.306Z] 💰 API calls so far: 58800, Cost: $117.60
+[2025-07-11T23:25:19.306Z] 
+📊 Processing PSA (148/196) for year 2024
+[2025-07-11T23:25:19.369Z] 📈 Fetching 400 missing dates for PSA (0 existing)
+[2025-07-11T23:25:34.226Z] 📊 PSA progress: 12.5% (47/50 successful)
