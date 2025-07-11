@@ -1,0 +1,24 @@
+{
+  "name": "kurzora-historical-data-fetcher",
+  "version": "1.0.0",
+  "description": "Dynamic historical data fetcher - reads active stocks from database to ensure perfect alignment with live signals",
+  "main": "historical-data-fetcher.js",
+  "scripts": {
+    "fetch-2024": "node historical-data-fetcher.js --year=2024",
+    "fetch-2023": "node historical-data-fetcher.js --year=2023",
+    "fetch-2022": "node historical-data-fetcher.js --year=2022",
+    "fetch-2021": "node historical-data-fetcher.js --year=2021",
+    "fetch-2020": "node historical-data-fetcher.js --year=2020",
+    "fetch-2019": "node historical-data-fetcher.js --year=2019"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "node-fetch": "^2.7.0",
+    "dotenv": "^16.3.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "author": "Kurzora Platform",
+  "license": "MIT"
+}

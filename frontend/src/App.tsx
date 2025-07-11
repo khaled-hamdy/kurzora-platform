@@ -41,6 +41,8 @@ import CookieNotice from "./pages/legal/CookieNotice";
 import PolygonTest from "./pages/PolygonTest";
 // ✅ CLEANED: Single signals test component (Enhanced with sector fix)
 import SignalsTest from "./pages/SignalsTest";
+// 🚀 SESSION #169: Backtesting System - Complete 30-day simulation
+import BacktestAnalyzer from "./components/BacktestAnalyzer";
 
 // Create QueryClient with default options
 const queryClient = new QueryClient({
@@ -88,6 +90,9 @@ function App() {
 
                   {/* ✅ CLEANED: Enhanced Signal Generation Test with Database Auto-Save & Sector Fix */}
                   <Route path="/signals-test" element={<SignalsTest />} />
+
+                  {/* 🚀 SESSION #169: BACKTESTING SYSTEM - Complete 30-Day Trading Simulation */}
+                  <Route path="/backtest" element={<BacktestAnalyzer />} />
 
                   {/* 🧪 SUBSCRIPTION TIER TEST PAGE */}
                   <Route
