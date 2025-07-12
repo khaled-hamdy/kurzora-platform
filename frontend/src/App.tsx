@@ -2,11 +2,11 @@
 // 🎯 KURZORA PLATFORM - MAIN APPLICATION ROUTER
 // ==================================================================================
 // 🛡️ ANTI-REGRESSION: This is a PRODUCTION-CRITICAL file - handle with extreme care
-// 📝 SESSION #172: Added Combined Backtest Analyzer route (/combined-backtest)
+// 📝 SESSION #173: Removed fake data components (DailyBreakdownReportGenerator, CombinedBacktestAnalyzer)
 // 🔄 PRESERVED: All existing routes from Sessions #169, #171 and earlier
 // 🚨 CRITICAL: Never modify existing routes without understanding their purpose
 // 📋 COMPLETE: All imports, providers, and routes maintained exactly as before
-// 🎊 NEW FEATURE: Combined investor due diligence system at /combined-backtest
+// 🧹 CLEANED: Removed components with fake data as requested by user
 
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -71,18 +71,10 @@ import PolygonTest from "./pages/PolygonTest";
 import SignalsTest from "./pages/SignalsTest";
 
 // ==================================================================================
-// 📊 BACKTESTING SYSTEM IMPORTS (PRESERVED + NEW SESSION #172)
+// 📊 BACKTESTING SYSTEM IMPORTS (PRESERVED FROM PREVIOUS SESSIONS)
 // ==================================================================================
 // 🚀 SESSION #169: Backtesting System - Complete 30-day simulation
 import BacktestAnalyzer from "./components/BacktestAnalyzer";
-// 🚀 SESSION #171: Daily Breakdown Report Generator - Professional investor reports
-import DailyBreakdownReportGenerator from "./components/DailyBreakdownReportGenerator";
-// 🚀 SESSION #172: Combined Backtest Analyzer - Complete Investor Due Diligence System
-// 🛡️ ANTI-REGRESSION: This combines the functionality of Sessions #169 and #171
-// 🎯 PURPOSE: Professional institutional-grade backtesting with lifecycle tracking
-// 🎊 FEATURES: Enhanced traceability, flexible position sizing, multiple export formats
-// 📋 INVESTOR READY: Complete audit trail for due diligence presentations
-import CombinedBacktestAnalyzer from "./components/CombinedBacktestAnalyzer";
 
 // ==================================================================================
 // ⚙️ QUERY CLIENT CONFIGURATION (PRESERVED FROM PREVIOUS SESSIONS)
@@ -101,7 +93,7 @@ const queryClient = new QueryClient({
 // 🎯 MAIN APPLICATION COMPONENT
 // ==================================================================================
 // 🛡️ ANTI-REGRESSION: This function contains ALL routes for the platform
-// 📝 SESSION #172: Added /combined-backtest route for enhanced investor system
+// 📝 SESSION #173: Removed fake data component routes as requested
 // 🔄 PRESERVED: All existing routes maintained exactly as before
 // 🚨 CRITICAL: Never remove or modify existing routes without understanding impact
 
@@ -156,29 +148,12 @@ function App() {
                   />
 
                   {/* ================================================================== */}
-                  {/* 📊 BACKTESTING SYSTEM ROUTES (SESSIONS #169, #171, #172) */}
+                  {/* 📊 BACKTESTING SYSTEM ROUTES (SESSION #169) */}
                   {/* ================================================================== */}
 
                   {/* 🚀 SESSION #169: BACKTESTING SYSTEM - Complete 30-Day Trading Simulation */}
                   {/* 🛡️ PRESERVED: Original backtesting system from Session #169 */}
                   <Route path="/backtest" element={<BacktestAnalyzer />} />
-
-                  {/* 🚀 SESSION #171: DAILY BREAKDOWN REPORTS - Professional investor reports */}
-                  {/* 🛡️ PRESERVED: Daily report generator from Session #171 */}
-                  <Route
-                    path="/daily-reports"
-                    element={<DailyBreakdownReportGenerator />}
-                  />
-
-                  {/* 🚀 SESSION #172: COMBINED BACKTEST ANALYZER - Complete Investor Due Diligence System */}
-                  {/* 🎯 NEW FEATURE: Combined backtesting with enhanced lifecycle tracking */}
-                  {/* 📋 FEATURES: Flexible position sizing, force-close system, multiple exports */}
-                  {/* 🛡️ SAFE ADDITION: New route that doesn't conflict with existing /backtest */}
-                  {/* 🎊 INVESTOR READY: Professional due diligence system with complete audit trail */}
-                  <Route
-                    path="/combined-backtest"
-                    element={<CombinedBacktestAnalyzer />}
-                  />
 
                   {/* ================================================================== */}
                   {/* 🛡️ ADMIN ROUTES - COMPLETE PROFESSIONAL ADMIN PANEL */}
@@ -328,12 +303,12 @@ function App() {
 export default App;
 
 // ==================================================================================
-// 📝 SESSION #172 HANDOVER NOTES FOR FUTURE SESSIONS
+// 📝 SESSION #173 HANDOVER NOTES FOR FUTURE SESSIONS
 // ==================================================================================
-// 🎯 WHAT WAS ADDED: Single new route /combined-backtest for enhanced investor system
+// 🧹 WHAT WAS REMOVED: DailyBreakdownReportGenerator and CombinedBacktestAnalyzer imports and routes
 // 🛡️ WHAT WAS PRESERVED: All existing routes, imports, and functionality unchanged
-// 🔄 ROUTE STRUCTURE: /backtest (Session #169), /daily-reports (Session #171), /combined-backtest (Session #172)
+// 🔄 ROUTE STRUCTURE: /backtest (Session #169) still functional, fake data routes removed
 // 🚨 CRITICAL ROUTES: Admin panel, core platform, and all legal pages preserved exactly
 // 📋 FUTURE MODIFICATIONS: Always preserve existing functionality and add extensive comments
-// 🎊 TESTING: New route accessible at localhost:8081/combined-backtest
-// 🛡️ SAFETY: Original backtesting systems still functional at original routes
+// 🎊 TESTING: All remaining routes still functional, fake data components safely removed
+// 🛡️ SAFETY: Core backtesting system still functional at /backtest route
