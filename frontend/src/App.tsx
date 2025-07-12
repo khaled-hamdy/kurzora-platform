@@ -1,3 +1,13 @@
+// ==================================================================================
+// 🎯 KURZORA PLATFORM - MAIN APPLICATION ROUTER
+// ==================================================================================
+// 🛡️ ANTI-REGRESSION: This is a PRODUCTION-CRITICAL file - handle with extreme care
+// 📝 SESSION #172: Added Combined Backtest Analyzer route (/combined-backtest)
+// 🔄 PRESERVED: All existing routes from Sessions #169, #171 and earlier
+// 🚨 CRITICAL: Never modify existing routes without understanding their purpose
+// 📋 COMPLETE: All imports, providers, and routes maintained exactly as before
+// 🎊 NEW FEATURE: Combined investor due diligence system at /combined-backtest
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -6,14 +16,24 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { SignalsProvider } from "./contexts/SignalsContext";
 import { PositionsProvider } from "./contexts/PositionsContext";
-// ADMIN IMPORTS - COMPLETE ADMIN PANEL
+
+// ==================================================================================
+// 🛡️ ADMIN IMPORTS - COMPLETE ADMIN PANEL (PRESERVED FROM PREVIOUS SESSIONS)
+// ==================================================================================
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./components/admin/AdminDashboard";
 import AdminUsers from "./components/admin/AdminUsers";
 import AdminSettings from "./components/admin/AdminSettings";
-// TEST COMPONENTS
+
+// ==================================================================================
+// 🧪 TEST COMPONENTS (PRESERVED FROM PREVIOUS SESSIONS)
+// ==================================================================================
 import SubscriptionTierTest from "./components/test/SubscriptionTierTest";
+
+// ==================================================================================
+// 📄 CORE PAGE IMPORTS (PRESERVED FROM PREVIOUS SESSIONS)
+// ==================================================================================
 import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
 import Signals from "./pages/Signals";
@@ -31,6 +51,10 @@ import Contact from "./pages/Contact";
 import BrokerIntegration from "./pages/BrokerIntegration";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
+
+// ==================================================================================
+// 📋 LEGAL PAGE IMPORTS (PRESERVED FROM PREVIOUS SESSIONS)
+// ==================================================================================
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import TermsOfService from "./pages/legal/TermsOfService";
 import GermanTermsOfService from "./pages/legal/de/TermsOfService";
@@ -38,14 +62,31 @@ import RiskDisclosure from "./pages/legal/RiskDisclosure";
 import ShariahCompliance from "./pages/legal/ShariahCompliance";
 import GDPRCompliance from "./pages/legal/GDPRCompliance";
 import CookieNotice from "./pages/legal/CookieNotice";
+
+// ==================================================================================
+// 🔬 TESTING & ANALYSIS IMPORTS (PRESERVED FROM PREVIOUS SESSIONS)
+// ==================================================================================
 import PolygonTest from "./pages/PolygonTest";
 // ✅ CLEANED: Single signals test component (Enhanced with sector fix)
 import SignalsTest from "./pages/SignalsTest";
+
+// ==================================================================================
+// 📊 BACKTESTING SYSTEM IMPORTS (PRESERVED + NEW SESSION #172)
+// ==================================================================================
 // 🚀 SESSION #169: Backtesting System - Complete 30-day simulation
 import BacktestAnalyzer from "./components/BacktestAnalyzer";
 // 🚀 SESSION #171: Daily Breakdown Report Generator - Professional investor reports
 import DailyBreakdownReportGenerator from "./components/DailyBreakdownReportGenerator";
+// 🚀 SESSION #172: Combined Backtest Analyzer - Complete Investor Due Diligence System
+// 🛡️ ANTI-REGRESSION: This combines the functionality of Sessions #169 and #171
+// 🎯 PURPOSE: Professional institutional-grade backtesting with lifecycle tracking
+// 🎊 FEATURES: Enhanced traceability, flexible position sizing, multiple export formats
+// 📋 INVESTOR READY: Complete audit trail for due diligence presentations
+import CombinedBacktestAnalyzer from "./components/CombinedBacktestAnalyzer";
 
+// ==================================================================================
+// ⚙️ QUERY CLIENT CONFIGURATION (PRESERVED FROM PREVIOUS SESSIONS)
+// ==================================================================================
 // Create QueryClient with default options
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -55,6 +96,14 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// ==================================================================================
+// 🎯 MAIN APPLICATION COMPONENT
+// ==================================================================================
+// 🛡️ ANTI-REGRESSION: This function contains ALL routes for the platform
+// 📝 SESSION #172: Added /combined-backtest route for enhanced investor system
+// 🔄 PRESERVED: All existing routes maintained exactly as before
+// 🚨 CRITICAL: Never remove or modify existing routes without understanding impact
 
 function App() {
   return (
@@ -67,6 +116,9 @@ function App() {
             <PositionsProvider>
               <SignalsProvider>
                 <Routes>
+                  {/* ================================================================== */}
+                  {/* 🏠 CORE PLATFORM ROUTES (PRESERVED FROM PREVIOUS SESSIONS) */}
+                  {/* ================================================================== */}
                   <Route path="/" element={<LandingPage />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/signals" element={<Signals />} />
@@ -87,20 +139,15 @@ function App() {
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/profile" element={<Profile />} />
 
+                  {/* ================================================================== */}
+                  {/* 🔬 TESTING & DEVELOPMENT ROUTES (PRESERVED FROM PREVIOUS SESSIONS) */}
+                  {/* ================================================================== */}
+
                   {/* 🚀 POLYGON.IO TEST PAGE */}
                   <Route path="/polygon-test" element={<PolygonTest />} />
 
                   {/* ✅ CLEANED: Enhanced Signal Generation Test with Database Auto-Save & Sector Fix */}
                   <Route path="/signals-test" element={<SignalsTest />} />
-
-                  {/* 🚀 SESSION #169: BACKTESTING SYSTEM - Complete 30-Day Trading Simulation */}
-                  <Route path="/backtest" element={<BacktestAnalyzer />} />
-
-                  {/* 🚀 SESSION #171: DAILY BREAKDOWN REPORTS - Professional investor reports */}
-                  <Route
-                    path="/daily-reports"
-                    element={<DailyBreakdownReportGenerator />}
-                  />
 
                   {/* 🧪 SUBSCRIPTION TIER TEST PAGE */}
                   <Route
@@ -108,7 +155,35 @@ function App() {
                     element={<SubscriptionTierTest />}
                   />
 
+                  {/* ================================================================== */}
+                  {/* 📊 BACKTESTING SYSTEM ROUTES (SESSIONS #169, #171, #172) */}
+                  {/* ================================================================== */}
+
+                  {/* 🚀 SESSION #169: BACKTESTING SYSTEM - Complete 30-Day Trading Simulation */}
+                  {/* 🛡️ PRESERVED: Original backtesting system from Session #169 */}
+                  <Route path="/backtest" element={<BacktestAnalyzer />} />
+
+                  {/* 🚀 SESSION #171: DAILY BREAKDOWN REPORTS - Professional investor reports */}
+                  {/* 🛡️ PRESERVED: Daily report generator from Session #171 */}
+                  <Route
+                    path="/daily-reports"
+                    element={<DailyBreakdownReportGenerator />}
+                  />
+
+                  {/* 🚀 SESSION #172: COMBINED BACKTEST ANALYZER - Complete Investor Due Diligence System */}
+                  {/* 🎯 NEW FEATURE: Combined backtesting with enhanced lifecycle tracking */}
+                  {/* 📋 FEATURES: Flexible position sizing, force-close system, multiple exports */}
+                  {/* 🛡️ SAFE ADDITION: New route that doesn't conflict with existing /backtest */}
+                  {/* 🎊 INVESTOR READY: Professional due diligence system with complete audit trail */}
+                  <Route
+                    path="/combined-backtest"
+                    element={<CombinedBacktestAnalyzer />}
+                  />
+
+                  {/* ================================================================== */}
                   {/* 🛡️ ADMIN ROUTES - COMPLETE PROFESSIONAL ADMIN PANEL */}
+                  {/* ================================================================== */}
+                  {/* 🛡️ PRESERVED: All admin functionality from previous sessions */}
                   <Route
                     path="/admin"
                     element={
@@ -127,7 +202,7 @@ function App() {
                     <Route path="settings" element={<AdminSettings />} />
                   </Route>
 
-                  {/* 🛡️ ADMIN TEST ROUTE - DEMONSTRATION */}
+                  {/* 🛡️ ADMIN TEST ROUTE - DEMONSTRATION (PRESERVED) */}
                   <Route
                     path="/admin-test"
                     element={
@@ -213,7 +288,9 @@ function App() {
                     }
                   />
 
-                  {/* Legal Pages */}
+                  {/* ================================================================== */}
+                  {/* 📋 LEGAL PAGES (PRESERVED FROM PREVIOUS SESSIONS) */}
+                  {/* ================================================================== */}
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                   <Route
                     path="/terms-of-service"
@@ -231,7 +308,9 @@ function App() {
                   <Route path="/gdpr-compliance" element={<GDPRCompliance />} />
                   <Route path="/cookie-notice" element={<CookieNotice />} />
 
-                  {/* Catch-all route */}
+                  {/* ================================================================== */}
+                  {/* 🚨 CATCH-ALL ROUTE (PRESERVED FROM PREVIOUS SESSIONS) */}
+                  {/* ================================================================== */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </SignalsProvider>
@@ -243,4 +322,18 @@ function App() {
   );
 }
 
+// ==================================================================================
+// 📤 EXPORT (PRESERVED FROM PREVIOUS SESSIONS)
+// ==================================================================================
 export default App;
+
+// ==================================================================================
+// 📝 SESSION #172 HANDOVER NOTES FOR FUTURE SESSIONS
+// ==================================================================================
+// 🎯 WHAT WAS ADDED: Single new route /combined-backtest for enhanced investor system
+// 🛡️ WHAT WAS PRESERVED: All existing routes, imports, and functionality unchanged
+// 🔄 ROUTE STRUCTURE: /backtest (Session #169), /daily-reports (Session #171), /combined-backtest (Session #172)
+// 🚨 CRITICAL ROUTES: Admin panel, core platform, and all legal pages preserved exactly
+// 📋 FUTURE MODIFICATIONS: Always preserve existing functionality and add extensive comments
+// 🎊 TESTING: New route accessible at localhost:8081/combined-backtest
+// 🛡️ SAFETY: Original backtesting systems still functional at original routes
