@@ -95,9 +95,20 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onSignupClick }) => {
     return price;
   };
 
+  // 🔧 FIXED: Daily rate calculation to account for billing cycle
+  // 🎯 PURPOSE: Calculate correct daily rates for Monthly vs Yearly billing
+  // 📝 HANDOVER: This fixes the bug where yearly prices showed wrong daily rates
   const getDailyPrice = (price: string) => {
-    const numPrice = parseInt(price.replace("$", ""));
-    return (numPrice / 30).toFixed(2);
+    const basePrice = parseInt(price.replace("$", ""));
+
+    if (billingCycle === "yearly") {
+      // For yearly: apply 20% discount and divide by 365 days
+      const yearlyPrice = Math.round(basePrice * 0.8);
+      return (yearlyPrice / 365).toFixed(2);
+    } else {
+      // For monthly: divide by 30.44 (average days per month)
+      return (basePrice / 30.44).toFixed(2);
+    }
   };
 
   return (

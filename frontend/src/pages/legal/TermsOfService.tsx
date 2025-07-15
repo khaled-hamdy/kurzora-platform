@@ -5,6 +5,7 @@ import { FileText, TrendingUp, Shield } from "lucide-react";
 
 // 🎯 PURPOSE: Terms of Service page for legal compliance and user agreements
 // 🔧 SESSION #178: LAYOUT FIX - Replaced dashboard Layout with public layout pattern
+// 🔧 SESSION #188: FOOTER FIX - Changed Telegram link to Twitter link for consistency with Session #187 pattern
 // 🛡️ PRESERVATION: Maintains all existing multilingual functionality and legal protections exactly
 // 📝 HANDOVER: Complete terms following "Audi Approach" - professional but accessible legal framework
 // 🚨 LAYOUT CHANGE: Copied navigation pattern from HowItWorks.tsx to fix dashboard navigation showing on legal pages
@@ -484,13 +485,14 @@ const TermsOfService: React.FC = () => {
                   </Link>
                 </li>
                 <li>
+                  {/* 🔧 SESSION #188: FOOTER FIX - Changed Telegram to Twitter with correct URL */}
                   <a
-                    href="https://t.me/kurzora"
+                    href="https://x.com/KurzoraPlatform"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-white transition-colors"
                   >
-                    Telegram
+                    Twitter
                   </a>
                 </li>
               </ul>

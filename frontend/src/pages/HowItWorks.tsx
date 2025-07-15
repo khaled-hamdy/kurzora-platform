@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 
 // 🔧 PRESERVATION: Keeping exact same component structure and TypeScript patterns
+// 🔧 SESSION #188: FOOTER FIX - Changed Telegram link to Twitter link for consistency with Session #187 pattern
 const HowItWorks: React.FC = () => {
   const { t } = useLanguage();
 
@@ -508,13 +509,14 @@ const HowItWorks: React.FC = () => {
                   </Link>
                 </li>
                 <li>
+                  {/* 🔧 SESSION #188: FOOTER FIX - Changed Telegram to Twitter with correct URL */}
                   <a
-                    href="https://t.me/kurzora"
+                    href="https://x.com/KurzoraPlatform"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-white transition-colors"
                   >
-                    Telegram
+                    Twitter
                   </a>
                 </li>
               </ul>

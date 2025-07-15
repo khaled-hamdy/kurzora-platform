@@ -5,6 +5,7 @@ import { Cookie, TrendingUp, Shield } from "lucide-react";
 
 // 🎯 PURPOSE: Cookie Notice page for GDPR compliance and transparency
 // 🔧 SESSION #178: LAYOUT FIX - Replaced dashboard Layout with public layout pattern
+// 🔧 SESSION #188: FOOTER FIX - Changed Telegram link to Twitter link for consistency with Session #187 pattern
 // 🛡️ PRESERVATION: Maintains all existing multilingual functionality and layout exactly
 // 📝 HANDOVER: Complete cookie disclosure following "Audi Approach" - professional but accessible
 // 🚨 LAYOUT CHANGE: Copied navigation pattern from HowItWorks.tsx to fix dashboard navigation showing on legal pages
@@ -321,13 +322,14 @@ const CookieNotice: React.FC = () => {
                   </Link>
                 </li>
                 <li>
+                  {/* 🔧 SESSION #188: FOOTER FIX - Changed Telegram to Twitter with correct URL */}
                   <a
-                    href="https://t.me/kurzora"
+                    href="https://x.com/KurzoraPlatform"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-white transition-colors"
                   >
-                    Telegram
+                    Twitter
                   </a>
                 </li>
               </ul>
