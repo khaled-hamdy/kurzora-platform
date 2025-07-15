@@ -1,49 +1,60 @@
+import React from "react";
+import { ChevronDown } from "lucide-react";
 
-import React from 'react';
-import { ChevronDown } from 'lucide-react';
-
+// 🔧 PRESERVATION: Keeping exact same component structure, TypeScript interfaces, and functionality
+// 🎯 CHANGE: Only updating text content in faqs array - zero functional changes
 const FAQSection: React.FC = () => {
+  // 🎯 WHITE PAPER APPROVED CONTENT: Updated content only, same array structure
   const faqs = [
     {
-      question: "How fast are signals delivered?",
-      answer: "Our signals are delivered within 30 seconds of detection. Telegram alerts are instant, while email notifications may take 1-2 minutes depending on your email provider."
+      question: "How accurate are your signals?",
+      answer:
+        "Our institutional-grade analysis system uses advanced AI and quantitative models to identify high-probability setups. While past performance doesn't guarantee future results, our rigorous quality control ensures only premium opportunities reach you.",
     },
     {
-      question: "Is Kurzora suitable for beginners?",
-      answer: "Yes! Each signal comes with a detailed explanation and suggested entry/exit points. We also provide educational resources and paper trading to help you learn risk-free."
+      question: "What makes this different from other signal services?",
+      answer:
+        "Most services provide basic buy/sell alerts. We deliver complete trading intelligence with professional risk management, multi-timeframe analysis, and institutional-grade quality control built-in.",
     },
     {
       question: "What returns can I expect?",
-      answer: "Our members average +47% annual returns with a 2:1 profit ratio. This means you can be profitable with just a 45% win rate. Individual results vary based on position sizing and risk management."
+      answer:
+        "We focus on providing high-quality analysis rather than promising specific returns. Our institutional-grade signals are designed for consistent, risk-managed opportunities. Success depends on market conditions, your trading discipline, and risk management. We prioritize capital protection and quality setups over unrealistic promises. All trading involves risk, and individual results vary.",
     },
     {
-      question: "How do you calculate the 2:1 profit ratio?",
-      answer: "Our signals target 4-6% gains while limiting losses to 2% maximum. Historical data shows our average winning trade gains +4.7% while average losses are -2.1%, delivering better than 2:1 returns."
+      question: "How quickly do I receive signals?",
+      answer:
+        "Premium signals are delivered within minutes of market opportunities through email and Telegram alerts. Our AI processes market data continuously to identify optimal timing.",
     },
     {
-      question: "When will I be charged?",
-      answer: "Your card won't be charged during the 7-day free trial. The first charge will occur after the trial ends, and then monthly or yearly based on your selected plan. You can cancel anytime during the trial to avoid any charges."
+      question: "Do you provide risk management guidance?",
+      answer:
+        "Yes, every signal includes professional risk parameters, position sizing recommendations, and stop-loss calculations based on institutional standards.",
+    },
+    {
+      question: "Is this suitable for beginners?",
+      answer:
+        "Our platform provides institutional-grade analysis in an intuitive interface. While designed for serious traders, the complete risk management guidance makes it accessible for committed beginners.",
     },
     {
       question: "Can I cancel anytime?",
-      answer: "Absolutely. No contracts, no hidden fees. Cancel your subscription anytime from your dashboard and you'll retain access until the end of your billing period."
+      answer:
+        "Yes, absolutely. All plans include our money-back guarantee and can be canceled anytime with no fees or commitments.",
     },
-    {
-      question: "Do you support crypto or forex?",
-      answer: "Currently, we focus on US stocks (NYSE, NASDAQ). Crypto and forex signals are on our roadmap for Q2 2025."
-    }
   ];
 
+  // 🔧 PRESERVATION: Keeping EXACT same JSX structure, CSS classes, and animations
+  // No changes to HTML structure, responsive classes, or group animations
   return (
     <section className="py-12 sm:py-16 lg:py-20 px-4">
       <div className="max-w-4xl mx-auto">
         <h2 className="text-3xl sm:text-4xl font-bold text-white text-center mb-8 sm:mb-12">
           Frequently Asked Questions
         </h2>
-        
+
         <div className="space-y-4 sm:space-y-6">
           {faqs.map((faq, index) => (
-            <details 
+            <details
               key={index}
               className="group bg-slate-800/30 backdrop-blur-sm border border-blue-800/20 rounded-lg p-4 sm:p-6 cursor-pointer hover:bg-slate-800/40 transition-all duration-300"
             >

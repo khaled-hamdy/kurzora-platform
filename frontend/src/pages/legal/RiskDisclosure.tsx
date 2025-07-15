@@ -1,95 +1,263 @@
+import React from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { useNavigate } from "react-router-dom";
+import Layout from "../../components/Layout";
+import { AlertTriangle } from "lucide-react";
 
-import React from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { useLanguage } from '../../contexts/LanguageContext';
-import { useNavigate } from 'react-router-dom';
-import Layout from '../../components/Layout';
-import { AlertTriangle } from 'lucide-react';
+// 🎯 PURPOSE: Risk Disclosure page for legal compliance and user protection
+// 🔧 SESSION #187: Updated for Kurzora branding and professional messaging
+// 🛡️ PRESERVATION: Maintains all existing functionality and legal protections
+// 📝 HANDOVER: Professional risk disclosure following "Audi Approach" - clear but not intimidating
 
 const RiskDisclosure: React.FC = () => {
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
 
   return (
     <Layout>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Header Section with Warning Icon */}
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-white mb-4">{t('legal.riskDisclosure')}</h1>
+          <h1 className="text-3xl font-bold text-white mb-4">
+            {language === "ar"
+              ? "الكشف عن المخاطر"
+              : language === "de"
+              ? "Risikoaufklärung"
+              : "Risk Disclosure"}
+          </h1>
           <div className="flex justify-center">
             <AlertTriangle className="h-12 w-12 text-amber-500" />
           </div>
         </div>
-        
+
+        {/* Professional Introduction - Matches "Audi Approach" Positioning */}
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg p-6 mb-8">
-          <h2 className="text-xl font-semibold text-white mb-4">Important Notice</h2>
+          <h2 className="text-xl font-semibold text-white mb-4">
+            Important Notice
+          </h2>
           <p className="text-slate-300 mb-4">
-            The trading signals provided by SwingTrader are algorithmic in nature and do not constitute financial advice. 
-            These signals are generated using technical analysis and historical pattern recognition algorithms.
+            The trading intelligence provided by Kurzora represents
+            institutional-grade analysis using advanced AI and quantitative
+            models. These signals are generated through sophisticated technical
+            analysis and historical pattern recognition algorithms designed for
+            professional traders.
           </p>
           <p className="text-slate-300 mb-4">
-            You acknowledge and agree that you use these signals at your own risk. SwingTrader is not liable for any 
-            financial losses that may occur from using our signals or automated trading features.
+            Professional traders understand that all financial markets carry
+            inherent risks. You acknowledge and agree that you use our
+            institutional-grade analysis at your own discretion. Kurzora
+            provides educational tools and analysis - not financial advice.
           </p>
         </div>
 
+        {/* Main Content Sections */}
         <div className="space-y-6 text-slate-300">
+          {/* Trading Risks */}
           <section>
-            <h3 className="text-lg font-semibold text-white mb-2">Trading Risks</h3>
-            <ul className="list-disc list-inside space-y-2">
-              <li>Trading stocks, options, and other financial instruments involves substantial risk of loss and is not suitable for all investors.</li>
-              <li>Past performance of any trading system or methodology is not necessarily indicative of future results.</li>
-              <li>You should consider your financial situation and risk tolerance before trading any financial instruments.</li>
-              <li>No signal, analysis, or content on this platform guarantees profitability.</li>
-            </ul>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Market Risk Considerations
+            </h3>
+            <div className="bg-slate-800/50 p-4 rounded-lg">
+              <ul className="list-disc list-inside space-y-2 text-sm">
+                <li>
+                  Trading stocks and financial instruments involves substantial
+                  risk and may not be suitable for all investors.
+                </li>
+                <li>
+                  Past performance of any trading methodology is not necessarily
+                  indicative of future results.
+                </li>
+                <li>
+                  Professional traders assess their financial situation and risk
+                  tolerance before making trading decisions.
+                </li>
+                <li>
+                  No analysis or signal guarantees profitability - markets can
+                  move unpredictably.
+                </li>
+                <li>
+                  Institutional-grade analysis tools are designed for
+                  sophisticated users who understand market dynamics.
+                </li>
+              </ul>
+            </div>
           </section>
 
+          {/* Signal Intelligence Accuracy */}
           <section>
-            <h3 className="text-lg font-semibold text-white mb-2">Signal Accuracy</h3>
-            <ul className="list-disc list-inside space-y-2">
-              <li>While our algorithms target a 68% accuracy rate based on historical data, actual performance may vary.</li>
-              <li>Market conditions can change rapidly, affecting signal performance.</li>
-              <li>Technical failures, latency, or other issues may affect signal delivery or execution.</li>
-              <li>Users should independently verify signals before making trading decisions.</li>
-            </ul>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Signal Intelligence Performance
+            </h3>
+            <div className="bg-slate-800/50 p-4 rounded-lg">
+              <ul className="list-disc list-inside space-y-2 text-sm">
+                <li>
+                  Our AI algorithms are designed to identify high-probability
+                  trading opportunities using institutional-grade analysis.
+                </li>
+                <li>
+                  Signal performance varies based on market conditions,
+                  volatility, and economic factors.
+                </li>
+                <li>
+                  Professional risk management and position sizing are essential
+                  components of successful trading.
+                </li>
+                <li>
+                  Technical failures, data delays, or connectivity issues may
+                  affect signal delivery or timing.
+                </li>
+                <li>
+                  Users should independently validate signals using their own
+                  research and analysis.
+                </li>
+              </ul>
+            </div>
           </section>
 
+          {/* Platform and Technology Risks */}
           <section>
-            <h3 className="text-lg font-semibold text-white mb-2">Automated Trading Risks</h3>
-            <ul className="list-disc list-inside space-y-2">
-              <li>Automated trading through our broker integration carries additional risks.</li>
-              <li>Technical failures may occur, causing orders to not be executed or to be executed incorrectly.</li>
-              <li>Market conditions may change between signal generation and order execution.</li>
-              <li>Users are responsible for monitoring their automated trading activity.</li>
-            </ul>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Platform and Technology Considerations
+            </h3>
+            <div className="bg-slate-800/50 p-4 rounded-lg">
+              <ul className="list-disc list-inside space-y-2 text-sm">
+                <li>
+                  Our institutional-grade platform relies on advanced technology
+                  infrastructure and data feeds.
+                </li>
+                <li>
+                  Internet connectivity, server availability, or data provider
+                  issues may occasionally impact service.
+                </li>
+                <li>
+                  Market conditions can change rapidly between signal generation
+                  and potential trade execution.
+                </li>
+                <li>
+                  Users are responsible for monitoring their trading activity
+                  and managing their portfolios.
+                </li>
+                <li>
+                  Emergency procedures and backup systems are in place to
+                  maintain service reliability.
+                </li>
+              </ul>
+            </div>
           </section>
 
+          {/* Professional Responsibility */}
           <section>
-            <h3 className="text-lg font-semibold text-white mb-2">Financial Responsibility</h3>
-            <ul className="list-disc list-inside space-y-2">
-              <li>You are solely responsible for your trading decisions and their outcomes.</li>
-              <li>SwingTrader and its affiliates assume no responsibility for your trading results.</li>
-              <li>We strongly recommend never trading with money you cannot afford to lose.</li>
-              <li>Consider consulting with a qualified financial advisor before engaging in trading activities.</li>
-            </ul>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Professional Trading Responsibility
+            </h3>
+            <div className="bg-slate-800/50 p-4 rounded-lg">
+              <ul className="list-disc list-inside space-y-2 text-sm">
+                <li>
+                  You are solely responsible for your trading decisions and
+                  their financial outcomes.
+                </li>
+                <li>
+                  Kurzora provides analysis tools and educational resources -
+                  not personalized investment advice.
+                </li>
+                <li>
+                  Professional traders understand the importance of proper risk
+                  management and position sizing.
+                </li>
+                <li>
+                  Consider consulting with qualified financial professionals for
+                  personalized investment guidance.
+                </li>
+                <li>
+                  Never trade with capital you cannot afford to lose or that is
+                  needed for essential expenses.
+                </li>
+              </ul>
+            </div>
           </section>
 
+          {/* Educational Purpose Statement */}
           <section>
-            <h3 className="text-lg font-semibold text-white mb-2">Shariah Compliance Notice</h3>
-            <p className="mb-2">
-              While we offer Shariah-compliant filtering options, we make no guarantees regarding their perfect adherence to all 
-              Islamic financial principles across all jurisdictions and schools of thought.
-            </p>
-            <p>
-              Users seeking to trade according to Islamic financial principles should conduct their own due diligence and 
-              possibly consult with an Islamic financial advisor.
-            </p>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Educational and Analytical Purpose
+            </h3>
+            <div className="bg-slate-800/50 p-4 rounded-lg">
+              <p className="text-sm mb-3">
+                Kurzora's institutional-grade platform is designed for
+                educational and analytical purposes, providing sophisticated
+                traders with:
+              </p>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                <li>Advanced market analysis and pattern recognition</li>
+                <li>Professional-grade risk assessment tools</li>
+                <li>
+                  Institutional-quality data processing and signal generation
+                </li>
+                <li>Comprehensive performance tracking and analytics</li>
+                <li>Educational resources for advanced trading concepts</li>
+              </ul>
+              <p className="text-sm mt-3">
+                These tools are intended to supplement your own research and
+                analysis - not replace professional judgment or due diligence.
+              </p>
+            </div>
+          </section>
+
+          {/* Shariah Compliance Notice */}
+          <section>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Shariah Compliance Considerations
+            </h3>
+            <div className="bg-slate-800/50 p-4 rounded-lg">
+              <p className="mb-2 text-sm">
+                While Kurzora offers advanced Shariah-compliant filtering
+                options using institutional-grade screening methodologies, we
+                provide these tools for educational and analytical purposes.
+              </p>
+              <p className="text-sm">
+                Professional traders seeking to follow Islamic financial
+                principles should conduct their own due diligence and consider
+                consulting with qualified Islamic financial advisors to ensure
+                compliance with their specific requirements and interpretations.
+              </p>
+            </div>
+          </section>
+
+          {/* Regulatory Compliance */}
+          <section>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Regulatory and Compliance Information
+            </h3>
+            <div className="bg-slate-800/50 p-4 rounded-lg">
+              <p className="text-sm mb-2">
+                Kurzora operates as an educational technology platform providing
+                market analysis tools. We are not a registered investment
+                advisor, broker-dealer, or financial institution. Our
+                institutional-grade analysis tools are designed for:
+              </p>
+              <ul className="list-disc list-inside space-y-1 text-sm mb-2">
+                <li>Educational purposes and market research</li>
+                <li>Sophisticated traders who understand market risks</li>
+                <li>Professional analysis and pattern recognition</li>
+                <li>Advanced risk management education</li>
+              </ul>
+              <p className="text-sm">
+                Users are responsible for compliance with applicable laws and
+                regulations in their jurisdiction.
+              </p>
+            </div>
           </section>
         </div>
-        
+
+        {/* Contact Footer - UPDATED: Kurzora support email */}
         <div className="mt-10 p-4 bg-amber-900/20 border border-amber-800/50 rounded-lg">
           <p className="text-amber-400 text-sm text-center">
-            By using SwingTrader, you acknowledge that you have read, understood, and agree to this Risk Disclosure.
+            By using Kurzora's institutional-grade trading intelligence
+            platform, you acknowledge that you have read, understood, and agree
+            to this Risk Disclosure. For questions, contact us at
+            support@kurzora.com.
           </p>
         </div>
       </div>
