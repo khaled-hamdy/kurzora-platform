@@ -24,6 +24,7 @@ import {
 
 // 🔧 PRESERVATION: Keeping exact same component structure and TypeScript patterns
 // 🔧 SESSION #188: FOOTER FIX - Changed Telegram link to Twitter link for consistency with Session #187 pattern
+// 🔧 SESSION #189: DISCORD CONSISTENCY FIX - Added Discord link to Support section to match Home Page footer pattern
 const HowItWorks: React.FC = () => {
   const { t } = useLanguage();
 
@@ -486,6 +487,14 @@ const HowItWorks: React.FC = () => {
                 </li>
                 <li>
                   <Link
+                    to="/how-it-works"
+                    className="hover:text-white transition-colors"
+                  >
+                    How It Works
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     to="/pricing"
                     className="hover:text-white transition-colors"
                   >
@@ -507,6 +516,17 @@ const HowItWorks: React.FC = () => {
                   >
                     Contact
                   </Link>
+                </li>
+                <li>
+                  {/* 🔧 SESSION #189: DISCORD CONSISTENCY FIX - Added Discord link to match Home Page footer pattern */}
+                  <a
+                    href="https://discord.gg/kurzora"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-white transition-colors"
+                  >
+                    Discord
+                  </a>
                 </li>
                 <li>
                   {/* 🔧 SESSION #188: FOOTER FIX - Changed Telegram to Twitter with correct URL */}
