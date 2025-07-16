@@ -1000,23 +1000,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setIsProcessingSubscription(true);
 
         // Call backend API to process subscription
-        const response = await fetch(
-          "http://localhost:3001/api/subscription/process",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              userId,
-              userEmail,
-              userName,
-              planId: pendingSubscription.planId,
-              paymentMethodId: pendingSubscription.paymentMethodId,
-              billingCycle: pendingSubscription.billingCycle || "monthly",
-            }),
-          }
-        );
+        const response = await fetch("/api/subscription/process", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId,
+            userEmail,
+            userName,
+            planId: pendingSubscription.planId,
+            paymentMethodId: pendingSubscription.paymentMethodId,
+            billingCycle: pendingSubscription.billingCycle || "monthly",
+          }),
+        });
 
         const result = await response.json();
 
