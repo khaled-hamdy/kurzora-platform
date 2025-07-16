@@ -1,7 +1,8 @@
 // 🎯 PURPOSE: Privacy Policy page for data protection and user transparency
 // 🔧 SESSION #188: FOOTER CONSISTENCY FIX - Changed hardcoded "Telegram" to "Twitter" to match other pages
+// 🔧 SESSION #190: PRICING LINK CONSISTENCY FIX - Added missing "Pricing" link to Platform section to match HowItWorks.tsx pattern
 // 🛡️ PRESERVATION: All existing privacy policy functionality maintained exactly as before
-// 📝 HANDOVER: Footer now shows Twitter consistently across all pages instead of mixed Twitter/Telegram
+// 📝 HANDOVER: Footer now shows complete Platform navigation (Home + How It Works + Pricing) consistently across all pages
 
 import React from "react";
 import { useLanguage } from "../../contexts/LanguageContext";
@@ -340,6 +341,7 @@ const PrivacyPolicy: React.FC = () => {
       </div>
 
       {/* 🔧 SESSION #188: FOOTER CONSISTENCY FIX - Changed Telegram to Twitter for consistency */}
+      {/* 🔧 SESSION #190: PRICING LINK CONSISTENCY FIX - Added missing "Pricing" link to Platform section */}
       <footer className="bg-slate-950/50 border-t border-blue-800/30 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
@@ -382,6 +384,15 @@ const PrivacyPolicy: React.FC = () => {
                     className="hover:text-white transition-colors"
                   >
                     How It Works
+                  </Link>
+                </li>
+                <li>
+                  {/* 🔧 SESSION #190: PRICING LINK CONSISTENCY FIX - Added missing "Pricing" link to match HowItWorks.tsx pattern */}
+                  <Link
+                    to="/pricing"
+                    className="hover:text-white transition-colors"
+                  >
+                    Pricing
                   </Link>
                 </li>
               </ul>

@@ -1,7 +1,8 @@
 // 🎯 PURPOSE: Footer component with navigation links
 // 🔧 SESSION #188: Fixed Home link navigation bug - now goes to landing page "/" instead of "/dashboard"
+// 🔧 SESSION #190: Added missing "Pricing" link to Platform section for complete footer consistency
 // 🛡️ PRESERVATION: All existing functionality maintained exactly as before
-// 📝 HANDOVER: Home link in footer now correctly navigates to landing page instead of dashboard
+// 📝 HANDOVER: Home link in footer now correctly navigates to landing page, Pricing link added to Platform section
 
 import React from "react";
 import { Link } from "react-router-dom";
@@ -19,10 +20,13 @@ const Footer: React.FC = () => {
   };
 
   // 🔧 FIXED: Home link now points to landing page "/" instead of "/dashboard"
+  // 🔧 SESSION #190: Added "Pricing" link to complete Platform section consistency
   // This ensures users clicking "Home" go to the actual home page, not the user dashboard
+  // And users can access Pricing from any page footer
   const platformLinks = [
     { label: t("footer.home"), path: "/" }, // ← FIXED: Changed from '/dashboard' to '/'
     { label: t("nav.howItWorks"), path: "/how-it-works" },
+    { label: "Pricing", path: "#pricing" }, // ← SESSION #190: Added missing Pricing link for footer consistency
   ];
 
   const supportLinks = [

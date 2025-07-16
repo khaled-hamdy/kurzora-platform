@@ -9,6 +9,7 @@ import { AlertTriangle, TrendingUp, Shield } from "lucide-react";
 // 🔧 SESSION #178: LAYOUT FIX - Replaced dashboard Layout with public layout pattern
 // 🔧 SESSION #188: FOOTER FIX - Changed Telegram link to Twitter link for consistency with Session #187 pattern
 // 🔧 SESSION #189: DISCORD CONSISTENCY FIX - Added Discord link to Support section to match Home Page footer pattern
+// 🔧 SESSION #190: PRICING LINK CONSISTENCY FIX - Added missing "Pricing" link to Platform section to match HowItWorks.tsx pattern
 // 🛡️ PRESERVATION: Maintains all existing functionality and legal protections exactly
 // 📝 HANDOVER: Professional risk disclosure following "Audi Approach" - clear but not intimidating
 // 🚨 LAYOUT CHANGE: Copied navigation pattern from HowItWorks.tsx to fix dashboard navigation showing on legal pages
@@ -293,6 +294,7 @@ const RiskDisclosure: React.FC = () => {
       </div>
 
       {/* 🔧 SESSION #178: Public footer (copied from HowItWorks.tsx pattern) */}
+      {/* 🔧 SESSION #190: PRICING LINK CONSISTENCY FIX - Added missing "Pricing" link to Platform section */}
       <footer className="bg-slate-950/50 border-t border-blue-800/30 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
@@ -335,6 +337,15 @@ const RiskDisclosure: React.FC = () => {
                     className="hover:text-white transition-colors"
                   >
                     How It Works
+                  </Link>
+                </li>
+                <li>
+                  {/* 🔧 SESSION #190: PRICING LINK CONSISTENCY FIX - Added missing "Pricing" link to match HowItWorks.tsx pattern */}
+                  <Link
+                    to="/pricing"
+                    className="hover:text-white transition-colors"
+                  >
+                    Pricing
                   </Link>
                 </li>
               </ul>
