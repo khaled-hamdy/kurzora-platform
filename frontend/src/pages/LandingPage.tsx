@@ -114,9 +114,18 @@ const LandingPage: React.FC = () => {
   }
 
   // 🔧 PRESERVATION: Authentication redirect logic - critical for user flows
+  // 🔧 SESSION #193: Allow logged-in users to access pricing section when navigating to /#pricing
   if (user && !showAuth && !loading) {
-    console.log("🔄 LandingPage: User logged in, redirecting to dashboard");
-    return <Navigate to="/dashboard" replace />;
+    // Allow logged-in users to see pricing section when they specifically navigate to /#pricing
+    if (window.location.hash === "#pricing") {
+      // Don't redirect, let them see the pricing section
+      console.log(
+        "🔄 LandingPage: User logged in but accessing pricing section, allowing access"
+      );
+    } else {
+      console.log("🔄 LandingPage: User logged in, redirecting to dashboard");
+      return <Navigate to="/dashboard" replace />;
+    }
   }
 
   // 🔧 PRESERVATION: Authentication forms display logic - critical for user registration
@@ -799,7 +808,7 @@ const LandingPage: React.FC = () => {
                     onClick={handleFooterLinkClick}
                     className="hover:text-white transition-colors"
                   >
-                    {t("Pricing")}
+                    Pricing
                   </a>
                 </li>
               </ul>

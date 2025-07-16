@@ -1,8 +1,11 @@
 // 🎯 PURPOSE: Footer component with navigation links
 // 🔧 SESSION #188: Fixed Home link navigation bug - now goes to landing page "/" instead of "/dashboard"
 // 🔧 SESSION #190: Added missing "Pricing" link to Platform section for complete footer consistency
+// 🔧 SESSION #191: Fixed Pricing link to navigate to landing page pricing section instead of current page
+// 🔧 SESSION #192: Fixed conditional scroll behavior + Pricing link uses window.location to bypass auth redirect
+// 🔧 SESSION #194: REMOVED Pricing link from dashboard footer - logged-in users don't need pricing in footer
 // 🛡️ PRESERVATION: All existing functionality maintained exactly as before
-// 📝 HANDOVER: Home link in footer now correctly navigates to landing page, Pricing link added to Platform section
+// 📝 HANDOVER: Clean dashboard footer focused on actual user needs (Platform, Support, Legal only)
 
 import React from "react";
 import { Link } from "react-router-dom";
@@ -12,21 +15,26 @@ import { useLanguage } from "../contexts/LanguageContext";
 const Footer: React.FC = () => {
   const { t, language } = useLanguage();
 
-  const handleFooterLinkClick = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+  // 🔧 SESSION #192: Made scroll behavior conditional - only scroll for same-page navigation
+  const handleFooterLinkClick = (path: string) => {
+    // Only scroll to top for same-page links or internal page navigation
+    // Don't scroll for external navigation links like pricing, home, etc.
+    if (path.startsWith("#") && !path.includes("/#")) {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
   };
 
   // 🔧 FIXED: Home link now points to landing page "/" instead of "/dashboard"
-  // 🔧 SESSION #190: Added "Pricing" link to complete Platform section consistency
-  // This ensures users clicking "Home" go to the actual home page, not the user dashboard
-  // And users can access Pricing from any page footer
+  // 🔧 SESSION #194: REMOVED Pricing link - logged-in users don't need pricing in dashboard footer
+  // Dashboard footer now focuses on actual user needs: Platform navigation and Support
+  // Pricing remains available on landing page for new users and in Settings for upgrades
   const platformLinks = [
     { label: t("footer.home"), path: "/" }, // ← FIXED: Changed from '/dashboard' to '/'
     { label: t("nav.howItWorks"), path: "/how-it-works" },
-    { label: "Pricing", path: "#pricing" }, // ← SESSION #190: Added missing Pricing link for footer consistency
+    // ← SESSION #194: Removed Pricing link - cleaner UX for logged-in users
   ];
 
   const supportLinks = [
@@ -89,7 +97,7 @@ const Footer: React.FC = () => {
                 <li key={link.label}>
                   <Link
                     to={link.path}
-                    onClick={handleFooterLinkClick}
+                    onClick={() => handleFooterLinkClick(link.path)}
                     className="text-slate-400 hover:text-white transition-colors text-sm"
                   >
                     {link.label}
@@ -115,7 +123,7 @@ const Footer: React.FC = () => {
                       rel="noopener noreferrer"
                       onClick={
                         link.path.startsWith("#")
-                          ? handleFooterLinkClick
+                          ? () => handleFooterLinkClick(link.path)
                           : undefined
                       }
                     >
@@ -124,7 +132,7 @@ const Footer: React.FC = () => {
                   ) : (
                     <Link
                       to={link.path}
-                      onClick={handleFooterLinkClick}
+                      onClick={() => handleFooterLinkClick(link.path)}
                       className="text-slate-400 hover:text-white transition-colors text-sm"
                     >
                       {link.label}
@@ -145,7 +153,7 @@ const Footer: React.FC = () => {
                 <li key={link.label}>
                   <Link
                     to={link.path}
-                    onClick={handleFooterLinkClick}
+                    onClick={() => handleFooterLinkClick(link.path)}
                     className="text-slate-400 hover:text-white transition-colors text-sm"
                   >
                     {link.label}
@@ -164,7 +172,7 @@ const Footer: React.FC = () => {
               <Link
                 key={link.label}
                 to={link.path}
-                onClick={handleFooterLinkClick}
+                onClick={() => handleFooterLinkClick(link.path)}
                 className="text-slate-400 hover:text-white transition-colors text-sm"
               >
                 {link.label}
