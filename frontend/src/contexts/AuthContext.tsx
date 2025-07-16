@@ -148,9 +148,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
-  // 🔍 BULLETPROOF PLAN RETRIEVAL: Check all storage methods
+  // 🔍 ENHANCED: Bulletproof plan retrieval with email verification redirect support
   const retrievePlanDataFromAllSources = useCallback(() => {
-    console.log("🔍 BULLETPROOF RETRIEVAL: Checking all 6 storage methods...");
+    console.log(
+      "🔍 ENHANCED RETRIEVAL: Checking all storage methods with email verification support..."
+    );
 
     // Method 1: In-memory storage (fastest)
     if (pendingPlanInfo.current?.id) {
@@ -161,7 +163,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       return pendingPlanInfo.current;
     }
 
-    // Method 2: Primary localStorage with timestamp
+    // Method 2: Primary localStorage with timestamp validation
     try {
       const stored = localStorage.getItem("kurzora_plan_selection");
       if (stored) {
@@ -171,12 +173,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           planData
         );
 
-        // Check if data is fresh (within 1 hour)
-        if (planData.timestamp && Date.now() - planData.timestamp < 3600000) {
+        // 🔧 ENHANCED: Extended timeout for email verification (24 hours instead of 1 hour)
+        if (planData.timestamp && Date.now() - planData.timestamp < 86400000) {
+          console.log(
+            "✅ PLAN DATA TIMESTAMP: Valid (within 24 hours for email verification)"
+          );
           return planData;
         } else {
           console.log(
-            "⚠️ RETRIEVAL METHOD 2: Data expired, checking other methods"
+            "⚠️ PLAN DATA TIMESTAMP: Expired, but continuing to check other methods"
           );
         }
       }
@@ -211,7 +216,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       console.warn("⚠️ RETRIEVAL METHOD 4 failed:", e);
     }
 
-    // Method 5: URL parameters
+    // Method 5: URL parameters (critical for email verification redirects)
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const planId = urlParams.get("plan_id");
@@ -266,8 +271,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       console.warn("⚠️ RETRIEVAL METHOD 7 failed:", e);
     }
 
+    // 🔧 ENHANCED: Method 8: Domain-specific retrieval for email verification contexts
+    try {
+      // Check if we're in an email verification context (common redirect patterns)
+      const currentPath = window.location.pathname;
+      const currentSearch = window.location.search;
+
+      if (
+        currentPath.includes("dashboard") ||
+        currentSearch.includes("type=signup")
+      ) {
+        console.log(
+          "🔍 EMAIL VERIFICATION CONTEXT: Detected dashboard/signup redirect"
+        );
+
+        // Re-check localStorage with more lenient timing for email verification
+        const stored = localStorage.getItem("kurzora_plan_selection");
+        if (stored) {
+          try {
+            const planData = JSON.parse(stored);
+            if (planData.id) {
+              console.log(
+                "✅ RETRIEVAL METHOD 8: Email verification context recovery:",
+                planData
+              );
+              return planData;
+            }
+          } catch (parseError) {
+            console.warn("⚠️ RETRIEVAL METHOD 8 parse error:", parseError);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("⚠️ RETRIEVAL METHOD 8 failed:", e);
+    }
+
     console.log(
-      "❌ BULLETPROOF RETRIEVAL: No plan data found in any of the 7 methods"
+      "❌ ENHANCED RETRIEVAL: No plan data found in any of the 8 methods"
     );
     return null;
   }, []);
@@ -311,11 +351,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     console.log("✅ CLEANUP: All plan data storage methods cleared");
   }, []);
 
-  // 🎯 BULLETPROOF: Enhanced plan tier determination with detailed logging
+  // 🎯 ENHANCED: Plan tier determination with comprehensive debugging
   const determineSubscriptionTier = useCallback(
     (directPlanInfo: any, userEmail?: string): "starter" | "professional" => {
       console.log(
-        "🎯 BULLETPROOF TIER DETERMINATION: Starting comprehensive analysis..."
+        "🎯 ENHANCED TIER DETERMINATION: Starting comprehensive analysis..."
       );
       console.log("🎯 INPUT: directPlanInfo:", directPlanInfo);
       console.log("🎯 INPUT: userEmail:", userEmail);
@@ -334,19 +374,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       }
 
-      // Priority 2: Comprehensive retrieval from all storage methods
+      // Priority 2: Enhanced retrieval from all storage methods
       const retrievedPlan = retrievePlanDataFromAllSources();
       if (retrievedPlan?.id) {
         const planId = String(retrievedPlan.id).toLowerCase().trim();
-        console.log("🎯 PRIORITY 2: Retrieved plan ID:", planId);
+        console.log("🎯 PRIORITY 2: Enhanced retrieved plan ID:", planId);
 
         if (planId === "professional") {
-          console.log(
-            "✅ TIER DECISION: PROFESSIONAL from comprehensive retrieval"
-          );
+          console.log("✅ TIER DECISION: PROFESSIONAL from enhanced retrieval");
           return "professional";
         } else if (planId === "starter") {
-          console.log("✅ TIER DECISION: STARTER from comprehensive retrieval");
+          console.log("✅ TIER DECISION: STARTER from enhanced retrieval");
           return "starter";
         }
       }
@@ -368,7 +406,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       // 🚨 FINAL FALLBACK: Default to starter with comprehensive logging
-      console.warn("⚠️ BULLETPROOF TIER DETERMINATION: NO PLAN DATA FOUND");
+      console.warn("⚠️ ENHANCED TIER DETERMINATION: NO PLAN DATA FOUND");
       console.warn("🔍 FALLBACK DEBUG: directPlanInfo was:", directPlanInfo);
       console.warn("🔍 FALLBACK DEBUG: retrievedPlan was:", retrievedPlan);
       console.warn("🔍 FALLBACK DEBUG: userEmail was:", userEmail);
@@ -426,7 +464,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
-  // 🔧 FIXED: Profile creation that handles BOTH new and existing users with plan selection
+  // 🔧 ENHANCED: Profile creation with improved plan data handling for email verification
   const createUserProfileInBackground = useCallback(
     async (userId: string) => {
       try {
@@ -436,11 +474,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         if (!user || !mounted.current) return;
 
         console.log(
-          "🆕 BULLETPROOF PROFILE CREATION: Starting for user:",
+          "🆕 ENHANCED PROFILE CREATION: Starting for user:",
           user.email
         );
 
-        // 🔧 CRITICAL FIX: Check if user already exists first
+        // 🔧 CRITICAL: Check if user already exists first
         console.log("🔍 CHECKING: Does user profile already exist?");
         const { data: existingUser, error: checkError } = await supabase
           .from("users")
@@ -448,17 +486,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           .eq("id", userId)
           .single();
 
-        // 🎯 BULLETPROOF: Get current plan selection data
-        console.log("🔍 ANALYZING: Current plan selection data...");
-        const comprehensivePlanData = retrievePlanDataFromAllSources();
-        console.log("🔍 PLAN DATA FOUND:", comprehensivePlanData);
+        // 🎯 ENHANCED: Multiple attempts at plan data retrieval for email verification scenarios
+        console.log(
+          "🔍 ENHANCED ANALYSIS: Multiple plan data retrieval attempts..."
+        );
 
-        // 🎯 BULLETPROOF: Enhanced tier determination
+        // Attempt 1: Immediate retrieval
+        let comprehensivePlanData = retrievePlanDataFromAllSources();
+        console.log("🔍 ATTEMPT 1 - Plan data found:", comprehensivePlanData);
+
+        // Attempt 2: If first attempt failed, try again after short delay (for async storage)
+        if (!comprehensivePlanData?.id) {
+          console.log(
+            "🔍 ATTEMPT 2: Retrying plan data retrieval after delay..."
+          );
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          comprehensivePlanData = retrievePlanDataFromAllSources();
+          console.log("🔍 ATTEMPT 2 - Plan data found:", comprehensivePlanData);
+        }
+
+        // Attempt 3: Check pendingPlanInfo.current directly as final fallback
+        if (!comprehensivePlanData?.id && pendingPlanInfo.current?.id) {
+          console.log(
+            "🔍 ATTEMPT 3: Using pendingPlanInfo.current as fallback"
+          );
+          comprehensivePlanData = pendingPlanInfo.current;
+          console.log("🔍 ATTEMPT 3 - Plan data found:", comprehensivePlanData);
+        }
+
+        // 🎯 ENHANCED: Tier determination with improved logic
         const determinedTier = determineSubscriptionTier(
-          comprehensivePlanData || pendingPlanInfo.current,
+          comprehensivePlanData,
           user.email
         );
-        console.log("🎯 TIER DETERMINATION RESULT:", determinedTier);
+        console.log("🎯 ENHANCED TIER DETERMINATION RESULT:", determinedTier);
 
         if (!checkError && existingUser) {
           console.log("✅ EXISTING USER FOUND: Profile already exists");
@@ -468,7 +529,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           );
           console.log("✅ NEW PLAN SELECTION TIER:", determinedTier);
 
-          // 🔧 CRITICAL BUG FIX: Apply plan selection logic to existing users too!
+          // 🔧 ENHANCED: Apply plan selection logic with better validation
           if (
             comprehensivePlanData?.id &&
             existingUser.subscription_tier !== determinedTier
@@ -537,8 +598,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
               existingUser.subscription_tier
             );
 
-            // Clear plan data since no update needed
-            clearAllPlanData();
+            // 🔧 ENHANCED: Only clear plan data if no valid plan was found
+            if (!comprehensivePlanData?.id) {
+              clearAllPlanData();
+            }
 
             if (mounted.current) {
               setUserProfile(existingUser);
@@ -551,20 +614,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           "🆕 NEW USER: No existing profile found, creating new profile..."
         );
 
-        // 🔍 ENHANCED DEBUG: Comprehensive plan info analysis for NEW users only
-        console.log("🔍 PROFILE CREATION: Analyzing all plan data sources...");
+        // 🔍 ENHANCED DEBUG: Comprehensive plan info analysis for NEW users
+        console.log("🔍 NEW USER CREATION: Analyzing all plan data sources...");
         console.log(
           "🔍 PROFILE CREATION: pendingPlanInfo.current =",
           pendingPlanInfo.current
         );
-
         console.log(
           "🔍 PROFILE CREATION: Comprehensive plan data =",
           comprehensivePlanData
         );
-
         console.log(
-          "🔍 PROFILE CREATION: FINAL TIER DECISION:",
+          "🔍 PROFILE CREATION: ENHANCED TIER DECISION:",
           determinedTier
         );
 
@@ -609,15 +670,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           is_active: true,
         };
 
-        console.log(
-          "🎯 BULLETPROOF PROFILE: Final profile data for NEW user:",
-          {
-            email: profileData.email,
-            subscription_tier: profileData.subscription_tier,
-            subscription_status: profileData.subscription_status,
-            notification_settings: profileData.notification_settings,
-          }
-        );
+        console.log("🎯 ENHANCED PROFILE: Final profile data for NEW user:", {
+          email: profileData.email,
+          subscription_tier: profileData.subscription_tier,
+          subscription_status: profileData.subscription_status,
+          notification_settings: profileData.notification_settings,
+        });
 
         console.log(
           "🔍 PROFILE CREATION: About to insert NEW user into Supabase..."
@@ -634,9 +692,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             error
           );
         } else {
-          console.log(
-            "✅ BULLETPROOF SUCCESS: NEW profile created successfully!"
-          );
+          console.log("✅ ENHANCED SUCCESS: NEW profile created successfully!");
           console.log(
             "✅ VERIFICATION: User tier in database:",
             data.subscription_tier
@@ -673,7 +729,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       } catch (error) {
         console.error(
-          "💥 Mac AuthContext: Background create profile error:",
+          "💥 Mac AuthContext: Enhanced create profile error:",
           error
         );
       }
@@ -1145,7 +1201,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       // 🔧 IMPORTANT: Profile creation will happen automatically via auth state change
-      // The bulletproof plan selection system will ensure correct tier assignment
+      // The enhanced plan selection system will ensure correct tier assignment
 
       console.log("🔍 BULLETPROOF SIGNUP: Signup completed successfully");
       console.log(
