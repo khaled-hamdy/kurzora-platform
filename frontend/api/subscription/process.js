@@ -1,8 +1,9 @@
 // File: api/subscription/process.js
-// 🎯 SESSION #195: FINAL API INTEGRATION FIX - Check function return value not just errors
-// 🛡️ PRESERVATION: 100% of Session #191-193 Stripe logic preserved exactly
-// 🔧 CRITICAL FIX: Check both error AND return value from update_user_stripe_info function
-// 📝 HANDOVER: Session #194 proved function works perfectly - API just needed to check return value
+// 🎯 SESSION #194: FINAL COMPLETE FIX - Using database function to bypass RLS
+// 🛡️ PRESERVATION: 100% of Session #191-192 Stripe logic preserved exactly
+// 🔧 CHANGE: Using update_user_stripe_info() function instead of direct UPDATE
+// 📝 HANDOVER: Database function bypasses RLS while preserving all functionality
+// 🚨 SESSION #195 FIX: Check function RETURN VALUE not just errors!
 
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
@@ -35,7 +36,8 @@ const PLAN_CONFIGS = {
 /**
  * 🔧 VERCEL API ROUTE: ES6 default export for Vite projects with "type": "module"
  * 🛡️ PRESERVATION: 100% of Session #191-192 subscription logic preserved exactly
- * 🎯 SESSION #195 FIX: Check function return value to ensure database actually updated
+ * 🎯 FINAL FIX: Using database function to bypass RLS for stripe_customer_id updates
+ * 🚨 SESSION #195: Now checks function RETURN VALUE not just errors!
  */
 export default async function handler(req, res) {
   // Handle CORS for cross-origin requests
@@ -202,9 +204,13 @@ export default async function handler(req, res) {
         });
       }
 
-      // 🎯 SESSION #195 FIX: Step 4 - Update database using function that bypasses RLS
-      // 🔧 CRITICAL FIX: Check both error AND return value from function
+      // 🚨 SESSION #195 FIX: Step 4 - Update database AND check return value!
       try {
+        console.log(
+          `🔍 Calling database function with userId: ${userId}, customerId: ${customer.id}`
+        );
+
+        // 🎯 THE FIX: Get BOTH data and error from function call
         const { data: updateResult, error: userUpdateError } =
           await supabase.rpc("update_user_stripe_info", {
             user_id: userId,
@@ -213,25 +219,32 @@ export default async function handler(req, res) {
             sub_status: "trialing",
           });
 
-        // 🔧 PRESERVED: Check for function execution errors
+        // 🛡️ PRESERVED: Check for errors first (Session #193 logic)
         if (userUpdateError) {
-          console.error("❌ Error calling function:", userUpdateError);
+          console.error(
+            "❌ Error updating user with function:",
+            userUpdateError
+          );
           throw userUpdateError;
         }
 
-        // 🎯 NEW FIX: Check function return value - must be true for success
-        if (updateResult !== true) {
+        // 🚨 NEW: Check if function actually updated rows (return value check)
+        if (!updateResult) {
           console.error(
-            "❌ Function returned false - no database rows updated:",
-            updateResult
+            "❌ Function returned FALSE - no database rows updated!",
+            `userId: ${userId}, customerId: ${customer.id}, planId: ${planId}`
           );
           throw new Error(
-            `Database function returned false - expected true but got: ${updateResult}`
+            "Database function returned false - no rows updated. Check if userId exists in database."
           );
         }
 
+        // 🎉 ONLY log success if BOTH no error AND successful return value
         console.log(
-          "✅ Database updated successfully using function - return value confirmed true"
+          "✅ Database updated successfully - function returned TRUE!"
+        );
+        console.log(
+          `✅ User ${userId} now has ${planId} plan with customer ID ${customer.id}`
         );
       } catch (error) {
         console.error("❌ Database function error:", error);
@@ -239,7 +252,10 @@ export default async function handler(req, res) {
         // 🛡️ PRESERVED: Session #191 important logic - don't return error even if database update fails
         // The subscription was created successfully in Stripe
         console.warn(
-          "⚠️ Database update failed, but subscription created successfully"
+          "⚠️ Database update failed, but subscription created successfully in Stripe"
+        );
+        console.warn(
+          `⚠️ Manual fix needed: Update user ${userId} with customer ID ${customer.id} and plan ${planId}`
         );
       }
 
