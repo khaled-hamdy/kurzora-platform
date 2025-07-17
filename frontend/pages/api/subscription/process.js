@@ -1,10 +1,11 @@
 // File: pages/api/subscription/process.js
-// 🎯 SESSION #192: Complete Stripe API with all Session #191 logic preserved
-// 🛡️ PRESERVATION: All Session #191 Stripe logic preserved exactly
-// 🔧 FORMAT: ES6 modules for "type": "module" project compatibility
+// 🎯 SESSION #193: PRODUCTION FIX - Convert ES6 to CommonJS for Vercel compatibility
+// 🛡️ PRESERVATION: 100% of Session #191-192 Stripe logic preserved exactly
+// 🔧 CHANGE: Only import/export syntax changed - NO business logic modifications
+// 📝 HANDOVER: Fixed 405 error while maintaining all existing functionality
 
-import Stripe from "stripe";
-import { createClient } from "@supabase/supabase-js";
+const Stripe = require("stripe");
+const { createClient } = require("@supabase/supabase-js");
 
 // Initialize Stripe with secret key
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -32,10 +33,10 @@ const PLAN_CONFIGS = {
 };
 
 /**
- * 🔧 VERCEL API ROUTE: Default export function that handles all HTTP methods
- * 🛡️ PRESERVATION: All Session #191 subscription logic preserved exactly
+ * 🔧 VERCEL API ROUTE: CommonJS export that Vercel can properly execute
+ * 🛡️ PRESERVATION: 100% of Session #191-192 subscription logic preserved exactly
  */
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Handle CORS for cross-origin requests
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -307,4 +308,4 @@ export default async function handler(req, res) {
       error: `Method ${req.method} not allowed`,
     });
   }
-}
+};
