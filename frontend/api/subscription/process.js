@@ -1,11 +1,11 @@
-// File: pages/api/subscription/process.js
-// 🎯 SESSION #193: PRODUCTION FIX - Convert ES6 to CommonJS for Vercel compatibility
+// File: api/subscription/process.js
+// 🎯 SESSION #193: FINAL FIX - ES6 syntax for "type": "module" project
 // 🛡️ PRESERVATION: 100% of Session #191-192 Stripe logic preserved exactly
-// 🔧 CHANGE: Only import/export syntax changed - NO business logic modifications
-// 📝 HANDOVER: Fixed 405 error while maintaining all existing functionality
+// 🔧 CHANGE: Back to ES6 imports/exports (project requires ES modules)
+// 📝 HANDOVER: Fixed ReferenceError by using correct ES6 syntax for Vite project
 
-const Stripe = require("stripe");
-const { createClient } = require("@supabase/supabase-js");
+import Stripe from "stripe";
+import { createClient } from "@supabase/supabase-js";
 
 // Initialize Stripe with secret key
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -33,10 +33,10 @@ const PLAN_CONFIGS = {
 };
 
 /**
- * 🔧 VERCEL API ROUTE: CommonJS export that Vercel can properly execute
+ * 🔧 VERCEL API ROUTE: ES6 default export for Vite projects with "type": "module"
  * 🛡️ PRESERVATION: 100% of Session #191-192 subscription logic preserved exactly
  */
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   // Handle CORS for cross-origin requests
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -308,4 +308,4 @@ module.exports = async function handler(req, res) {
       error: `Method ${req.method} not allowed`,
     });
   }
-};
+}
