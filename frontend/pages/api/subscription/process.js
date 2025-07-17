@@ -1,10 +1,10 @@
 // File: pages/api/subscription/process.js
-// 🎯 SESSION #192 FIX: Convert to CommonJS format for Vercel compatibility
+// 🎯 SESSION #192: Complete Stripe API with all Session #191 logic preserved
 // 🛡️ PRESERVATION: All Session #191 Stripe logic preserved exactly
-// 🔧 CHANGE: ES6 imports → CommonJS requires for Vercel deployment
+// 🔧 FORMAT: ES6 modules for "type": "module" project compatibility
 
-const Stripe = require("stripe");
-const { createClient } = require("@supabase/supabase-js");
+import Stripe from "stripe";
+import { createClient } from "@supabase/supabase-js";
 
 // Initialize Stripe with secret key
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -32,10 +32,10 @@ const PLAN_CONFIGS = {
 };
 
 /**
- * 🔧 VERCEL API ROUTE: CommonJS export for better compatibility
+ * 🔧 VERCEL API ROUTE: Default export function that handles all HTTP methods
  * 🛡️ PRESERVATION: All Session #191 subscription logic preserved exactly
  */
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   // Handle CORS for cross-origin requests
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -102,6 +102,7 @@ module.exports = async function handler(req, res) {
         return res.status(500).json({
           success: false,
           error: "Failed to create Stripe customer",
+          details: error.message,
         });
       }
 
@@ -122,6 +123,7 @@ module.exports = async function handler(req, res) {
         return res.status(500).json({
           success: false,
           error: "Failed to attach payment method",
+          details: error.message,
         });
       }
 
@@ -194,6 +196,7 @@ module.exports = async function handler(req, res) {
           success: false,
           error: errorMessage,
           stripe_error: error.message,
+          details: error.code || "unknown_error",
         });
       }
 
@@ -226,7 +229,7 @@ module.exports = async function handler(req, res) {
       }
 
       // 🛡️ PRESERVED: Session #191 success response format
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         subscription: {
           id: subscription.id,
@@ -241,13 +244,12 @@ module.exports = async function handler(req, res) {
         },
         message: `🎉 ${planId} subscription created successfully with 7-day trial!`,
       });
-
-      console.log(`🎉 Subscription completed for ${userEmail}`);
     } catch (error) {
       console.error("❌ Subscription processing failed:", error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         error: error.message || "Subscription processing failed",
+        details: "Unexpected error during subscription processing",
       });
     }
   }
@@ -256,6 +258,13 @@ module.exports = async function handler(req, res) {
   else if (req.method === "GET") {
     try {
       const { userId } = req.query; // Vercel uses req.query instead of req.params
+
+      if (!userId) {
+        return res.status(400).json({
+          success: false,
+          error: "User ID required",
+        });
+      }
 
       const { data: user, error } = await supabase
         .from("users")
@@ -270,7 +279,7 @@ module.exports = async function handler(req, res) {
         });
       }
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         user: {
           id: user.id,
@@ -282,9 +291,10 @@ module.exports = async function handler(req, res) {
       });
     } catch (error) {
       console.error("Error getting subscription status:", error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         error: "Failed to get subscription status",
+        details: error.message,
       });
     }
   }
@@ -292,9 +302,9 @@ module.exports = async function handler(req, res) {
   // Handle unsupported methods
   else {
     res.setHeader("Allow", ["GET", "POST"]);
-    res.status(405).json({
+    return res.status(405).json({
       success: false,
       error: `Method ${req.method} not allowed`,
     });
   }
-};
+}
