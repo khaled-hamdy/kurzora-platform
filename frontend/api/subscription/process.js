@@ -1,8 +1,8 @@
 // File: api/subscription/process.js
-// 🎯 SESSION #193: FINAL FIX - ES6 syntax for "type": "module" project
+// 🎯 SESSION #193: FINAL COMPLETE FIX - Using database function to bypass RLS
 // 🛡️ PRESERVATION: 100% of Session #191-192 Stripe logic preserved exactly
-// 🔧 CHANGE: Back to ES6 imports/exports (project requires ES modules)
-// 📝 HANDOVER: Fixed ReferenceError by using correct ES6 syntax for Vite project
+// 🔧 CHANGE: Using update_user_stripe_info() function instead of direct UPDATE
+// 📝 HANDOVER: Database function bypasses RLS while preserving all functionality
 
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
@@ -35,6 +35,7 @@ const PLAN_CONFIGS = {
 /**
  * 🔧 VERCEL API ROUTE: ES6 default export for Vite projects with "type": "module"
  * 🛡️ PRESERVATION: 100% of Session #191-192 subscription logic preserved exactly
+ * 🎯 FINAL FIX: Using database function to bypass RLS for stripe_customer_id updates
  */
 export default async function handler(req, res) {
   // Handle CORS for cross-origin requests
@@ -201,26 +202,29 @@ export default async function handler(req, res) {
         });
       }
 
-      // 🛡️ PRESERVED: Step 4 - Update database (Session #191 logic)
+      // 🎯 NEW: Step 4 - Update database using function that bypasses RLS
       try {
-        const { error: userUpdateError } = await supabase
-          .from("users")
-          .update({
-            stripe_customer_id: customer.id,
-            subscription_tier: planId,
-            subscription_status: "trialing",
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", userId);
+        const { error: userUpdateError } = await supabase.rpc(
+          "update_user_stripe_info",
+          {
+            user_id: userId,
+            customer_id: customer.id,
+            sub_tier: planId,
+            sub_status: "trialing",
+          }
+        );
 
         if (userUpdateError) {
-          console.error("❌ Error updating user:", userUpdateError);
+          console.error(
+            "❌ Error updating user with function:",
+            userUpdateError
+          );
           throw userUpdateError;
         }
 
-        console.log("✅ Database updated successfully");
+        console.log("✅ Database updated successfully using function");
       } catch (error) {
-        console.error("❌ Database error:", error);
+        console.error("❌ Database function error:", error);
 
         // 🛡️ PRESERVED: Session #191 important logic - don't return error even if database update fails
         // The subscription was created successfully in Stripe
