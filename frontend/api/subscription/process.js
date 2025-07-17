@@ -1,8 +1,8 @@
 // File: api/subscription/process.js
-// 🎯 SESSION #193: FINAL COMPLETE FIX - Using database function to bypass RLS
-// 🛡️ PRESERVATION: 100% of Session #191-192 Stripe logic preserved exactly
-// 🔧 CHANGE: Using update_user_stripe_info() function instead of direct UPDATE
-// 📝 HANDOVER: Database function bypasses RLS while preserving all functionality
+// 🎯 SESSION #195: FINAL API INTEGRATION FIX - Check function return value not just errors
+// 🛡️ PRESERVATION: 100% of Session #191-193 Stripe logic preserved exactly
+// 🔧 CRITICAL FIX: Check both error AND return value from update_user_stripe_info function
+// 📝 HANDOVER: Session #194 proved function works perfectly - API just needed to check return value
 
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
@@ -35,7 +35,7 @@ const PLAN_CONFIGS = {
 /**
  * 🔧 VERCEL API ROUTE: ES6 default export for Vite projects with "type": "module"
  * 🛡️ PRESERVATION: 100% of Session #191-192 subscription logic preserved exactly
- * 🎯 FINAL FIX: Using database function to bypass RLS for stripe_customer_id updates
+ * 🎯 SESSION #195 FIX: Check function return value to ensure database actually updated
  */
 export default async function handler(req, res) {
   // Handle CORS for cross-origin requests
@@ -202,27 +202,37 @@ export default async function handler(req, res) {
         });
       }
 
-      // 🎯 NEW: Step 4 - Update database using function that bypasses RLS
+      // 🎯 SESSION #195 FIX: Step 4 - Update database using function that bypasses RLS
+      // 🔧 CRITICAL FIX: Check both error AND return value from function
       try {
-        const { error: userUpdateError } = await supabase.rpc(
-          "update_user_stripe_info",
-          {
+        const { data: updateResult, error: userUpdateError } =
+          await supabase.rpc("update_user_stripe_info", {
             user_id: userId,
             customer_id: customer.id,
             sub_tier: planId,
             sub_status: "trialing",
-          }
-        );
+          });
 
+        // 🔧 PRESERVED: Check for function execution errors
         if (userUpdateError) {
-          console.error(
-            "❌ Error updating user with function:",
-            userUpdateError
-          );
+          console.error("❌ Error calling function:", userUpdateError);
           throw userUpdateError;
         }
 
-        console.log("✅ Database updated successfully using function");
+        // 🎯 NEW FIX: Check function return value - must be true for success
+        if (updateResult !== true) {
+          console.error(
+            "❌ Function returned false - no database rows updated:",
+            updateResult
+          );
+          throw new Error(
+            `Database function returned false - expected true but got: ${updateResult}`
+          );
+        }
+
+        console.log(
+          "✅ Database updated successfully using function - return value confirmed true"
+        );
       } catch (error) {
         console.error("❌ Database function error:", error);
 
