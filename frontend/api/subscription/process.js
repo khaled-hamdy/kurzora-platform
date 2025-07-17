@@ -1,9 +1,8 @@
 // File: api/subscription/process.js
-// 🎯 SESSION #194: FINAL COMPLETE FIX - Using database function to bypass RLS
-// 🛡️ PRESERVATION: 100% of Session #191-192 Stripe logic preserved exactly
-// 🔧 CHANGE: Using update_user_stripe_info() function instead of direct UPDATE
-// 📝 HANDOVER: Database function bypasses RLS while preserving all functionality
-// 🚨 SESSION #195 FIX: Check function RETURN VALUE not just errors!
+// 🎯 SESSION #195: TIMING FIX - Add delay for user creation before database function
+// 🛡️ PRESERVATION: 100% of Session #191-193 Stripe logic preserved exactly
+// 🔧 CRITICAL FIX: Wait for user to exist in database before calling function
+// 📝 HANDOVER: Timing issue resolved - API waits for user creation before database update
 
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
@@ -36,8 +35,7 @@ const PLAN_CONFIGS = {
 /**
  * 🔧 VERCEL API ROUTE: ES6 default export for Vite projects with "type": "module"
  * 🛡️ PRESERVATION: 100% of Session #191-192 subscription logic preserved exactly
- * 🎯 FINAL FIX: Using database function to bypass RLS for stripe_customer_id updates
- * 🚨 SESSION #195: Now checks function RETURN VALUE not just errors!
+ * 🎯 SESSION #195 TIMING FIX: Wait for user creation before database update
  */
 export default async function handler(req, res) {
   // Handle CORS for cross-origin requests
@@ -204,7 +202,53 @@ export default async function handler(req, res) {
         });
       }
 
-      // 🚨 SESSION #195 FIX: Step 4 - Update database AND check return value!
+      // 🎯 SESSION #195 TIMING FIX: Wait for user creation before database update
+      console.log(
+        `⏰ Waiting for user creation to complete before database update...`
+      );
+
+      // Wait with retries to check if user exists
+      let userExists = false;
+      let attempts = 0;
+      const maxAttempts = 10; // 10 seconds max wait
+
+      while (!userExists && attempts < maxAttempts) {
+        attempts++;
+        console.log(
+          `🔍 Checking if user ${userId} exists (attempt ${attempts}/${maxAttempts})`
+        );
+
+        try {
+          const { data: user, error } = await supabase
+            .from("users")
+            .select("id")
+            .eq("id", userId)
+            .single();
+
+          if (user && !error) {
+            userExists = true;
+            console.log(
+              `✅ User ${userId} found in database after ${attempts} attempts`
+            );
+            break;
+          }
+        } catch (checkError) {
+          console.log(
+            `⏰ User not found yet, waiting... (attempt ${attempts})`
+          );
+        }
+
+        // Wait 1 second before next attempt
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+
+      if (!userExists) {
+        console.warn(
+          `⚠️ User ${userId} not found after ${maxAttempts} seconds - proceeding anyway`
+        );
+      }
+
+      // 🎯 SESSION #195 FIX: Step 4 - Update database with user existence confirmed
       try {
         console.log(
           `🔍 Calling database function with userId: ${userId}, customerId: ${customer.id}`
