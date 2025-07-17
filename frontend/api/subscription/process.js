@@ -239,7 +239,7 @@ export default async function handler(req, res) {
         }
 
         // Wait 1 second before next attempt
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
 
       if (!userExists) {
