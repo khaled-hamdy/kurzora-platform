@@ -1,8 +1,8 @@
 // File: api/subscription/process.js
-// 🎯 SESSION #195: TIMING FIX - Add delay for user creation before database function
+// 🎯 SESSION #195: RACE CONDITION PERMANENTLY FIXED with UPSERT database function
 // 🛡️ PRESERVATION: 100% of Session #191-193 Stripe logic preserved exactly
-// 🔧 CRITICAL FIX: Wait for user to exist in database before calling function
-// 📝 HANDOVER: Timing issue resolved - API waits for user creation before database update
+// 🔧 FINAL VERSION: Clean production code with race condition eliminated
+// 📝 HANDOVER: UPSERT function handles user creation - no retry logic needed
 
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
@@ -35,7 +35,8 @@ const PLAN_CONFIGS = {
 /**
  * 🔧 VERCEL API ROUTE: ES6 default export for Vite projects with "type": "module"
  * 🛡️ PRESERVATION: 100% of Session #191-192 subscription logic preserved exactly
- * 🎯 SESSION #195 TIMING FIX: Wait for user creation before database update
+ * 🎯 SESSION #195 FINAL: Race condition eliminated with UPSERT database function
+ * 📋 PROCESS: Creates Stripe customer + subscription, then links to user profile via UPSERT
  */
 export default async function handler(req, res) {
   // Handle CORS for cross-origin requests
@@ -79,7 +80,7 @@ export default async function handler(req, res) {
         });
       }
 
-      // Validate plan ID
+      // Validate plan ID against configured plans
       if (!PLAN_CONFIGS[planId]) {
         return res.status(400).json({
           success: false,
@@ -136,7 +137,7 @@ export default async function handler(req, res) {
         const priceAmount = planConfig[billingCycle];
         const interval = billingCycle === "yearly" ? "year" : "month";
 
-        // Create product first
+        // Create product first to ensure price creation succeeds
         const product = await stripe.products.create({
           name: planConfig.name,
           metadata: {
@@ -202,59 +203,15 @@ export default async function handler(req, res) {
         });
       }
 
-      // 🎯 SESSION #195 TIMING FIX: Wait for user creation before database update
-      console.log(
-        `⏰ Waiting for user creation to complete before database update...`
-      );
-
-      // Wait with retries to check if user exists
-      let userExists = false;
-      let attempts = 0;
-      const maxAttempts = 10; // 10 seconds max wait
-
-      while (!userExists && attempts < maxAttempts) {
-        attempts++;
-        console.log(
-          `🔍 Checking if user ${userId} exists (attempt ${attempts}/${maxAttempts})`
-        );
-
-        try {
-          const { data: user, error } = await supabase
-            .from("users")
-            .select("id")
-            .eq("id", userId)
-            .single();
-
-          if (user && !error) {
-            userExists = true;
-            console.log(
-              `✅ User ${userId} found in database after ${attempts} attempts`
-            );
-            break;
-          }
-        } catch (checkError) {
-          console.log(
-            `⏰ User not found yet, waiting... (attempt ${attempts})`
-          );
-        }
-
-        // Wait 1 second before next attempt
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-      }
-
-      if (!userExists) {
-        console.warn(
-          `⚠️ User ${userId} not found after ${maxAttempts} seconds - proceeding anyway`
-        );
-      }
-
-      // 🎯 SESSION #195 FIX: Step 4 - Update database with user existence confirmed
+      // 🎯 SESSION #195 FINAL: Step 4 - Link Stripe customer to user profile via UPSERT
+      // 📝 NOTE: UPSERT function creates user profile from auth.users if missing, updates if exists
+      // 🛡️ NO RACE CONDITION: Function handles timing regardless of user creation state
       try {
         console.log(
-          `🔍 Calling database function with userId: ${userId}, customerId: ${customer.id}`
+          `🔍 Linking Stripe customer to user profile: userId: ${userId}, customerId: ${customer.id}`
         );
 
-        // 🎯 THE FIX: Get BOTH data and error from function call
+        // 🎯 UPSERT FUNCTION: Creates profile from auth.users data if missing, updates if exists
         const { data: updateResult, error: userUpdateError } =
           await supabase.rpc("update_user_stripe_info", {
             user_id: userId,
@@ -263,43 +220,41 @@ export default async function handler(req, res) {
             sub_status: "trialing",
           });
 
-        // 🛡️ PRESERVED: Check for errors first (Session #193 logic)
+        // 🛡️ PRESERVED: Check for database function errors (Session #193-194 logic)
         if (userUpdateError) {
           console.error(
-            "❌ Error updating user with function:",
+            "❌ Error linking Stripe customer to user profile:",
             userUpdateError
           );
           throw userUpdateError;
         }
 
-        // 🚨 NEW: Check if function actually updated rows (return value check)
+        // 🔍 SESSION #194-195: Verify function actually created/updated user profile
         if (!updateResult) {
           console.error(
-            "❌ Function returned FALSE - no database rows updated!",
+            "❌ Database function returned FALSE - profile creation/update failed!",
             `userId: ${userId}, customerId: ${customer.id}, planId: ${planId}`
           );
           throw new Error(
-            "Database function returned false - no rows updated. Check if userId exists in database."
+            "Failed to create or update user profile. Check if userId exists in auth.users table."
           );
         }
 
-        // 🎉 ONLY log success if BOTH no error AND successful return value
-        console.log(
-          "✅ Database updated successfully - function returned TRUE!"
-        );
+        // 🎉 SUCCESS: Stripe customer successfully linked to user profile
+        console.log("✅ Stripe customer linked to user profile successfully!");
         console.log(
           `✅ User ${userId} now has ${planId} plan with customer ID ${customer.id}`
         );
       } catch (error) {
-        console.error("❌ Database function error:", error);
+        console.error("❌ Database profile linking error:", error);
 
-        // 🛡️ PRESERVED: Session #191 important logic - don't return error even if database update fails
-        // The subscription was created successfully in Stripe
+        // 🛡️ PRESERVED: Session #191 important logic - don't fail API even if database update fails
+        // The subscription was created successfully in Stripe and customer can be manually linked
         console.warn(
-          "⚠️ Database update failed, but subscription created successfully in Stripe"
+          "⚠️ Profile linking failed, but subscription created successfully in Stripe"
         );
         console.warn(
-          `⚠️ Manual fix needed: Update user ${userId} with customer ID ${customer.id} and plan ${planId}`
+          `⚠️ Manual action needed: Link user ${userId} to customer ID ${customer.id} with plan ${planId}`
         );
       }
 
@@ -341,6 +296,7 @@ export default async function handler(req, res) {
         });
       }
 
+      // Fetch user profile including subscription and Stripe information
       const { data: user, error } = await supabase
         .from("users")
         .select("*")
@@ -374,7 +330,7 @@ export default async function handler(req, res) {
     }
   }
 
-  // Handle unsupported methods
+  // Handle unsupported HTTP methods
   else {
     res.setHeader("Allow", ["GET", "POST"]);
     return res.status(405).json({
@@ -383,4 +339,3 @@ export default async function handler(req, res) {
     });
   }
 }
-// Force redeploy Fri Jul 18 00:35:45 CEST 2025
