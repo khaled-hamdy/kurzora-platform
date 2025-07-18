@@ -106,7 +106,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </Link>
 
               {/* 🖥️ DESKTOP NAVIGATION - ADMIN LINK APPEARS HERE */}
-              <div className="hidden md:flex ml-10 space-x-8">
+              <div className="hidden lg:flex ml-10 space-x-8">
                 {navItems.map(({ path, label, icon: Icon }) => (
                   <Link
                     key={path}
@@ -136,7 +136,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
             <div className="flex items-center space-x-4">
               {/* 🔧 SESSION #197: Mobile hamburger menu button */}
-              <div className="md:hidden">
+              <div className="lg:hidden">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -231,7 +231,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
           {/* 🔧 SESSION #197: Mobile navigation - now toggleable instead of always visible */}
           {isMobileMenuOpen && (
-            <div className="md:hidden relative z-50">
+            <div className="lg:hidden relative z-50">
               <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-slate-900/95 border-t border-slate-700">
                 {navItems.map(({ path, label, icon: Icon }) => (
                   <Link
