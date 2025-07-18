@@ -1,4 +1,4 @@
-// Complete Enhanced Signals.tsx - CLEANED USER CONTROLS + PRESERVED ALL FUNCTIONALITY
+// Complete Enhanced Signals.tsx - MARKET HOURS AUTO-REFRESH ADDED + PRESERVED ALL FUNCTIONALITY
 // src/pages/Signals.tsx
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
@@ -53,6 +53,10 @@ import { useToast } from "../hooks/use-toast";
 import EnhancedSignalModal from "../components/signals/SignalModal";
 // 🚀 PRESERVED: Import the standalone enhanced SignalCard component
 import SignalCard from "../components/signals/SignalCard";
+// 🎯 NEW: Import the new SignalsPageHeader component
+import SignalsPageHeader from "../components/signals/SignalsPageHeader";
+// 🎯 NEW: Import auto-refresh hook with market hours detection
+import { useAutoRefresh } from "../hooks/useAutoRefresh";
 import { useSignalsPageData } from "../hooks/useSignalsPageData";
 import { usePositions } from "../contexts/PositionsContext";
 import {
@@ -388,7 +392,7 @@ const TradingViewChart: React.FC<{
   );
 };
 
-// Main Signals Component - CLEANED USER CONTROLS + PRESERVED ALL FUNCTIONALITY
+// Main Signals Component - MARKET HOURS AUTO-REFRESH ADDED + PRESERVED ALL FUNCTIONALITY
 const Signals: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -418,6 +422,10 @@ const Signals: React.FC = () => {
   const [highlightedStock, setHighlightedStock] = useState<string | null>(null);
   const signalRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
+  // 🎯 NEW: Auto-refresh state for signals page
+  // 📝 HANDOVER: Same pattern as heatmap for consistency
+  const [autoRefresh, setAutoRefresh] = useState(true);
+
   // Existing data hooks - PRESERVED
   const {
     signals: realSignals,
@@ -432,6 +440,41 @@ const Signals: React.FC = () => {
     error: sectorsError,
     refresh: refreshSectors,
   } = useSectorData();
+
+  // 🎯 NEW: Market hours auto-refresh hook integration
+  // 📝 HANDOVER: Connects to existing refresh function from useSignalsPageData
+  const {
+    isAutoRefreshEnabled,
+    toggleAutoRefresh,
+    lastRefreshTime,
+    nextRefreshIn,
+    forceRefresh,
+  } = useAutoRefresh({
+    refreshFunction: refresh || (() => window.location.reload()),
+    enabledByDefault: autoRefresh,
+  });
+
+  // 🎯 NEW: Sync auto-refresh state with hook
+  // 📝 HANDOVER: Same pattern as SignalHeatmap for consistency
+  React.useEffect(() => {
+    if (isAutoRefreshEnabled !== autoRefresh) {
+      setAutoRefresh(isAutoRefreshEnabled);
+    }
+  }, [isAutoRefreshEnabled, autoRefresh]);
+
+  // 🎯 NEW: Enhanced toggle handler
+  // 📝 HANDOVER: Matches SignalHeatmap pattern exactly
+  const handleAutoRefreshToggle = (value: boolean) => {
+    console.log(
+      `🔄 Signals page auto-refresh ${value ? "ENABLED" : "DISABLED"}`
+    );
+    setAutoRefresh(value);
+
+    // Sync with functional auto-refresh
+    if (value !== isAutoRefreshEnabled) {
+      toggleAutoRefresh();
+    }
+  };
 
   // 🚮 REMOVED: handleGenerateSignals function (manual generation)
 
@@ -628,28 +671,16 @@ const Signals: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <TestAlertSettings />
 
-        {/* 🚀 PRESERVED: Header Section */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-white mb-2">
-                Trading Signals
-              </h1>
-              <p className="text-slate-400">
-                Browse and execute paper trades based on AI-powered signals •
-                Automated generation 3x daily
-              </p>
-            </div>
-            {/* 🚀 PRESERVED: Only essential elements in header */}
-            <div className="flex items-center space-x-3">
-              {targetStock && (
-                <Badge className="bg-emerald-600 text-white animate-pulse">
-                  Navigating to {targetStock}
-                </Badge>
-              )}
-            </div>
-          </div>
-        </div>
+        {/* 🎯 NEW: Replace inline header with SignalsPageHeader component */}
+        {/* 📝 HANDOVER: Same pattern as dashboard for consistency */}
+        <SignalsPageHeader
+          autoRefresh={autoRefresh}
+          setAutoRefresh={handleAutoRefreshToggle}
+          lastRefreshTime={lastRefreshTime}
+          nextRefreshIn={nextRefreshIn}
+          onForceRefresh={forceRefresh}
+          targetStock={targetStock}
+        />
 
         {/* 🚮 REMOVED: TelegramAlertBanner (as requested - not important for clean interface) */}
 
