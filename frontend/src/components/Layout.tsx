@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -14,6 +14,8 @@ import {
   TrendingUp,
   BookOpen,
   Shield,
+  Menu,
+  X,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -35,6 +37,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // 🔧 SESSION #197: Mobile menu toggle state for responsive navigation
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const handleLogout = async () => {
     try {
       console.log("Main layout logout button clicked");
@@ -49,6 +54,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path);
+  };
+
+  // 🔧 SESSION #197: Close mobile menu when navigation item is clicked
+  const handleMobileNavClick = () => {
+    setIsMobileMenuOpen(false);
   };
 
   // 🚀 MAIN NAVIGATION ITEMS - ADMIN LINK ADDED HERE
@@ -125,13 +135,29 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
 
             <div className="flex items-center space-x-4">
+              {/* 🔧 SESSION #197: Mobile hamburger menu button */}
+              <div className="md:hidden">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="text-slate-300 hover:text-white hover:bg-slate-700/50"
+                >
+                  {isMobileMenuOpen ? (
+                    <X className="h-6 w-6" />
+                  ) : (
+                    <Menu className="h-6 w-6" />
+                  )}
+                </Button>
+              </div>
+
               <LanguageToggle />
 
               {user && (
                 <div className="flex items-center space-x-4">
                   {/* 🛡️ ADMIN BADGE - SHOWS ONLY FOR ADMIN USERS */}
                   {isAdmin() && (
-                    <div className="flex items-center space-x-1 px-2 py-1 bg-red-600/20 border border-red-500/30 rounded-md">
+                    <div className="hidden sm:flex items-center space-x-1 px-2 py-1 bg-red-600/20 border border-red-500/30 rounded-md">
                       <Shield className="h-3 w-3 text-red-400" />
                       <span className="text-xs text-red-400 font-medium">
                         ADMIN
@@ -147,7 +173,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                         className="flex items-center space-x-2 text-slate-300 hover:text-white hover:bg-slate-700/50"
                       >
                         <User className="h-4 w-4" />
-                        <span className="text-sm">{t("nav.account")}</span>
+                        <span className="hidden sm:inline text-sm">
+                          {t("nav.account")}
+                        </span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
@@ -201,41 +229,52 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
           </div>
 
-          {/* 📱 MOBILE NAVIGATION - ADMIN LINK APPEARS HERE TOO */}
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              {navItems.map(({ path, label, icon: Icon }) => (
-                <Link
-                  key={path}
-                  to={path}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                    isActive(path)
-                      ? path === "/admin"
-                        ? "text-red-400 bg-red-400/10 border border-red-500/30" // Special styling for admin
-                        : "text-emerald-400 bg-emerald-400/10"
-                      : "text-slate-300 hover:text-white hover:bg-slate-700/50"
-                  }`}
-                >
-                  <Icon
-                    className={`h-5 w-5 ${
-                      path === "/admin" ? "text-red-400" : ""
+          {/* 🔧 SESSION #197: Mobile navigation - now toggleable instead of always visible */}
+          {isMobileMenuOpen && (
+            <div className="md:hidden">
+              <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-slate-900/95 border-t border-slate-700">
+                {navItems.map(({ path, label, icon: Icon }) => (
+                  <Link
+                    key={path}
+                    to={path}
+                    onClick={handleMobileNavClick}
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                      isActive(path)
+                        ? path === "/admin"
+                          ? "text-red-400 bg-red-400/10 border border-red-500/30" // Special styling for admin
+                          : "text-emerald-400 bg-emerald-400/10"
+                        : "text-slate-300 hover:text-white hover:bg-slate-700/50"
                     }`}
-                  />
-                  <span>{label}</span>
-                  {/* 👑 ADMIN INDICATOR ON MOBILE */}
-                  {path === "/admin" && (
-                    <div className="ml-auto flex items-center space-x-1">
-                      <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
-                      <span className="text-xs text-red-300 font-medium">
-                        ADMIN
-                      </span>
-                    </div>
-                  )}
-                </Link>
-              ))}
+                  >
+                    <Icon
+                      className={`h-5 w-5 ${
+                        path === "/admin" ? "text-red-400" : ""
+                      }`}
+                    />
+                    <span>{label}</span>
+                    {/* 👑 ADMIN INDICATOR ON MOBILE */}
+                    {path === "/admin" && (
+                      <div className="ml-auto flex items-center space-x-1">
+                        <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+                        <span className="text-xs text-red-300 font-medium">
+                          ADMIN
+                        </span>
+                      </div>
+                    )}
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
+
+        {/* 🔧 SESSION #197: Mobile menu backdrop overlay - closes menu when tapped outside */}
+        {isMobileMenuOpen && (
+          <div
+            className="fixed inset-0 bg-black/30 z-40 md:hidden"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+        )}
       </nav>
 
       {/* Main Content */}
