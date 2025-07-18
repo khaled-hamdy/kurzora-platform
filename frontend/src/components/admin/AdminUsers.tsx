@@ -29,7 +29,9 @@ interface User {
   email: string;
   created_at: string;
   subscription_tier?: "starter" | "professional";
-  subscription_status?: "active" | "trial";
+  subscription_status?: "active" | "trialing" | "trial";
+  subscription_ends_at?: string;
+  stripe_customer_id?: string;
   trial_end_date?: string;
   last_login?: string;
   is_active?: boolean;
@@ -307,10 +309,21 @@ const AdminUsers: React.FC = () => {
 
       // Fetch users and their trade data in parallel
       const [usersResult, tradesResult] = await Promise.all([
-        // Get all users
+        // 🔧 SESSION #196 FIX: Select subscription fields from database
+        // FIXED: Added missing subscription_tier, subscription_status, subscription_ends_at, stripe_customer_id
         supabase
           .from("users")
-          .select("id, email, created_at")
+          .select(
+            `
+            id, 
+            email, 
+            created_at,
+            subscription_tier,
+            subscription_status,
+            subscription_ends_at,
+            stripe_customer_id
+          `
+          )
           .order("created_at", { ascending: false }),
 
         // Get trade counts per user
@@ -327,16 +340,16 @@ const AdminUsers: React.FC = () => {
           return acc;
         }, {}) || {};
 
+      // 🔧 SESSION #196 FIX: Use real database values instead of hardcoded email logic
+      // REMOVED: Hardcoded email pattern logic that ignored database data
+      // NOW: Uses actual database subscription_tier and subscription_status values
       const processedUsers: User[] = (usersResult.data || []).map((user) => {
-        // FIXED: Better subscription tier detection based on email patterns
-        const subscriptionTier = user.email?.includes("khaled.hamdy.hassan")
-          ? "professional"
-          : user.email?.includes("pro@kurzora.com")
-          ? "professional"
-          : "starter";
+        // Use real database values with proper fallbacks
+        const subscriptionTier = user.subscription_tier || "starter";
+        const subscriptionStatus = user.subscription_status || "trial";
 
-        const subscriptionStatus =
-          subscriptionTier === "professional" ? "active" : "trial";
+        // Calculate revenue based on actual subscription tier
+        const monthlyRevenue = subscriptionTier === "professional" ? 49 : 19;
 
         return {
           ...user,
@@ -344,8 +357,8 @@ const AdminUsers: React.FC = () => {
           subscription_status: subscriptionStatus,
           is_active: true,
           total_trades: tradesByUser[user.id] || 0,
-          total_revenue: subscriptionTier === "professional" ? 49 : 19, // Professional $49, Starter $19
-          last_login: user.created_at, // Placeholder - you can enhance this
+          total_revenue: monthlyRevenue,
+          last_login: user.created_at, // Placeholder - can be enhanced later
         };
       });
 
@@ -359,7 +372,9 @@ const AdminUsers: React.FC = () => {
         totalUsers: processedUsers.length,
         activeUsers: processedUsers.filter((u) => u.is_active).length,
         trialUsers: processedUsers.filter(
-          (u) => u.subscription_status === "trial"
+          (u) =>
+            u.subscription_status === "trial" ||
+            u.subscription_status === "trialing"
         ).length,
         professionalUsers: processedUsers.filter(
           (u) => u.subscription_tier === "professional"
@@ -410,7 +425,10 @@ const AdminUsers: React.FC = () => {
           case "active":
             return user.is_active && user.subscription_status === "active";
           case "trial":
-            return user.subscription_status === "trial";
+            return (
+              user.subscription_status === "trial" ||
+              user.subscription_status === "trialing"
+            );
           case "professional":
             return user.subscription_tier === "professional";
           case "inactive":
@@ -477,6 +495,7 @@ const AdminUsers: React.FC = () => {
     const badges = {
       active: "bg-green-900/50 text-green-400 border-green-500/50",
       trial: "bg-blue-900/50 text-blue-400 border-blue-500/50",
+      trialing: "bg-blue-900/50 text-blue-400 border-blue-500/50", // Handle "trialing" status
     };
 
     return badges[status as keyof typeof badges] || badges.trial;
