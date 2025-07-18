@@ -64,17 +64,17 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    subscription_tier: "starter",
+    subscription_tier: "professional", // 🔧 FIXED: Default to professional for test users
     subscription_status: "trial",
     trial_end_date: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Calculate default trial end date (7 days from now)
+  // Calculate default trial end date (30 days from now for test users)
   const getDefaultTrialEndDate = () => {
     const date = new Date();
-    date.setDate(date.getDate() + 7);
+    date.setDate(date.getDate() + 30); // 30 days for test users
     return date.toISOString().split("T")[0]; // Format: YYYY-MM-DD
   };
 
@@ -87,19 +87,71 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
     }
   }, [formData.subscription_status]);
 
+  // 🔧 SESSION #201 FIX: Direct database update for admin-created users
+  // This bypasses AuthContext entirely and directly sets the subscription tier
+  const updateUserTierDirectly = async (userId: string, targetTier: string) => {
+    console.log("🔄 ADMIN PANEL: Directly updating user tier in database...");
+    console.log("🎯 TARGET TIER:", targetTier);
+    console.log("👤 USER ID:", userId);
+
+    try {
+      // Direct database update - bypass AuthContext completely
+      const { data, error } = await supabase
+        .from("users")
+        .update({
+          subscription_tier: targetTier,
+          notification_settings: {
+            email_alerts_enabled: true,
+            telegram_alerts_enabled: targetTier === "professional",
+            daily_alert_limit: targetTier === "starter" ? 3 : null,
+            minimum_score: 65,
+          },
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", userId)
+        .select("subscription_tier")
+        .single();
+
+      if (error) {
+        console.error("❌ ADMIN PANEL: Database update failed:", error);
+        throw error;
+      }
+
+      console.log("✅ ADMIN PANEL: Database update successful!");
+      console.log("✅ VERIFIED TIER:", data.subscription_tier);
+
+      // Verify the update was successful
+      if (data.subscription_tier !== targetTier) {
+        throw new Error(
+          `Tier mismatch: expected ${targetTier}, got ${data.subscription_tier}`
+        );
+      }
+
+      return data;
+    } catch (error) {
+      console.error("💥 ADMIN PANEL: Direct tier update failed:", error);
+      throw error;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      // Create user with Supabase Auth
+      console.log(
+        "🆕 ADMIN PANEL: Creating test user with tier:",
+        formData.subscription_tier
+      );
+
+      // Step 1: Create user with Supabase Auth (tier will be "starter" by default)
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
           data: {
-            subscription_tier: formData.subscription_tier,
+            subscription_tier: formData.subscription_tier, // For reference only
             subscription_status: formData.subscription_status,
             trial_end_date:
               formData.subscription_status === "trial"
@@ -112,8 +164,50 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
 
       if (signUpError) throw signUpError;
 
-      // Success
-      console.log("User created successfully:", data);
+      if (!data.user) {
+        throw new Error("User creation failed - no user data returned");
+      }
+
+      console.log(
+        "✅ ADMIN PANEL: User created in Auth, now updating database tier..."
+      );
+
+      // Step 2: Wait for AuthContext profile creation to complete
+      console.log(
+        "⏳ ADMIN PANEL: Waiting for AuthContext profile creation..."
+      );
+      await new Promise((resolve) => setTimeout(resolve, 3000)); // 3 second wait
+
+      // Step 3: Directly update the user's subscription tier in database
+      await updateUserTierDirectly(data.user.id, formData.subscription_tier);
+
+      // Step 4: Verify the final result
+      console.log("🔍 ADMIN PANEL: Verifying final user tier...");
+      const { data: verificationData, error: verifyError } = await supabase
+        .from("users")
+        .select("subscription_tier, email")
+        .eq("id", data.user.id)
+        .single();
+
+      if (verifyError) {
+        console.warn("⚠️ ADMIN PANEL: Verification failed:", verifyError);
+      } else {
+        console.log("✅ FINAL VERIFICATION:");
+        console.log("✅ Email:", verificationData.email);
+        console.log("✅ Final Tier:", verificationData.subscription_tier);
+
+        if (verificationData.subscription_tier !== formData.subscription_tier) {
+          throw new Error(
+            `CRITICAL: Final tier (${verificationData.subscription_tier}) does not match target (${formData.subscription_tier})`
+          );
+        }
+      }
+
+      // Success!
+      console.log(
+        "🎉 ADMIN PANEL: Test user created successfully with correct tier!"
+      );
+
       onUserAdded();
       onClose();
 
@@ -121,12 +215,12 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
       setFormData({
         email: "",
         password: "",
-        subscription_tier: "starter",
+        subscription_tier: "professional",
         subscription_status: "trial",
         trial_end_date: "",
       });
     } catch (err) {
-      console.error("Add user error:", err);
+      console.error("❌ ADMIN PANEL: Test user creation error:", err);
       setError(err instanceof Error ? err.message : "Failed to create user");
     } finally {
       setLoading(false);
@@ -142,7 +236,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
         <div className="flex items-center justify-between p-6 border-b border-slate-700">
           <div className="flex items-center space-x-3">
             <UserPlus className="h-6 w-6 text-green-400" />
-            <h2 className="text-xl font-semibold text-white">Add New User</h2>
+            <h2 className="text-xl font-semibold text-white">Add Test User</h2>
           </div>
           <button
             onClick={onClose}
@@ -169,7 +263,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                   setFormData({ ...formData, email: e.target.value })
                 }
                 className="pl-10 pr-4 py-2 w-full bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="user@example.com"
+                placeholder="friend@example.com"
               />
             </div>
           </div>
@@ -192,65 +286,45 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
             />
           </div>
 
-          {/* Subscription Tier - CORRECTED */}
+          {/* 🔧 SIMPLIFIED: Fixed to Professional only for test users */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Subscription Tier
+              Account Type
             </label>
-            <select
-              value={formData.subscription_tier}
-              onChange={(e) =>
-                setFormData({ ...formData, subscription_tier: e.target.value })
-              }
-              className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              <option value="starter">Starter ($19/month)</option>
-              <option value="professional">Professional ($49/month)</option>
-            </select>
-          </div>
-
-          {/* Subscription Status - SIMPLIFIED */}
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Account Status
-            </label>
-            <select
-              value={formData.subscription_status}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  subscription_status: e.target.value,
-                })
-              }
-              className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              <option value="trial">7-Day Free Trial</option>
-              <option value="active">Active Subscription</option>
-            </select>
-          </div>
-
-          {/* Trial End Date - CONDITIONAL */}
-          {formData.subscription_status === "trial" && (
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Trial End Date
-              </label>
-              <input
-                type="date"
-                required
-                value={formData.trial_end_date}
-                onChange={(e) =>
-                  setFormData({ ...formData, trial_end_date: e.target.value })
-                }
-                className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
-                min={new Date().toISOString().split("T")[0]} // Can't set past dates
-              />
-              <p className="text-xs text-slate-400 mt-1">
-                User will automatically lose access after this date unless they
-                upgrade
+            <div className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-2">
+              <div className="flex items-center justify-between">
+                <span className="text-white font-medium">
+                  Professional Test User
+                </span>
+                <span className="text-purple-400 text-sm">
+                  No Payment Required
+                </span>
+              </div>
+              <p className="text-slate-400 text-xs mt-1">
+                Full access for testing
               </p>
             </div>
-          )}
+          </div>
+
+          {/* Trial End Date */}
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Test Access Expires
+            </label>
+            <input
+              type="date"
+              required
+              value={formData.trial_end_date}
+              onChange={(e) =>
+                setFormData({ ...formData, trial_end_date: e.target.value })
+              }
+              className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+              min={new Date().toISOString().split("T")[0]} // Can't set past dates
+            />
+            <p className="text-xs text-slate-400 mt-1">
+              User will lose access after this date (default: 30 days)
+            </p>
+          </div>
 
           {/* Error Message */}
           {error && (
@@ -274,7 +348,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
               className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-6 py-2 rounded-lg transition-colors flex items-center space-x-2"
             >
               <UserPlus className="h-4 w-4" />
-              <span>{loading ? "Creating..." : "Create User"}</span>
+              <span>{loading ? "Creating..." : "Create Test User"}</span>
             </button>
           </div>
         </form>
@@ -572,7 +646,7 @@ const AdminUsers: React.FC = () => {
             User Management
           </h1>
           <p className="text-slate-400">
-            Manage platform users and subscriptions
+            Manage platform users and create test accounts
           </p>
         </div>
         <div className="flex items-center space-x-3">
@@ -588,7 +662,7 @@ const AdminUsers: React.FC = () => {
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
           >
             <UserPlus className="h-4 w-4" />
-            <span>Add User</span>
+            <span>Add Test User</span>
           </button>
         </div>
       </div>
