@@ -253,6 +253,8 @@ const OrdersHistory: React.FC = () => {
                     <TableHead className="text-slate-300">Score</TableHead>
                     <TableHead className="text-slate-300">Final P&L</TableHead>
                     <TableHead className="text-slate-300">Reason</TableHead>
+                    {/* ✅ NEW: Entry Date column header */}
+                    <TableHead className="text-slate-300">Entry Date</TableHead>
                     <TableHead className="text-slate-300">
                       Closed Date
                     </TableHead>
@@ -321,6 +323,10 @@ const OrdersHistory: React.FC = () => {
                         >
                           {trade.reasonForClosing}
                         </Badge>
+                      </TableCell>
+                      {/* ✅ NEW: Entry Date column data */}
+                      <TableCell className="text-slate-400">
+                        {trade.entryDate}
                       </TableCell>
                       <TableCell className="text-slate-400">
                         {trade.closedDate}

@@ -12,6 +12,7 @@ interface ClosedTrade {
   pnl: number;
   pnlPercent: number;
   score: number;
+  entryDate: string; // ✅ NEW: Entry date formatted for display
   closedDate: string;
   reasonForClosing: string;
 }
@@ -107,6 +108,10 @@ export const usePaperTrades = () => {
             pnl: Number(pnl),
             pnlPercent: Number(pnlPercent),
             score: 85,
+            // ✅ NEW: Format entry date from opened_at field (same pattern as closedDate)
+            entryDate: trade.opened_at
+              ? new Date(trade.opened_at).toISOString().split("T")[0]
+              : "Unknown",
             closedDate: trade.closed_at
               ? new Date(trade.closed_at).toISOString().split("T")[0]
               : "Unknown",
