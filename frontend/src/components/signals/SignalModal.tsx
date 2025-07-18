@@ -54,6 +54,8 @@ interface EnhancedSignalModalProps {
     atr?: number;
     positionSize?: number;
     sector?: string;
+    // 📅 NEW: Entry date for existing positions (Session #198 - Option A implementation)
+    entryDate?: string;
     // Raw signal data for advanced calculations
     signals?: {
       "1H": number;
@@ -112,6 +114,21 @@ const EnhancedSignalModal: React.FC<EnhancedSignalModalProps> = ({
       setCustomEntryPrice(correctEntryPrice);
     }
   }, [signal?.symbol, signal?.entryPrice, signal?.price]);
+
+  // 📅 SESSION #198: Format entry date for display (Option A implementation)
+  const formatEntryDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } catch (error) {
+      console.warn("Error formatting entry date:", error);
+      return dateString; // Fallback to original string
+    }
+  };
 
   // 🚀 ENHANCED: Professional Risk Management with Real Values + Custom Entry Support
   const riskManagement = useMemo((): RiskManagementData | null => {
@@ -638,6 +655,12 @@ const EnhancedSignalModal: React.FC<EnhancedSignalModalProps> = ({
               <p className="text-white font-bold text-lg">
                 ${entryPrice.toFixed(2)}
               </p>
+              {/* 📅 SESSION #198: Entry Date Display - Option A Implementation */}
+              {signal.entryDate && (
+                <p className="text-slate-300 text-xs mt-1">
+                  Entered: {formatEntryDate(signal.entryDate)}
+                </p>
+              )}
               {useCustomEntry && (
                 <p className="text-blue-300 text-xs mt-1">Custom Entry</p>
               )}

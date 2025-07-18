@@ -407,6 +407,8 @@ const OpenPositions: React.FC = () => {
         ((position.currentPrice - position.entryPrice) / position.entryPrice) *
         100,
       signalScore: position.signalScore,
+      // 📅 SESSION #198: Add entry date for modal display - Option A implementation
+      entryDate: position.entryDate,
     };
 
     setSelectedSignalData(signalData);
