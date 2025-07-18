@@ -231,7 +231,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
           {/* 🔧 SESSION #197: Mobile navigation - now toggleable instead of always visible */}
           {isMobileMenuOpen && (
-            <div className="md:hidden">
+            <div className="md:hidden relative z-50">
               <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-slate-900/95 border-t border-slate-700">
                 {navItems.map(({ path, label, icon: Icon }) => (
                   <Link
@@ -267,14 +267,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
           )}
         </div>
-
-        {/* 🔧 SESSION #197: Mobile menu backdrop overlay - closes menu when tapped outside */}
-        {isMobileMenuOpen && (
-          <div
-            className="fixed inset-0 bg-black/30 z-40 md:hidden"
-            onClick={() => setIsMobileMenuOpen(false)}
-          />
-        )}
       </nav>
 
       {/* Main Content */}
