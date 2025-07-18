@@ -87,49 +87,93 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
     }
   }, [formData.subscription_status]);
 
-  // 🔧 SESSION #201 FIX: Direct database update for admin-created users
-  // This bypasses AuthContext entirely and directly sets the subscription tier
-  const updateUserTierDirectly = async (userId: string, targetTier: string) => {
-    console.log("🔄 ADMIN PANEL: Directly updating user tier in database...");
-    console.log("🎯 TARGET TIER:", targetTier);
+  // 🔧 SESSION #201 BULLETPROOF FIX: Admin panel creates database profile directly
+  // This completely bypasses AuthContext to eliminate race conditions
+  const createUserProfileDirectly = async (
+    userId: string,
+    userEmail: string,
+    targetTier: string
+  ) => {
+    console.log(
+      "🏗️ ADMIN PANEL: Creating user profile directly in database..."
+    );
     console.log("👤 USER ID:", userId);
+    console.log("📧 EMAIL:", userEmail);
+    console.log("🎯 TARGET TIER:", targetTier);
 
     try {
-      // Direct database update - bypass AuthContext completely
+      // Create the complete user profile directly
+      const profileData = {
+        id: userId,
+        email: userEmail.toLowerCase().trim(),
+        name: userEmail.split("@")[0] || "User",
+        subscription_tier: targetTier,
+        subscription_status: "trial",
+        language: "en",
+        timezone: "UTC",
+        starting_balance: 10000.0,
+        current_balance: 10000.0,
+        risk_percentage: 2.0,
+        notification_settings: {
+          email_alerts_enabled: true,
+          telegram_alerts_enabled: targetTier === "professional",
+          daily_alert_limit: targetTier === "starter" ? 3 : null,
+          minimum_score: 65,
+        },
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      console.log("📋 ADMIN PANEL: Profile data to insert:", {
+        email: profileData.email,
+        subscription_tier: profileData.subscription_tier,
+        notification_settings: profileData.notification_settings,
+      });
+
+      // Insert directly into database
       const { data, error } = await supabase
         .from("users")
-        .update({
-          subscription_tier: targetTier,
-          notification_settings: {
-            email_alerts_enabled: true,
-            telegram_alerts_enabled: targetTier === "professional",
-            daily_alert_limit: targetTier === "starter" ? 3 : null,
-            minimum_score: 65,
-          },
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", userId)
-        .select("subscription_tier")
+        .insert([profileData])
+        .select()
         .single();
 
       if (error) {
-        console.error("❌ ADMIN PANEL: Database update failed:", error);
-        throw error;
+        // Handle potential conflicts gracefully
+        if (error.code === "23505") {
+          // Duplicate key
+          console.log(
+            "🔄 ADMIN PANEL: User already exists, updating instead..."
+          );
+
+          const { data: updateData, error: updateError } = await supabase
+            .from("users")
+            .update({
+              subscription_tier: targetTier,
+              notification_settings: profileData.notification_settings,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", userId)
+            .select()
+            .single();
+
+          if (updateError) {
+            throw updateError;
+          }
+
+          console.log("✅ ADMIN PANEL: User profile updated successfully!");
+          return updateData;
+        } else {
+          throw error;
+        }
       }
 
-      console.log("✅ ADMIN PANEL: Database update successful!");
+      console.log("✅ ADMIN PANEL: User profile created successfully!");
       console.log("✅ VERIFIED TIER:", data.subscription_tier);
-
-      // Verify the update was successful
-      if (data.subscription_tier !== targetTier) {
-        throw new Error(
-          `Tier mismatch: expected ${targetTier}, got ${data.subscription_tier}`
-        );
-      }
 
       return data;
     } catch (error) {
-      console.error("💥 ADMIN PANEL: Direct tier update failed:", error);
+      console.error("💥 ADMIN PANEL: Direct profile creation failed:", error);
       throw error;
     }
   };
@@ -145,19 +189,20 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
         formData.subscription_tier
       );
 
-      // Step 1: Create user with Supabase Auth (tier will be "starter" by default)
+      // Step 1: Create user with Supabase Auth (with special flag to prevent AuthContext profile creation)
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
           data: {
-            subscription_tier: formData.subscription_tier, // For reference only
+            subscription_tier: formData.subscription_tier,
             subscription_status: formData.subscription_status,
             trial_end_date:
               formData.subscription_status === "trial"
                 ? formData.trial_end_date
                 : null,
             created_by_admin: true,
+            skip_authcontext_profile: true, // 🔧 NEW: Prevent AuthContext from creating profile
           },
         },
       });
@@ -168,45 +213,34 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
         throw new Error("User creation failed - no user data returned");
       }
 
-      console.log(
-        "✅ ADMIN PANEL: User created in Auth, now updating database tier..."
+      console.log("✅ ADMIN PANEL: User created in Auth successfully");
+      console.log("👤 USER ID:", data.user.id);
+
+      // Step 2: Create database profile directly (NO waiting for AuthContext)
+      console.log("🏗️ ADMIN PANEL: Creating database profile directly...");
+
+      const profileResult = await createUserProfileDirectly(
+        data.user.id,
+        formData.email,
+        formData.subscription_tier
       );
 
-      // Step 2: Wait for AuthContext profile creation to complete
-      console.log(
-        "⏳ ADMIN PANEL: Waiting for AuthContext profile creation..."
-      );
-      await new Promise((resolve) => setTimeout(resolve, 3000)); // 3 second wait
+      // Step 3: Final verification
+      console.log("🔍 ADMIN PANEL: Verifying final result...");
+      console.log("✅ FINAL EMAIL:", profileResult.email);
+      console.log("✅ FINAL TIER:", profileResult.subscription_tier);
 
-      // Step 3: Directly update the user's subscription tier in database
-      await updateUserTierDirectly(data.user.id, formData.subscription_tier);
-
-      // Step 4: Verify the final result
-      console.log("🔍 ADMIN PANEL: Verifying final user tier...");
-      const { data: verificationData, error: verifyError } = await supabase
-        .from("users")
-        .select("subscription_tier, email")
-        .eq("id", data.user.id)
-        .single();
-
-      if (verifyError) {
-        console.warn("⚠️ ADMIN PANEL: Verification failed:", verifyError);
-      } else {
-        console.log("✅ FINAL VERIFICATION:");
-        console.log("✅ Email:", verificationData.email);
-        console.log("✅ Final Tier:", verificationData.subscription_tier);
-
-        if (verificationData.subscription_tier !== formData.subscription_tier) {
-          throw new Error(
-            `CRITICAL: Final tier (${verificationData.subscription_tier}) does not match target (${formData.subscription_tier})`
-          );
-        }
+      if (profileResult.subscription_tier !== formData.subscription_tier) {
+        throw new Error(
+          `CRITICAL: Final tier (${profileResult.subscription_tier}) does not match target (${formData.subscription_tier})`
+        );
       }
 
       // Success!
       console.log(
         "🎉 ADMIN PANEL: Test user created successfully with correct tier!"
       );
+      console.log("🎉 NO RACE CONDITIONS - Complete admin panel control!");
 
       onUserAdded();
       onClose();
