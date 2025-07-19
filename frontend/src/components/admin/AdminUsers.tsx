@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from "react";
 // CORRECT: Using the same import path as your working components
 import { supabase } from "@/lib/supabase";
+// 🔧 SESSION #202: Create admin client with service role for user deletion
+import { createClient } from "@supabase/supabase-js";
+
+// Admin client for auth.users deletion (requires service role key)
+const supabaseAdmin = createClient(
+  import.meta.env.VITE_SUPABASE_URL!,
+  import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
+);
 import {
   Users,
   UserPlus,
@@ -533,9 +547,11 @@ const DeleteUserModal: React.FC<DeleteUserModalProps> = ({
 
       if (usersError) throw usersError;
 
-      // Step 10: Delete from auth.users using Admin API
+      // Step 10: Delete from auth.users using Admin API with Service Role
       console.log("🧹 Deleting from auth.users...");
-      const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+      const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(
+        userId
+      );
 
       if (authError) throw authError;
 
