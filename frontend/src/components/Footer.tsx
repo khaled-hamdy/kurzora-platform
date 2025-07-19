@@ -4,8 +4,9 @@
 // 🔧 SESSION #191: Fixed Pricing link to navigate to landing page pricing section instead of current page
 // 🔧 SESSION #192: Fixed conditional scroll behavior + Pricing link uses window.location to bypass auth redirect
 // 🔧 SESSION #194: REMOVED Pricing link from dashboard footer - logged-in users don't need pricing in footer
+// 🔧 SESSION #208: RESTORED Pricing link to Platform section for complete footer consistency across all pages
 // 🛡️ PRESERVATION: All existing functionality maintained exactly as before
-// 📝 HANDOVER: Clean dashboard footer focused on actual user needs (Platform, Support, Legal only)
+// 📝 HANDOVER: Dashboard footer now consistent with legal pages - includes Pricing link for uniform navigation
 
 import React from "react";
 import { Link } from "react-router-dom";
@@ -28,13 +29,12 @@ const Footer: React.FC = () => {
   };
 
   // 🔧 FIXED: Home link now points to landing page "/" instead of "/dashboard"
-  // 🔧 SESSION #194: REMOVED Pricing link - logged-in users don't need pricing in dashboard footer
-  // Dashboard footer now focuses on actual user needs: Platform navigation and Support
-  // Pricing remains available on landing page for new users and in Settings for upgrades
+  // 🔧 SESSION #208: RESTORED Pricing link for footer consistency across all pages
+  // Dashboard footer now matches legal pages with complete Platform navigation
   const platformLinks = [
     { label: t("footer.home"), path: "/" }, // ← FIXED: Changed from '/dashboard' to '/'
     { label: t("nav.howItWorks"), path: "/how-it-works" },
-    // ← SESSION #194: Removed Pricing link - cleaner UX for logged-in users
+    { label: "Pricing", path: "/pricing" }, // ← SESSION #208: Restored for consistency
   ];
 
   const supportLinks = [
