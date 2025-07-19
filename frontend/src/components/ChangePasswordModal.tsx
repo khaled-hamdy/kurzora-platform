@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { supabase } from "../lib/supabase";
+import { useAuth } from "../contexts/AuthContext";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +12,14 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { AlertCircle, CheckCircle, Eye, EyeOff } from "lucide-react";
 
+// ==================================================================================
+// 🛡️ SECURE CHANGE PASSWORD MODAL - ENHANCED WITH CURRENT PASSWORD VERIFICATION
+// ==================================================================================
+// 🔧 SECURITY ENHANCEMENT: Added proper current password verification before update
+// 🛡️ PRESERVATION: All existing UI, styling, validation, and user experience maintained exactly
+// 📝 HANDOVER: Complete security implementation with real re-authentication flow
+// 🚨 CRITICAL: Production-ready security enhancement with comprehensive error handling
+
 interface ChangePasswordModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -20,6 +29,11 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  // 🔧 SECURITY ENHANCEMENT: Get current user for re-authentication
+  // 🎯 PURPOSE: Required for verifying current password before update
+  const { user } = useAuth();
+
+  // 🛡️ PRESERVATION: All existing state management maintained exactly
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -30,21 +44,43 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Form validation
+  // 🛡️ PRESERVATION: Existing form validation logic maintained exactly
   const isValidPassword = newPassword.length >= 6;
   const doPasswordsMatch = newPassword === confirmPassword;
   const isFormValid = currentPassword && isValidPassword && doPasswordsMatch;
 
+  // 🔧 SECURITY ENHANCEMENT: Secure password update with current password verification
+  // 🎯 PURPOSE: Verify current password before allowing update - prevents unauthorized changes
+  // 📝 HANDOVER: Two-step process: re-authenticate, then update password
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!isFormValid) return;
 
+    // 🔧 SECURITY CHECK: Ensure user email is available for re-authentication
+    if (!user?.email) {
+      setError("Unable to verify user identity. Please log in again.");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
     try {
-      // Use Supabase auth to update password
+      // 🔧 STEP 1: VERIFY CURRENT PASSWORD - Re-authenticate user with current password
+      // 🎯 PURPOSE: Confirm user knows their current password before allowing change
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword,
+      });
+
+      if (signInError) {
+        // 🔧 SECURITY: Handle incorrect current password with clear error message
+        throw new Error("Current password is incorrect. Please try again.");
+      }
+
+      // 🔧 STEP 2: UPDATE TO NEW PASSWORD - Only proceed if current password verified
+      // 🎯 PURPOSE: Secure password update after successful re-authentication
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword,
       });
@@ -53,7 +89,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
         throw updateError;
       }
 
-      // Success!
+      // 🛡️ PRESERVATION: Existing success handling maintained exactly
       setSuccess(true);
 
       // Clear form
@@ -67,6 +103,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
         onClose();
       }, 2000);
     } catch (err) {
+      // 🔧 ENHANCED ERROR HANDLING: Clear error messages for security failures
       console.error("Password update error:", err);
       setError(
         err instanceof Error ? err.message : "Failed to update password"
@@ -76,6 +113,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
     }
   };
 
+  // 🛡️ PRESERVATION: Existing modal close handler maintained exactly
   const handleClose = () => {
     if (loading) return; // Prevent closing while loading
 
@@ -98,7 +136,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
         </DialogHeader>
 
         {success ? (
-          // Success State
+          // 🛡️ PRESERVATION: Existing success state UI maintained exactly
           <div className="py-6 text-center">
             <CheckCircle className="h-12 w-12 text-green-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-white mb-2">
@@ -110,7 +148,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
             </p>
           </div>
         ) : (
-          // Form State
+          // 🛡️ PRESERVATION: Existing form UI and validation maintained exactly
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Current Password */}
             <div className="space-y-2">
@@ -216,7 +254,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
               )}
             </div>
 
-            {/* Error Message */}
+            {/* 🛡️ PRESERVATION: Existing error display maintained exactly */}
             {error && (
               <div className="flex items-center space-x-2 text-red-400 text-sm">
                 <AlertCircle className="h-4 w-4" />
@@ -224,7 +262,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
               </div>
             )}
 
-            {/* Buttons */}
+            {/* 🛡️ PRESERVATION: Existing button layout and styling maintained exactly */}
             <div className="flex space-x-3 pt-4">
               <Button
                 type="button"
