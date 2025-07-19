@@ -7,6 +7,7 @@
 // 🚨 CRITICAL: Never modify existing routes without understanding their purpose
 // 📋 COMPLETE: All imports, providers, and routes maintained exactly as before
 // 🧹 CLEANED: Removed components with fake data as requested by user
+// 🎯 NEW: Added Google Analytics tracking with proper script loading for Vite/React
 
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -16,6 +17,13 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { SignalsProvider } from "./contexts/SignalsContext";
 import { PositionsProvider } from "./contexts/PositionsContext";
+
+// ==================================================================================
+// 📊 GOOGLE ANALYTICS IMPORTS
+// ==================================================================================
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { initGA, trackPageView, GA_MEASUREMENT_ID } from "./lib/analytics";
 
 // ==================================================================================
 // 🛡️ ADMIN IMPORTS - COMPLETE ADMIN PANEL (PRESERVED FROM PREVIOUS SESSIONS)
@@ -90,17 +98,77 @@ const queryClient = new QueryClient({
 });
 
 // ==================================================================================
+// 📊 GOOGLE ANALYTICS SETUP COMPONENT
+// ==================================================================================
+// 🎯 PURPOSE: Properly load Google Analytics scripts and track page views
+function GoogleAnalyticsSetup() {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Load Google Analytics script dynamically
+    if (GA_MEASUREMENT_ID && typeof window !== "undefined") {
+      // Create and load gtag script
+      const script1 = document.createElement("script");
+      script1.async = true;
+      script1.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+      document.head.appendChild(script1);
+
+      // Initialize gtag
+      const script2 = document.createElement("script");
+      script2.innerHTML = `
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '${GA_MEASUREMENT_ID}');
+        console.log('🎯 Google Analytics script loaded with ID: ${GA_MEASUREMENT_ID}');
+      `;
+      document.head.appendChild(script2);
+
+      // Initialize our analytics
+      setTimeout(() => {
+        initGA();
+      }, 1000);
+
+      // Cleanup function
+      return () => {
+        // Clean up scripts if component unmounts
+        try {
+          document.head.removeChild(script1);
+          document.head.removeChild(script2);
+        } catch (e) {
+          // Scripts may already be removed
+        }
+      };
+    }
+  }, []); // Run once when component mounts
+
+  useEffect(() => {
+    // Track page views when location changes
+    if (GA_MEASUREMENT_ID) {
+      console.log("📊 Tracking page view:", location.pathname);
+      trackPageView(location.pathname);
+    }
+  }, [location.pathname]); // Run when route changes
+
+  return null; // This component doesn't render anything
+}
+
+// ==================================================================================
 // 🎯 MAIN APPLICATION COMPONENT
 // ==================================================================================
 // 🛡️ ANTI-REGRESSION: This function contains ALL routes for the platform
 // 📝 SESSION #173: Removed fake data component routes as requested
 // 🔄 PRESERVED: All existing routes maintained exactly as before
 // 🚨 CRITICAL: Never remove or modify existing routes without understanding impact
+// 🎯 NEW: Added Google Analytics tracking throughout the application
 
 function App() {
   return (
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
+        {/* Google Analytics Setup - Loads scripts and tracks page views */}
+        <GoogleAnalyticsSetup />
+
         <Toaster />
         <Sonner />
         <LanguageProvider>
@@ -303,7 +371,7 @@ function App() {
 export default App;
 
 // ==================================================================================
-// 📝 SESSION #173 HANDOVER NOTES FOR FUTURE SESSIONS
+// 📝 SESSION HANDOVER NOTES FOR FUTURE SESSIONS
 // ==================================================================================
 // 🧹 WHAT WAS REMOVED: DailyBreakdownReportGenerator and CombinedBacktestAnalyzer imports and routes
 // 🛡️ WHAT WAS PRESERVED: All existing routes, imports, and functionality unchanged
@@ -312,3 +380,6 @@ export default App;
 // 📋 FUTURE MODIFICATIONS: Always preserve existing functionality and add extensive comments
 // 🎊 TESTING: All remaining routes still functional, fake data components safely removed
 // 🛡️ SAFETY: Core backtesting system still functional at /backtest route
+// 🎯 NEW ADDITION: Google Analytics tracking implemented with proper dynamic script loading for Vite/React
+// 📊 ANALYTICS FEATURES: Real-time user behavior tracking, conversion tracking ready for Kurzora events
+// 🔧 SCRIPT LOADING: Fixed React/Vite compatibility issues with dynamic script injection
