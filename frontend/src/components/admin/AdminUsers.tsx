@@ -1,3 +1,8 @@
+// 🎯 PURPOSE: Admin user management with SQL-based deletion
+// 🔧 SESSION: Updated to use SQL script approach instead of Edge Functions
+// 🛡️ PRESERVATION: All Session #201 bulletproof user creation functionality intact
+// 📝 HANDOVER: Delete function generates SQL script for manual execution
+
 import React, { useState, useEffect } from "react";
 // CORRECT: Using the same import path as your working components
 import { supabase } from "@/lib/supabase";
@@ -48,6 +53,285 @@ interface UserStats {
   totalRevenue: number;
   averageTradesPerUser: number;
 }
+
+// 🗑️ NEW: SQL Delete Modal Component
+interface SQLDeleteModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  userEmail: string;
+  onDeleted: () => void;
+}
+
+const SQLDeleteModal: React.FC<SQLDeleteModalProps> = ({
+  isOpen,
+  onClose,
+  userEmail,
+  onDeleted,
+}) => {
+  const [step, setStep] = useState<"confirm" | "sql" | "complete">("confirm");
+  const [confirmText, setConfirmText] = useState("");
+  const requiredText = "DELETE";
+
+  // Generate the SQL script with the user's email
+  const generateSQL = () => {
+    return `-- 🗑️ DELETE USER: ${userEmail}
+-- ⚠️ WARNING: This permanently deletes ALL user data
+-- Run this in Supabase Dashboard → SQL Editor
+
+BEGIN;
+
+-- Delete in proper order (children first, parents last)
+DELETE FROM alert_delivery_log 
+WHERE user_id IN (
+    SELECT id FROM users WHERE email = '${userEmail}'
+    UNION 
+    SELECT id FROM auth.users WHERE email = '${userEmail}'
+);
+
+DELETE FROM watchlist_items 
+WHERE watchlist_id IN (
+    SELECT w.id FROM watchlists w 
+    WHERE w.user_id IN (
+        SELECT id FROM users WHERE email = '${userEmail}'
+        UNION 
+        SELECT id FROM auth.users WHERE email = '${userEmail}'
+    )
+);
+
+DELETE FROM watchlists 
+WHERE user_id IN (
+    SELECT id FROM users WHERE email = '${userEmail}'
+    UNION 
+    SELECT id FROM auth.users WHERE email = '${userEmail}'
+);
+
+DELETE FROM user_alert_settings 
+WHERE user_id IN (
+    SELECT id FROM users WHERE email = '${userEmail}'
+    UNION 
+    SELECT id FROM auth.users WHERE email = '${userEmail}'
+);
+
+DELETE FROM paper_trades 
+WHERE user_id IN (
+    SELECT id FROM users WHERE email = '${userEmail}'
+    UNION 
+    SELECT id FROM auth.users WHERE email = '${userEmail}'
+);
+
+DELETE FROM portfolio_snapshots 
+WHERE user_id IN (
+    SELECT id FROM users WHERE email = '${userEmail}'
+    UNION 
+    SELECT id FROM auth.users WHERE email = '${userEmail}'
+);
+
+DELETE FROM dashboard_metrics 
+WHERE user_id IN (
+    SELECT id FROM users WHERE email = '${userEmail}'
+    UNION 
+    SELECT id FROM auth.users WHERE email = '${userEmail}'
+);
+
+DELETE FROM user_sessions 
+WHERE user_id IN (
+    SELECT id FROM users WHERE email = '${userEmail}'
+    UNION 
+    SELECT id FROM auth.users WHERE email = '${userEmail}'
+);
+
+-- Finally delete from main users table
+DELETE FROM users WHERE email = '${userEmail}';
+
+-- Verify deletion
+SELECT 
+    'Remaining in users table' as check_type,
+    COUNT(*) as remaining_records 
+FROM users WHERE email = '${userEmail}'
+UNION ALL
+SELECT 
+    'Remaining in auth.users table' as check_type,
+    COUNT(*) as remaining_records 
+FROM auth.users WHERE email = '${userEmail}';
+
+-- If verification shows 0 records, run:
+COMMIT;
+
+-- MANUAL STEP: Go to Supabase Dashboard → Authentication → Users → Delete the user manually`;
+  };
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(generateSQL());
+      alert("SQL script copied to clipboard!");
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
+
+  const openSupabaseDashboard = () => {
+    window.open(
+      "https://supabase.com/dashboard/project/jmbkssafogvzizypjaoi/sql/new",
+      "_blank"
+    );
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-slate-800 rounded-lg border border-red-500/50 w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-slate-700">
+          <div className="flex items-center space-x-3">
+            <Trash2 className="h-6 w-6 text-red-400" />
+            <h2 className="text-xl font-semibold text-white">
+              {step === "confirm" && "Confirm Deletion"}
+              {step === "sql" && "SQL Script Ready"}
+              {step === "complete" && "Deletion Complete"}
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+          >
+            <X className="h-5 w-5 text-slate-400" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6">
+          {step === "confirm" && (
+            <div className="space-y-4">
+              <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-4">
+                <h3 className="text-red-400 font-semibold mb-2">
+                  ⚠️ PERMANENT DELETION WARNING
+                </h3>
+                <p className="text-red-300 text-sm">
+                  This will permanently delete user:{" "}
+                  <span className="font-mono text-red-200">{userEmail}</span>
+                </p>
+                <p className="text-red-300 text-sm mt-2">
+                  Including all trading history, watchlists, settings, and
+                  authentication data.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Type <span className="font-mono text-red-400">DELETE</span> to
+                  confirm:
+                </label>
+                <input
+                  type="text"
+                  value={confirmText}
+                  onChange={(e) => setConfirmText(e.target.value)}
+                  className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  placeholder="Type DELETE here..."
+                />
+              </div>
+
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={onClose}
+                  className="px-4 py-2 text-slate-300 hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => setStep("sql")}
+                  disabled={confirmText !== requiredText}
+                  className="bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg transition-colors"
+                >
+                  Generate SQL Script
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === "sql" && (
+            <div className="space-y-4">
+              <div className="bg-blue-900/20 border border-blue-500/50 rounded-lg p-4">
+                <h3 className="text-blue-400 font-semibold mb-2">
+                  📋 SQL Deletion Script
+                </h3>
+                <p className="text-blue-300 text-sm">
+                  Copy this script and run it in Supabase Dashboard → SQL Editor
+                </p>
+              </div>
+
+              <div className="bg-slate-900 rounded-lg p-4 border border-slate-600">
+                <pre className="text-sm text-slate-300 overflow-x-auto whitespace-pre-wrap">
+                  {generateSQL()}
+                </pre>
+              </div>
+
+              <div className="flex justify-between">
+                <button
+                  onClick={() => setStep("confirm")}
+                  className="px-4 py-2 text-slate-300 hover:text-white transition-colors"
+                >
+                  ← Back
+                </button>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={copyToClipboard}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+                  >
+                    <span>📋 Copy SQL</span>
+                  </button>
+                  <button
+                    onClick={openSupabaseDashboard}
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+                  >
+                    <span>🔗 Open SQL Editor</span>
+                  </button>
+                  <button
+                    onClick={() => setStep("complete")}
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Mark as Done
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step === "complete" && (
+            <div className="space-y-4 text-center">
+              <div className="bg-green-900/20 border border-green-500/50 rounded-lg p-6">
+                <CheckCircle className="h-12 w-12 text-green-400 mx-auto mb-4" />
+                <h3 className="text-green-400 font-semibold text-lg mb-2">
+                  Deletion Complete!
+                </h3>
+                <p className="text-green-300">
+                  User <span className="font-mono">{userEmail}</span> has been
+                  deleted.
+                </p>
+                <p className="text-green-300 text-sm mt-2">
+                  Remember to also delete the user from Authentication → Users
+                  in Supabase Dashboard.
+                </p>
+              </div>
+
+              <div className="flex justify-center space-x-3">
+                <button
+                  onClick={() => {
+                    onDeleted();
+                    onClose();
+                  }}
+                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition-colors"
+                >
+                  ✅ Refresh User List
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Add User Modal Component
 interface AddUserModalProps {
@@ -391,316 +675,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
   );
 };
 
-// 🗑️ SESSION #202: DELETE USER MODAL COMPONENT
-// Complete user deletion with email confirmation and automated cleanup
-interface DeleteUserModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onUserDeleted: () => void;
-  user: User | null;
-}
-
-const DeleteUserModal: React.FC<DeleteUserModalProps> = ({
-  isOpen,
-  onClose,
-  onUserDeleted,
-  user,
-}) => {
-  const [confirmEmail, setConfirmEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Reset state when modal opens/closes
-  useEffect(() => {
-    if (!isOpen) {
-      setConfirmEmail("");
-      setError(null);
-    }
-  }, [isOpen]);
-
-  // 🗑️ SESSION #202: COMPLETE USER DELETION FUNCTION
-  // Based on user's SQL script - deletes from all tables including auth.users
-  const deleteUserCompletely = async (userId: string, userEmail: string) => {
-    console.log("🗑️ ADMIN PANEL: Starting complete user deletion...");
-    console.log("👤 USER ID:", userId);
-    console.log("📧 EMAIL:", userEmail);
-
-    try {
-      // Step 1: Delete from alert_delivery_log
-      console.log("🧹 Deleting alert delivery logs...");
-      const { error: alertError } = await supabase
-        .from("alert_delivery_log")
-        .delete()
-        .eq("user_id", userId);
-
-      if (alertError) throw alertError;
-
-      // Step 2: Delete watchlist_items (children of watchlists)
-      console.log("🧹 Deleting watchlist items...");
-      const { data: watchlists } = await supabase
-        .from("watchlists")
-        .select("id")
-        .eq("user_id", userId);
-
-      if (watchlists && watchlists.length > 0) {
-        const watchlistIds = watchlists.map((w) => w.id);
-        const { error: watchlistItemsError } = await supabase
-          .from("watchlist_items")
-          .delete()
-          .in("watchlist_id", watchlistIds);
-
-        if (watchlistItemsError) throw watchlistItemsError;
-      }
-
-      // Step 3: Delete watchlists
-      console.log("🧹 Deleting watchlists...");
-      const { error: watchlistsError } = await supabase
-        .from("watchlists")
-        .delete()
-        .eq("user_id", userId);
-
-      if (watchlistsError) throw watchlistsError;
-
-      // Step 4: Delete user_alert_settings (if table exists)
-      console.log("🧹 Deleting user alert settings...");
-      const { error: alertSettingsError } = await supabase
-        .from("user_alert_settings")
-        .delete()
-        .eq("user_id", userId);
-
-      // Note: Ignore error if table doesn't exist
-      if (
-        alertSettingsError &&
-        !alertSettingsError.message.includes("does not exist")
-      ) {
-        throw alertSettingsError;
-      }
-
-      // Step 5: Delete paper_trades
-      console.log("🧹 Deleting paper trades...");
-      const { error: tradesError } = await supabase
-        .from("paper_trades")
-        .delete()
-        .eq("user_id", userId);
-
-      if (tradesError) throw tradesError;
-
-      // Step 6: Delete portfolio_snapshots (if table exists)
-      console.log("🧹 Deleting portfolio snapshots...");
-      const { error: portfolioError } = await supabase
-        .from("portfolio_snapshots")
-        .delete()
-        .eq("user_id", userId);
-
-      // Note: Ignore error if table doesn't exist
-      if (
-        portfolioError &&
-        !portfolioError.message.includes("does not exist")
-      ) {
-        throw portfolioError;
-      }
-
-      // Step 7: Delete dashboard_metrics (if table exists)
-      console.log("🧹 Deleting dashboard metrics...");
-      const { error: metricsError } = await supabase
-        .from("dashboard_metrics")
-        .delete()
-        .eq("user_id", userId);
-
-      // Note: Ignore error if table doesn't exist
-      if (metricsError && !metricsError.message.includes("does not exist")) {
-        throw metricsError;
-      }
-
-      // Step 8: Delete user_sessions (if table exists)
-      console.log("🧹 Deleting user sessions...");
-      const { error: sessionsError } = await supabase
-        .from("user_sessions")
-        .delete()
-        .eq("user_id", userId);
-
-      // Note: Ignore error if table doesn't exist
-      if (sessionsError && !sessionsError.message.includes("does not exist")) {
-        throw sessionsError;
-      }
-
-      // Step 9: Delete from main users table
-      console.log("🧹 Deleting from users table...");
-      const { error: usersError } = await supabase
-        .from("users")
-        .delete()
-        .eq("id", userId);
-
-      if (usersError) throw usersError;
-
-      // Step 10: Mark completion (auth.users cleanup can be done manually if needed)
-      console.log(
-        "✅ ADMIN PANEL: User completely deleted from all database systems!"
-      );
-      console.log("✅ USER REMOVED FROM:");
-      console.log("  - Alert delivery logs");
-      console.log("  - Watchlists and items");
-      console.log("  - Paper trades");
-      console.log("  - Main users table");
-      console.log(
-        "📝 NOTE: Auth.users record remains (can be deleted manually from Supabase dashboard if needed)"
-      );
-
-      return true;
-    } catch (error) {
-      console.error("💥 ADMIN PANEL: User deletion failed:", error);
-      throw error;
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!user) return;
-
-    // Verify email confirmation
-    if (confirmEmail !== user.email) {
-      setError(
-        "Email confirmation does not match. Please type the exact email address."
-      );
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      console.log("🗑️ ADMIN PANEL: Confirming deletion of user:", user.email);
-
-      await deleteUserCompletely(user.id, user.email);
-
-      // Success!
-      console.log("🎉 ADMIN PANEL: User deletion completed successfully!");
-
-      onUserDeleted();
-      onClose();
-    } catch (err) {
-      console.error("❌ ADMIN PANEL: User deletion error:", err);
-      setError(err instanceof Error ? err.message : "Failed to delete user");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (!isOpen || !user) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-slate-800 rounded-lg border border-red-500/50 w-full max-w-md mx-4">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-700">
-          <div className="flex items-center space-x-3">
-            <Trash2 className="h-6 w-6 text-red-400" />
-            <h2 className="text-xl font-semibold text-white">Delete User</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
-          >
-            <X className="h-5 w-5 text-slate-400" />
-          </button>
-        </div>
-
-        {/* Warning Content */}
-        <div className="p-6 space-y-4">
-          {/* Warning Message */}
-          <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-4">
-            <div className="flex items-center space-x-2 mb-2">
-              <AlertCircle className="h-5 w-5 text-red-400" />
-              <h3 className="text-lg font-semibold text-red-400">
-                Permanent Deletion Warning
-              </h3>
-            </div>
-            <p className="text-red-300 text-sm">
-              This action will permanently delete all data for this user:
-            </p>
-            <ul className="text-red-300 text-sm mt-2 ml-4 space-y-1">
-              <li>• All paper trades and portfolio data</li>
-              <li>• Alert settings and delivery logs</li>
-              <li>• Watchlists and preferences</li>
-              <li>• Account authentication data</li>
-            </ul>
-            <p className="text-red-300 text-sm mt-2 font-medium">
-              This action cannot be undone.
-            </p>
-          </div>
-
-          {/* User Info */}
-          <div className="bg-slate-700 rounded-lg p-4">
-            <h4 className="text-white font-medium mb-2">User to Delete:</h4>
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-white">
-                  {user.email.charAt(0).toUpperCase()}
-                </span>
-              </div>
-              <div>
-                <p className="text-white font-medium">{user.email}</p>
-                <p className="text-slate-400 text-sm">
-                  {user.subscription_tier} • {user.total_trades || 0} trades
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Confirmation Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Type the user's email to confirm deletion:
-              </label>
-              <input
-                type="email"
-                required
-                value={confirmEmail}
-                onChange={(e) => setConfirmEmail(e.target.value)}
-                className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                placeholder={user.email}
-              />
-              <p className="text-xs text-slate-400 mt-1">
-                Must match exactly: {user.email}
-              </p>
-            </div>
-
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-3">
-                <p className="text-red-300 text-sm">{error}</p>
-              </div>
-            )}
-
-            {/* Actions */}
-            <div className="flex justify-end space-x-3 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-slate-300 hover:text-white transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading || confirmEmail !== user.email}
-                className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white px-6 py-2 rounded-lg transition-colors flex items-center space-x-2"
-              >
-                <Trash2 className="h-4 w-4" />
-                <span>
-                  {loading ? "Deleting..." : "Delete User Permanently"}
-                </span>
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const AdminUsers: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
@@ -711,9 +685,10 @@ const AdminUsers: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
-  // 🗑️ SESSION #202: DELETE MODAL STATE
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+
+  // 🗑️ NEW: SQL Delete functionality state
+  const [showSQLDeleteModal, setShowSQLDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string>("");
 
   useEffect(() => {
     fetchUsersData();
@@ -863,49 +838,52 @@ const AdminUsers: React.FC = () => {
     setFilteredUsers(filtered);
   };
 
-  const handleUserAction = async (userId: string, action: string) => {
+  // 🗑️ NEW: Simple delete function that opens SQL modal
+  const handleDeleteUser = async (userEmail: string) => {
+    setUserToDelete(userEmail);
+    setShowSQLDeleteModal(true);
+  };
+
+  const handleUserDeleted = async () => {
+    // Refresh the user list after deletion
+    await fetchUsersData();
+  };
+
+  const handleUserAction = async (
+    userId: string,
+    action: string,
+    userEmail?: string
+  ) => {
     try {
+      // Placeholder for user actions - you can implement these
       console.log(`Action: ${action} for user: ${userId}`);
 
       switch (action) {
         case "view":
-          // Open user detail modal - placeholder for future implementation
+          // Open user detail modal
           break;
         case "edit":
-          // Open edit user modal - placeholder for future implementation
+          // Open edit user modal
           break;
         case "deactivate":
-          // Deactivate user - placeholder for future implementation
+          // Deactivate user
           break;
         case "upgrade":
-          // Upgrade subscription - placeholder for future implementation
+          // Upgrade subscription
           break;
         case "delete":
-          // 🗑️ SESSION #202: Handle delete action
-          const user = users.find((u) => u.id === userId);
-          if (user) {
-            setUserToDelete(user);
-            setShowDeleteModal(true);
+          // 🗑️ NEW: Handle delete action with SQL modal
+          if (userEmail) {
+            handleDeleteUser(userEmail);
           }
-          break;
+          return; // Don't refresh data yet
       }
 
-      // Refresh data after action (except for delete, which handles its own refresh)
-      if (action !== "delete") {
-        await fetchUsersData();
-      }
+      // Refresh data after action (except delete, which handles its own refresh)
+      await fetchUsersData();
     } catch (err) {
       console.error("User action error:", err);
     }
-  };
-
-  // 🗑️ SESSION #202: Handle successful user deletion
-  const handleUserDeleted = () => {
-    console.log(
-      "🎉 ADMIN PANEL: User deleted successfully, refreshing list..."
-    );
-    fetchUsersData(); // Refresh the user list
-    setUserToDelete(null);
   };
 
   const formatDate = (dateString: string) => {
@@ -1235,9 +1213,11 @@ const AdminUsers: React.FC = () => {
                         >
                           <Crown className="h-4 w-4" />
                         </button>
-                        {/* 🗑️ SESSION #202: DELETE BUTTON */}
+                        {/* 🗑️ NEW: Delete Button */}
                         <button
-                          onClick={() => handleUserAction(user.id, "delete")}
+                          onClick={() =>
+                            handleUserAction(user.id, "delete", user.email)
+                          }
                           className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-700 rounded-lg transition-colors"
                           title="Delete User"
                         >
@@ -1277,15 +1257,15 @@ const AdminUsers: React.FC = () => {
         onUserAdded={fetchUsersData}
       />
 
-      {/* 🗑️ SESSION #202: DELETE USER MODAL */}
-      <DeleteUserModal
-        isOpen={showDeleteModal}
+      {/* 🗑️ NEW: SQL Delete Modal */}
+      <SQLDeleteModal
+        isOpen={showSQLDeleteModal}
         onClose={() => {
-          setShowDeleteModal(false);
-          setUserToDelete(null);
+          setShowSQLDeleteModal(false);
+          setUserToDelete("");
         }}
-        onUserDeleted={handleUserDeleted}
-        user={userToDelete}
+        userEmail={userToDelete}
+        onDeleted={handleUserDeleted}
       />
 
       {/* Footer Status */}
@@ -1300,10 +1280,10 @@ const AdminUsers: React.FC = () => {
               <Users className="h-4 w-4 text-blue-400" />
               <span className="text-slate-300">Live User Management</span>
             </div>
-            {/* 🗑️ SESSION #202: DELETE FUNCTIONALITY STATUS */}
+            {/* 🗑️ NEW: SQL deletion functionality indicator */}
             <div className="flex items-center space-x-2">
               <Trash2 className="h-4 w-4 text-red-400" />
-              <span className="text-slate-300">Complete User Deletion</span>
+              <span className="text-slate-300">SQL Delete Available</span>
             </div>
           </div>
           <span className="text-slate-400">
