@@ -1,4 +1,4 @@
-// Complete Enhanced Signals.tsx - MARKET HOURS AUTO-REFRESH ADDED + PRESERVED ALL FUNCTIONALITY
+// Complete Enhanced Signals.tsx - SESSION #206: UPGRADE PROMPT REMOVED FOR CLEAN UX
 // src/pages/Signals.tsx
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
@@ -194,48 +194,10 @@ const FilterHeader: React.FC<{
   );
 };
 
-// Upgrade Prompt Component - PRESERVED FROM ORIGINAL
-const UpgradePrompt: React.FC<{ hiddenCount: number }> = ({ hiddenCount }) => {
-  const signalLimits = useSignalLimits();
-
-  return (
-    <Card className="bg-gradient-to-r from-amber-900/30 to-orange-900/30 border-amber-500/50 mt-6">
-      <CardContent className="p-6">
-        <div className="text-center">
-          <div className="flex justify-center mb-4">
-            <div className="bg-amber-600 rounded-full p-3">
-              <Crown className="h-8 w-8 text-white" />
-            </div>
-          </div>
-          <h3 className="text-xl font-bold text-white mb-2">
-            {hiddenCount} More Fresh Signals Available
-          </h3>
-          <p className="text-slate-300 mb-4">
-            You're viewing {signalLimits.maxSignalsPerDay} fresh signals + all
-            your existing positions. Upgrade to Professional to see all new
-            trading opportunities.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3">
-              <Crown className="h-5 w-5 mr-2" />
-              Upgrade to Professional ($49/month)
-            </Button>
-            <Button
-              variant="outline"
-              className="border-amber-500 text-amber-400 hover:bg-amber-600/10 px-8 py-3"
-            >
-              View Pricing Plans
-            </Button>
-          </div>
-          <p className="text-xs text-slate-400 mt-3">
-            ✨ Unlimited signals • AI explanations • Telegram premium group •
-            Priority support
-          </p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
+// 📝 SESSION #206: UPGRADE PROMPT COMPONENT REMOVED
+// Previously: Large UpgradePrompt component that showed crown icon and upgrade buttons
+// Reason: Clean UX strategy - remove upgrade fatigue from Signals page
+// Users now focus on their current signals without pressure
 
 // 🚀 PRESERVED: TradingView Chart Component - Using ACTUAL Working Pattern from Project Knowledge
 const TradingViewChart: React.FC<{
@@ -815,10 +777,9 @@ const Signals: React.FC = () => {
           })}
         </div>
 
-        {/* PRESERVED: Upgrade prompt for hidden fresh signals */}
-        {hiddenSignalsCount > 0 && (
-          <UpgradePrompt hiddenCount={hiddenSignalsCount} />
-        )}
+        {/* 📝 SESSION #206: UPGRADE PROMPT REMOVED FOR CLEAN UX */}
+        {/* Previously: Large upgrade prompt showed here when hiddenSignalsCount > 0 */}
+        {/* Result: Users now focus on their current signals without upgrade pressure */}
 
         {/* CLEANED: No signals found - Updated message */}
         {filteredSignals.length === 0 && !loading && (

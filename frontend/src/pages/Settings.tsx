@@ -12,11 +12,26 @@ import {
 import { Button } from "../components/ui/button";
 import { Switch } from "../components/ui/switch";
 import { Label } from "../components/ui/label";
-import { Bell, Shield, Mail, RefreshCw, Save, CheckCircle } from "lucide-react";
+import {
+  Bell,
+  Shield,
+  Mail,
+  RefreshCw,
+  Save,
+  CheckCircle,
+  MessageSquare,
+  Info,
+} from "lucide-react";
 import { useToast } from "../hooks/use-toast";
 
 // Import the production-ready TelegramConnection component
 import { TelegramConnection } from "../components/telegram";
+
+// Import subscription tier hooks for conditional rendering
+import {
+  useSubscriptionTier,
+  useSignalLimits,
+} from "../hooks/useSubscriptionTier";
 
 // Import the alert settings hook for email database integration
 import { useUserAlertSettings } from "../hooks/useUserAlertSettings";
@@ -85,6 +100,10 @@ const Settings: React.FC = React.memo(() => {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // 🚀 NEW: Get subscription tier for conditional Telegram rendering
+  const subscription = useSubscriptionTier();
+  const signalLimits = useSignalLimits();
 
   // 🚮 REMOVED: signalGenerationRef (Signal Generation section removed)
 
@@ -303,8 +322,52 @@ const Settings: React.FC = React.memo(() => {
                 icon={Mail}
               />
 
-              {/* PRESERVED: REAL TelegramConnection component - shows 80% threshold automatically */}
-              <TelegramConnection />
+              {/* 📝 SESSION #206: CONDITIONAL TELEGRAM SECTION BASED ON SUBSCRIPTION TIER */}
+              {/* Professional users: Full TelegramConnection component */}
+              {/* Starter users: Contextual disabled text following Session #205 UX strategy */}
+              {signalLimits.canViewUnlimited ? (
+                // Professional users get the full working TelegramConnection component
+                <TelegramConnection />
+              ) : (
+                // Starter users get contextual text about Professional plan feature
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <MessageSquare className="h-4 w-4 text-slate-400" />
+                    <Label className="text-slate-300 font-medium">
+                      🔔 Telegram Alerts
+                    </Label>
+                  </div>
+                  <p className="text-sm text-slate-400 mb-3">
+                    Get instant notifications for high-probability signals
+                  </p>
+
+                  {/* Disabled toggle for Starter users */}
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-slate-600 bg-slate-700/30 opacity-60">
+                    <div className="flex items-center space-x-3">
+                      <MessageSquare className="h-4 w-4 text-slate-400" />
+                      <div>
+                        <Label className="text-slate-300 font-medium">
+                          Enable Telegram Alerts
+                        </Label>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <span className="text-xs font-medium text-slate-500">
+                        OFF
+                      </span>
+                      <Switch checked={false} disabled={true} />
+                    </div>
+                  </div>
+
+                  {/* Contextual Professional plan info - SESSION #206: Dead link removed */}
+                  <div className="flex items-start space-x-2 p-3 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+                    <Info className="h-4 w-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <div className="text-sm text-blue-400">
+                      ℹ️ Telegram alerts are available with Professional plan.
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* PRESERVED: REMOVED: Push Notifications - too complex, email + Telegram is enough */}
 

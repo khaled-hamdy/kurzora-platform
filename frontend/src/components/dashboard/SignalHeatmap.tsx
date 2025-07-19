@@ -99,47 +99,10 @@ const marketMatches = (signalMarket: string, filterMarket: string): boolean => {
   );
 };
 
-// ✅ NEW: Dashboard Upgrade Prompt Component
-const DashboardUpgradePrompt: React.FC<{ hiddenCount: number }> = ({
-  hiddenCount,
-}) => {
-  const signalLimits = useSignalLimits();
-
-  return (
-    <div className="mt-4 p-4 bg-gradient-to-r from-amber-900/30 to-orange-900/30 border border-amber-500/50 rounded-lg">
-      <div className="text-center">
-        <div className="flex justify-center mb-3">
-          <div className="bg-amber-600 rounded-full p-2">
-            <Crown className="h-6 w-6 text-white" />
-          </div>
-        </div>
-        <h3 className="text-lg font-bold text-white mb-2">
-          {hiddenCount} More Fresh Signals Available
-        </h3>
-        <p className="text-slate-300 text-sm mb-3">
-          You're viewing {signalLimits.maxSignalsPerDay} fresh signals. Your
-          existing positions are always shown. Upgrade to Professional to see
-          all new trading opportunities.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-2 justify-center">
-          <Button className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 text-sm">
-            <Crown className="h-4 w-4 mr-2" />
-            Upgrade to Professional
-          </Button>
-          <Button
-            variant="outline"
-            className="border-amber-500 text-amber-400 hover:bg-amber-600/10 px-6 py-2 text-sm"
-          >
-            View All Pricing
-          </Button>
-        </div>
-        <p className="text-xs text-slate-400 mt-2">
-          ✨ Unlimited signals • AI explanations • Premium Telegram group
-        </p>
-      </div>
-    </div>
-  );
-};
+// 📝 SESSION #206: DASHBOARD UPGRADE PROMPT COMPONENT REMOVED
+// Previously: Large DashboardUpgradePrompt component with crown icon, upgrade buttons, and features list
+// Reason: Clean UX strategy - remove upgrade fatigue from Dashboard
+// Users now focus on their signal data without pressure
 
 // ✅ NEW: Dashboard Subscription Status Indicator
 const DashboardSubscriptionIndicator: React.FC = () => {
@@ -434,10 +397,9 @@ const SignalHeatmap: React.FC<SignalHeatmapProps> = ({ onOpenSignalModal }) => {
           setHighlightedCategory={setHighlightedCategory}
         />
 
-        {/* ✅ UPDATED: Show upgrade prompt for hidden FRESH signals */}
-        {hiddenSignalsCount > 0 && (
-          <DashboardUpgradePrompt hiddenCount={hiddenSignalsCount} />
-        )}
+        {/* 📝 SESSION #206: DASHBOARD UPGRADE PROMPT REMOVED FOR CLEAN UX */}
+        {/* Previously: Large upgrade prompt showed here when hiddenSignalsCount > 0 */}
+        {/* Result: Users now focus on their signal data without upgrade pressure */}
 
         {/* Auto-refresh status indicator */}
         <div className="text-center text-xs text-slate-500 border-t border-slate-700 pt-3">
