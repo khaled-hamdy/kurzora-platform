@@ -58,14 +58,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isProcessingSubscription, setIsProcessingSubscription] =
     useState(false);
 
-  // Store plan info temporarily during signup
+  // Store plan info temporarily during signup - PRESERVED from Session #118
   const pendingPlanInfo = useRef<any>(null);
 
-  // ✅ IMPROVED: Better redirect management
+  // ✅ IMPROVED: Better redirect management - PRESERVED from previous sessions
   const redirectTimeouts = useRef<Set<NodeJS.Timeout>>(new Set());
   const mounted = useRef(true);
 
-  // 🔥 BULLETPROOF PLAN STORAGE: Multiple redundant storage methods
+  // 🔥 BULLETPROOF PLAN STORAGE: Multiple redundant storage methods - PRESERVED from Session #191
   const storePlanDataWithMultipleBackups = useCallback((planInfo: any) => {
     if (!planInfo || !planInfo.id) {
       console.log("🚫 PLAN STORAGE: No valid plan info to store");
@@ -148,7 +148,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
-  // 🔍 ENHANCED: Bulletproof plan retrieval with email verification redirect support
+  // 🔍 ENHANCED: Bulletproof plan retrieval with email verification redirect support - PRESERVED from Session #191
   const retrievePlanDataFromAllSources = useCallback(() => {
     console.log(
       "🔍 ENHANCED RETRIEVAL: Checking all storage methods with email verification support..."
@@ -271,7 +271,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       console.warn("⚠️ RETRIEVAL METHOD 7 failed:", e);
     }
 
-    // 🔧 ENHANCED: Method 8: Domain-specific retrieval for email verification contexts
+    // 🔧 ENHANCED: Method 8: Domain-specific retrieval for email verification contexts - PRESERVED from Session #191
     try {
       // Check if we're in an email verification context (common redirect patterns)
       const currentPath = window.location.pathname;
@@ -312,7 +312,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return null;
   }, []);
 
-  // 🧹 CLEANUP: Clear all plan data storage
+  // 🧹 CLEANUP: Clear all plan data storage - PRESERVED from Session #191
   const clearAllPlanData = useCallback(() => {
     console.log(
       "🧹 CLEANUP: Clearing all plan data from all storage methods..."
@@ -351,19 +351,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     console.log("✅ CLEANUP: All plan data storage methods cleared");
   }, []);
 
-  // 🎯 ENHANCED: Plan tier determination with comprehensive debugging
+  // 🎯 FIXED: Plan tier determination with improved validation to prevent Starter→Professional issues
   const determineSubscriptionTier = useCallback(
     (directPlanInfo: any, userEmail?: string): "starter" | "professional" => {
       console.log(
-        "🎯 ENHANCED TIER DETERMINATION: Starting comprehensive analysis..."
+        "🎯 FIXED TIER DETERMINATION: Starting analysis to prevent Starter→Professional issues..."
       );
       console.log("🎯 INPUT: directPlanInfo:", directPlanInfo);
       console.log("🎯 INPUT: userEmail:", userEmail);
 
-      // Priority 1: Direct planInfo parameter (from function call)
-      if (directPlanInfo?.id) {
-        const planId = String(directPlanInfo.id).toLowerCase().trim();
-        console.log("🎯 PRIORITY 1: Direct planInfo.id found:", planId);
+      // 🔧 ENHANCED VALIDATION: Normalize and validate plan data more robustly
+      const normalizePlanId = (planData: any): string | null => {
+        if (!planData) return null;
+
+        // Handle different plan data structures
+        let planId = planData.id || planData.planId || planData.plan_id;
+
+        if (!planId && planData.name) {
+          // Fallback: derive ID from plan name
+          const name = String(planData.name).toLowerCase();
+          if (name.includes("starter")) planId = "starter";
+          else if (name.includes("professional")) planId = "professional";
+        }
+
+        if (!planId && planData.price) {
+          // Fallback: derive ID from price
+          const price = String(planData.price).replace(/[^0-9]/g, "");
+          if (price === "19" || price === "1900") planId = "starter";
+          else if (price === "49" || price === "4900") planId = "professional";
+        }
+
+        return planId ? String(planId).toLowerCase().trim() : null;
+      };
+
+      // Priority 1: Direct planInfo parameter (from function call) - ENHANCED VALIDATION
+      if (directPlanInfo) {
+        const planId = normalizePlanId(directPlanInfo);
+        console.log("🎯 PRIORITY 1: Normalized direct planInfo ID:", planId);
 
         if (planId === "professional") {
           console.log("✅ TIER DECISION: PROFESSIONAL from direct planInfo");
@@ -372,13 +396,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           console.log("✅ TIER DECISION: STARTER from direct planInfo");
           return "starter";
         }
+
+        // 🔧 ADDITIONAL VALIDATION: Check for partial matches
+        if (planId && planId.includes("starter")) {
+          console.log(
+            "✅ TIER DECISION: STARTER from partial match in direct planInfo"
+          );
+          return "starter";
+        } else if (planId && planId.includes("professional")) {
+          console.log(
+            "✅ TIER DECISION: PROFESSIONAL from partial match in direct planInfo"
+          );
+          return "professional";
+        }
       }
 
-      // Priority 2: Enhanced retrieval from all storage methods
+      // Priority 2: Enhanced retrieval from all storage methods - ENHANCED VALIDATION
       const retrievedPlan = retrievePlanDataFromAllSources();
-      if (retrievedPlan?.id) {
-        const planId = String(retrievedPlan.id).toLowerCase().trim();
-        console.log("🎯 PRIORITY 2: Enhanced retrieved plan ID:", planId);
+      if (retrievedPlan) {
+        const planId = normalizePlanId(retrievedPlan);
+        console.log("🎯 PRIORITY 2: Normalized retrieved plan ID:", planId);
 
         if (planId === "professional") {
           console.log("✅ TIER DECISION: PROFESSIONAL from enhanced retrieval");
@@ -387,10 +424,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           console.log("✅ TIER DECISION: STARTER from enhanced retrieval");
           return "starter";
         }
+
+        // 🔧 ADDITIONAL VALIDATION: Check for partial matches
+        if (planId && planId.includes("starter")) {
+          console.log(
+            "✅ TIER DECISION: STARTER from partial match in retrieved plan"
+          );
+          return "starter";
+        } else if (planId && planId.includes("professional")) {
+          console.log(
+            "✅ TIER DECISION: PROFESSIONAL from partial match in retrieved plan"
+          );
+          return "professional";
+        }
       }
 
-      // Priority 3: Email-based detection (for known admin emails)
-      if (userEmail) {
+      // Priority 3: Email-based detection (for known admin emails) - PRESERVED from Session #191
+      // 🔧 NOTE: This should only apply when NO explicit plan selection was made
+      if (userEmail && !directPlanInfo && !retrievedPlan) {
         const email = userEmail.toLowerCase().trim();
         const adminEmails = [
           "admin@kurzora.com",
@@ -400,24 +451,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         ];
 
         if (adminEmails.includes(email)) {
-          console.log("✅ TIER DECISION: PROFESSIONAL for admin email:", email);
+          console.log(
+            "✅ TIER DECISION: PROFESSIONAL for admin email (no plan data found):",
+            email
+          );
           return "professional";
         }
       }
 
-      // 🚨 FINAL FALLBACK: Default to starter with comprehensive logging
-      console.warn("⚠️ ENHANCED TIER DETERMINATION: NO PLAN DATA FOUND");
+      // 🚨 FIXED FALLBACK: Ensure consistent default behavior
+      console.warn("⚠️ FIXED TIER DETERMINATION: NO VALID PLAN DATA FOUND");
       console.warn("🔍 FALLBACK DEBUG: directPlanInfo was:", directPlanInfo);
       console.warn("🔍 FALLBACK DEBUG: retrievedPlan was:", retrievedPlan);
       console.warn("🔍 FALLBACK DEBUG: userEmail was:", userEmail);
-      console.warn("🎯 FALLBACK DECISION: Using default STARTER tier");
+      console.warn(
+        "🎯 FALLBACK DECISION: Using default STARTER tier to prevent Professional over-assignment"
+      );
 
       return "starter";
     },
     [retrievePlanDataFromAllSources]
   );
 
-  // OPTIMIZATION: New background profile fetching - doesn't block login
+  // OPTIMIZATION: New background profile fetching - doesn't block login - PRESERVED from previous sessions
   const fetchUserProfileInBackground = useCallback(async (userId: string) => {
     try {
       console.log("👤 Mac AuthContext: Background profile fetch for:", userId);
@@ -464,7 +520,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
-  // 🔧 ENHANCED: Profile creation with improved plan data handling for email verification
+  // 🔧 ENHANCED: Profile creation with improved plan data handling - PRESERVED from Session #191
   const createUserProfileInBackground = useCallback(
     async (userId: string) => {
       try {
@@ -514,12 +570,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           console.log("🔍 ATTEMPT 3 - Plan data found:", comprehensivePlanData);
         }
 
-        // 🎯 ENHANCED: Tier determination with improved logic
+        // 🎯 FIXED: Tier determination with improved validation
         const determinedTier = determineSubscriptionTier(
           comprehensivePlanData,
           user.email
         );
-        console.log("🎯 ENHANCED TIER DETERMINATION RESULT:", determinedTier);
+        console.log("🎯 FIXED TIER DETERMINATION RESULT:", determinedTier);
 
         if (!checkError && existingUser) {
           console.log("✅ EXISTING USER FOUND: Profile already exists");
@@ -625,7 +681,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           comprehensivePlanData
         );
         console.log(
-          "🔍 PROFILE CREATION: ENHANCED TIER DECISION:",
+          "🔍 PROFILE CREATION: FIXED TIER DECISION:",
           determinedTier
         );
 
@@ -670,7 +726,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           is_active: true,
         };
 
-        console.log("🎯 ENHANCED PROFILE: Final profile data for NEW user:", {
+        console.log("🎯 FIXED PROFILE: Final profile data for NEW user:", {
           email: profileData.email,
           subscription_tier: profileData.subscription_tier,
           subscription_status: profileData.subscription_status,
@@ -692,7 +748,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             error
           );
         } else {
-          console.log("✅ ENHANCED SUCCESS: NEW profile created successfully!");
+          console.log("✅ FIXED SUCCESS: NEW profile created successfully!");
           console.log(
             "✅ VERIFICATION: User tier in database:",
             data.subscription_tier
@@ -741,7 +797,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     ]
   );
 
-  // ✅ IMPROVED: Reliable redirect function that actually works
+  // ✅ IMPROVED: Reliable redirect function that actually works - PRESERVED from previous sessions
   const performReliableRedirect = useCallback(
     (path: string, reason: string = "") => {
       console.log(
@@ -845,7 +901,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     initializeAuth();
 
-    // ✅ IMPROVED: Auth state change listener with better redirect logic
+    // ✅ IMPROVED: Auth state change listener with better redirect logic - PRESERVED from previous sessions
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -975,7 +1031,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [clearAllPlanData]);
 
-  // 🎯 FIXED: Process pending subscription without throwing errors
+  // 🎯 FIXED: Process pending subscription without throwing errors - PRESERVED from previous sessions
   const processPendingSubscription = useCallback(
     async (userId: string, userEmail: string, userName: string) => {
       try {
@@ -1091,7 +1147,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  // 🎯 FIXED: SignUp function with bulletproof plan preservation
+  // 🎯 FIXED: SignUp function with bulletproof plan preservation - PRESERVED from Session #191
   const signUp = async (
     email: string,
     password: string,
@@ -1216,7 +1272,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  // ✅ IMPROVED: Simplified signOut with reliable redirect
+  // ✅ IMPROVED: Simplified signOut with reliable redirect - PRESERVED from previous sessions
   const signOut = async () => {
     try {
       console.log("🚪 Mac AuthContext: Sign out initiated");
@@ -1287,16 +1343,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  // 🚀 FIXED isAdmin FUNCTION - Now includes test@kurzora.com!
+  // 🚀 FIXED isAdmin FUNCTION - PRESERVED from Session #201
   const isAdmin = useCallback(() => {
     if (!user) return false;
 
-    // Admin email list - including test@kurzora.com
+    // Admin email list - PRESERVED from Session #201
     const adminEmails = [
       "admin@kurzora.com",
       "khaled@kurzora.com",
       "khaledhamdy@gmail.com",
-      "test@kurzora.com", // ← ADDED THIS!
+      "test@kurzora.com",
     ];
 
     return (
@@ -1320,7 +1376,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     isProcessingSubscription,
   };
 
-  // OPTIMIZATION: Reduced initialization timeout
+  // OPTIMIZATION: Reduced initialization timeout - PRESERVED from previous sessions
   if (!initialized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900">
