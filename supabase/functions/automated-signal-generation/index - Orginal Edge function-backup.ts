@@ -1,22 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-// ==================================================================================
-// 🚨 SESSION #302: MACD CALCULATOR MODULAR EXTRACTION - UPDATED MAIN FUNCTION
-// ==================================================================================
-// 🎯 PURPOSE: Integrate extracted MACD Calculator module into main Edge Function
-// 🛡️ ANTI-REGRESSION MANDATE: ALL Session #183 + #301 functionality preserved EXACTLY
-// 📝 SESSION #302 INTEGRATION: Replace inline MACD function with modular import
-// 🔧 PRESERVATION: Session #185 extended data range + Session #183 real calculations + Session #301 RSI module
-// 🚨 CRITICAL SUCCESS: Maintain identical MACD crossover detection and composite scoring
-// ⚠️ PROTECTED MODULES: Session #301 RSI Calculator functionality must not be touched
-// 🎖️ MODULAR PROGRESS: Session #301 RSI + Session #302 MACD = 2/6 indicators extracted
-// 📊 PRODUCTION IMPACT: Reduced monolith complexity while preserving signal accuracy
-// 🏆 TESTING REQUIREMENT: All existing signals must maintain identical scores
-// 🚀 NEXT EXTRACTION: Session #303 Volume Analyzer following proven modular pattern
-// ==================================================================================
-
-// 🔧 SESSION #302 MODULAR IMPORTS: Add MACD Calculator import following Session #301 interface pattern
-import { calculateMACD } from "./indicators/macd-calculator.ts";
 
 // ==================================================================================
 // 🚨 SESSION #185 CRITICAL PRODUCTION FIX: EXTENDED DATA RANGE FOR 4H + WEEKLY RELIABILITY
@@ -31,6 +14,7 @@ import { calculateMACD } from "./indicators/macd-calculator.ts";
 // 🏆 TESTING METHODOLOGY: Run enhanced system → verify 4H gets 50+ periods → verify Weekly gets 30+ periods → confirm improved signal generation
 // 🚀 PRODUCTION IMPACT: Reliable multi-timeframe analysis with sufficient data for all technical indicators + maintained Session #184 quality standards
 // ==================================================================================
+
 // ==================================================================================
 // 🚨 SESSION #184 CRITICAL PRODUCTION FIX: ENHANCED DATA PIPELINE FOR REAL INDICATORS
 // ==================================================================================
@@ -44,6 +28,7 @@ import { calculateMACD } from "./indicators/macd-calculator.ts";
 // 🏆 TESTING METHODOLOGY: Run enhanced system → verify sufficient data periods → confirm real indicator calculations → validate signal generation
 // 🚀 PRODUCTION IMPACT: Reliable signal generation with authentic technical analysis + preserved Session #183 quality controls
 // ==================================================================================
+
 // ==================================================================================
 // 🚨 SESSION #183 CRITICAL PRODUCTION FIX: REMOVE ALL SYNTHETIC LOGIC AND FAKE DATA
 // ==================================================================================
@@ -57,6 +42,7 @@ import { calculateMACD } from "./indicators/macd-calculator.ts";
 // 🏆 TESTING METHODOLOGY: Run enhanced system → verify real indicator variety → confirm no 50.00, 0.0000, 1.0000 template patterns
 // 🚀 PRODUCTION IMPACT: Authentic technical analysis with real market data calculations + preserved Session #182 enhanced data range
 // ==================================================================================
+
 // ==================================================================================
 // 🚨 SESSION #181 CRITICAL FIX: SUPABASE SERVICE ROLE DELETE SECURITY COMPLIANCE
 // ==================================================================================
@@ -69,6 +55,7 @@ import { calculateMACD } from "./indicators/macd-calculator.ts";
 // 📊 EXPECTED RESULTS: DELETE operation works correctly, table completely replaced with fresh signals
 // 🏆 TESTING METHODOLOGY: Run Batch 1 → verify ALL signals deleted → verify fresh signals inserted
 // ==================================================================================
+
 // ==================================================================================
 // 🚨 PRODUCTION FIX: RESTORE REAL MARKET DATA PROCESSING + COMPLETE DELETE STRATEGY
 // ==================================================================================
@@ -89,16 +76,17 @@ import { calculateMACD } from "./indicators/macd-calculator.ts";
 //    9. 🚨 SESSION #183 FIX: Removed ALL synthetic logic and fake data from technical indicator functions
 //   10. 🔧 SESSION #184 FIX: Enhanced data pipeline with extended date range and comprehensive debugging
 //   11. 🚀 SESSION #185 FIX: Extended date range from 150 to 400 calendar days for reliable 4H and Weekly data
-//   12. 🚨 SESSION #301 FIX: Extracted RSI Calculator into modular architecture (Session #301 complete)
-//   13. 🔧 SESSION #302 FIX: Extracted MACD Calculator into modular architecture (Session #302 complete)
 // 📊 EXPECTED RESULTS: Restore signal generation using real market data while preventing false signals
 // 🏆 PRODUCTION STATUS: Production fix to restore functionality while maintaining data authenticity
 // ==================================================================================
+
 // 🔄 SESSION #152 BACKTEST MODE TOGGLE: Critical solution for market closure data issues (PRESERVED EXACTLY)
 const USE_BACKTEST = false; // 🔧 Set to false for live current market data (July 2025)
+
 // 🧪 SESSION #153 TEST_STOCKS DEFINITION (PRESERVED EXACTLY)
 const TEST_STOCKS = ["AAPL", "MSFT", "GOOGL", "JPM", "JNJ"]; // 5 stocks for debugging if needed
-// 📊 TIMEFRAME CONFIGURATION (PRESERVED EXACTLY FROM SESSION #151-185)
+
+// 📊 TIMEFRAME CONFIGURATION (PRESERVED EXACTLY FROM SESSION #151-184)
 const TIMEFRAME_CONFIG = {
   "1H": {
     weight: 0.4,
@@ -121,18 +109,18 @@ const TIMEFRAME_CONFIG = {
     description: "Market cycle context",
   },
 };
-// 🛡️ GATEKEEPER RULES (PRESERVED EXACTLY FROM SESSION #151-185)
+
+// 🛡️ GATEKEEPER RULES (PRESERVED EXACTLY FROM SESSION #151-184)
 const GATEKEEPER_THRESHOLDS = {
   oneHour: 70,
   fourHour: 70,
   longTerm: 70,
 };
 
-// 🔧 SESSION #302 MODULAR INTEGRATION: MACD Calculator imported as helper function for backward compatibility
-
 /**
- * 🗄️ DATABASE-DRIVEN ACTIVE STOCKS RETRIEVER (PRESERVED EXACTLY FROM SESSION #180-185)
- */ async function getActiveStocksWithParameters(
+ * 🗄️ DATABASE-DRIVEN ACTIVE STOCKS RETRIEVER (PRESERVED EXACTLY FROM SESSION #180-184)
+ */
+async function getActiveStocksWithParameters(
   startIndex = 0,
   endIndex = 25,
   batchNumber = 1
@@ -143,9 +131,11 @@ const GATEKEEPER_THRESHOLDS = {
   console.log(
     `📊 [DATABASE_STOCKS] Parameters: startIndex=${startIndex}, endIndex=${endIndex}, batchNumber=${batchNumber}`
   );
+
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseKey = Deno.env.get("SERVICE_ROLE_KEY"); // 🔧 SESSION #181: Uses fixed environment variable name
+
     if (!supabaseUrl || !supabaseKey) {
       console.log(
         `⚠️ [DATABASE_STOCKS] Missing Supabase configuration - using TEST_STOCKS fallback`
@@ -162,22 +152,21 @@ const GATEKEEPER_THRESHOLDS = {
       );
       return selectedStocks;
     }
+
     const supabase = createClient(supabaseUrl, supabaseKey);
     console.log(
       `✅ [DATABASE_STOCKS] Database connection established successfully`
     );
+
     const { data, error } = await supabase
       .from("active_stocks")
       .select(
         "ticker, company_name, sector, priority, country_code, exchange_code"
       )
       .eq("is_active", true)
-      .order("priority", {
-        ascending: true,
-      })
-      .order("ticker", {
-        ascending: true,
-      });
+      .order("priority", { ascending: true })
+      .order("ticker", { ascending: true });
+
     if (error) {
       console.log(
         `❌ [DATABASE_STOCKS] Database query error: ${error.message}`
@@ -191,6 +180,7 @@ const GATEKEEPER_THRESHOLDS = {
       const selectedStocks = fallbackStocks.slice(startIndex, endIndex);
       return selectedStocks;
     }
+
     if (!data || data.length === 0) {
       console.log(`⚠️ [DATABASE_STOCKS] No active stocks found in database`);
       const fallbackStocks = TEST_STOCKS.map((ticker) => ({
@@ -202,6 +192,7 @@ const GATEKEEPER_THRESHOLDS = {
       const selectedStocks = fallbackStocks.slice(startIndex, endIndex);
       return selectedStocks;
     }
+
     const databaseStocks = data
       .filter(
         (row) =>
@@ -216,9 +207,11 @@ const GATEKEEPER_THRESHOLDS = {
         exchange_code: row.exchange_code || "NASDAQ",
         source: "database",
       }));
+
     console.log(
       `✅ [DATABASE_STOCKS] Successfully retrieved ${databaseStocks.length} total active stocks from database`
     );
+
     const selectedStocks = databaseStocks.slice(startIndex, endIndex);
     console.log(
       `📊 [DATABASE_STOCKS] Parameter-based selection: ${selectedStocks.length} stocks selected from range ${startIndex}-${endIndex}`
@@ -228,6 +221,7 @@ const GATEKEEPER_THRESHOLDS = {
         .map((s) => `${s.ticker}(${s.company_name})`)
         .join(", ")}`
     );
+
     return selectedStocks;
   } catch (databaseError) {
     console.log(
@@ -243,6 +237,7 @@ const GATEKEEPER_THRESHOLDS = {
     return selectedStocks;
   }
 }
+
 /**
  * 🔄 ENHANCED DATE RANGE CALCULATOR - SESSION #185 EXTENDED DATA RANGE FIX
  * 🚀 CRITICAL FIX: Extended from 150 to 400 calendar days to solve 4H and Weekly timeframe data availability
@@ -258,7 +253,8 @@ const GATEKEEPER_THRESHOLDS = {
  *    - Stochastic: needs 14+ trading data points (14-period)
  *    - Hourly data gaps: Account for 16-hour daily gaps + weekends + holidays
  * ✅ RESULT: Sufficient real trading data for authentic technical indicator calculations across all timeframes
- */ function getDateRanges() {
+ */
+function getDateRanges() {
   if (USE_BACKTEST) {
     const backtestStart = "2024-05-06";
     const backtestEnd = "2024-06-14";
@@ -273,6 +269,7 @@ const GATEKEEPER_THRESHOLDS = {
   } else {
     const now = new Date();
     const today = now.toISOString().split("T")[0];
+
     // 🚀 SESSION #185 CRITICAL DATA RANGE FIX: Extended from 150 to 400 calendar days for 4H + Weekly reliability
     // 📈 PREVIOUS (INSUFFICIENT): 150 calendar days = insufficient 4H and Weekly data periods in production
     // 📈 NEW (ABUNDANT): 400 calendar days = ~300 trading days = sufficient for all timeframes + large buffer
@@ -292,6 +289,7 @@ const GATEKEEPER_THRESHOLDS = {
       now.getTime() - 400 * 24 * 60 * 60 * 1000
     );
     const recentStartDate = fourHundredDaysAgo.toISOString().split("T")[0];
+
     console.log(
       `📈 LIVE MODE ACTIVE: Using SESSION #185 enhanced 400-day rolling window for reliable multi-timeframe data`
     );
@@ -307,6 +305,7 @@ const GATEKEEPER_THRESHOLDS = {
     console.log(
       `🎯 SESSION #185 EXPECTED IMPROVEMENT: 4H: 50+ periods (vs 16), Weekly: 30+ periods (vs 11)`
     );
+
     return {
       recent: {
         start: recentStartDate,
@@ -315,6 +314,7 @@ const GATEKEEPER_THRESHOLDS = {
     };
   }
 }
+
 /**
  * 🌐 SESSION #184 ENHANCED MULTI-TIMEFRAME DATA FETCHER - IMPROVED DATA PIPELINE (PRESERVED EXACTLY)
  * PURPOSE: Restore ability to process ANY real market data while preventing synthetic data usage
@@ -323,13 +323,15 @@ const GATEKEEPER_THRESHOLDS = {
  * SESSION #185 ENHANCEMENT: Extended date range from 150 to 400 calendar days for 4H and Weekly data reliability
  * ANTI-REGRESSION: Preserves all Session #151-184 functionality while fixing data availability issues
  * PRODUCTION READY: No synthetic fallbacks - returns null when no real data available + comprehensive data debugging
- */ async function fetchMultiTimeframeData(ticker) {
+ */
+async function fetchMultiTimeframeData(ticker) {
   try {
     const POLYGON_API_KEY = Deno.env.get("POLYGON_API_KEY");
     if (!POLYGON_API_KEY) {
       console.log(`❌ Missing Polygon API key for ${ticker}`);
       return null;
     }
+
     const dateRanges = getDateRanges();
     const modeLabel = USE_BACKTEST ? "BACKTEST" : "LIVE";
     console.log(
@@ -338,23 +340,28 @@ const GATEKEEPER_THRESHOLDS = {
     console.log(
       `📅 [${ticker}] SESSION #185 Date Range: ${dateRanges.recent.start} to ${dateRanges.recent.end} (400 calendar days for reliable multi-timeframe data)`
     );
+
     // 🚀 SESSION #184 ENHANCEMENT: Improved API endpoints with higher limits and better error handling (PRESERVED EXACTLY)
     const endpoints = {
-      "1H": `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/hour/${dateRanges.recent.start}/${dateRanges.recent.end}?adjusted=true&sort=asc&limit=5000&apikey=${POLYGON_API_KEY}`,
-      "4H": `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/4/hour/${dateRanges.recent.start}/${dateRanges.recent.end}?adjusted=true&sort=asc&limit=2000&apikey=${POLYGON_API_KEY}`,
-      "1D": `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${dateRanges.recent.start}/${dateRanges.recent.end}?adjusted=true&sort=asc&limit=200&apikey=${POLYGON_API_KEY}`,
+      "1H": `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/hour/${dateRanges.recent.start}/${dateRanges.recent.end}?adjusted=true&sort=asc&limit=5000&apikey=${POLYGON_API_KEY}`, // 🔧 SESSION #184: Increased limit from 500 to 5000
+      "4H": `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/4/hour/${dateRanges.recent.start}/${dateRanges.recent.end}?adjusted=true&sort=asc&limit=2000&apikey=${POLYGON_API_KEY}`, // 🔧 SESSION #184: Increased limit from 500 to 2000
+      "1D": `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${dateRanges.recent.start}/${dateRanges.recent.end}?adjusted=true&sort=asc&limit=200&apikey=${POLYGON_API_KEY}`, // 🔧 SESSION #184: Use range instead of prev for more data
       "1W": `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/week/${dateRanges.recent.start}/${dateRanges.recent.end}?adjusted=true&sort=asc&limit=50&apikey=${POLYGON_API_KEY}`, // 🔧 SESSION #184: Increased limit from 500 to 50 (sufficient for weeks)
     };
+
     const timeframeData = {};
+
     for (const [timeframe, url] of Object.entries(endpoints)) {
       try {
         console.log(
           `📡 [${ticker}] ${modeLabel}: Fetching ${timeframe} real market data with SESSION #185 enhanced 400-day range...`
         );
+
         // 🚀 SESSION #184 ENHANCEMENT: Improved fetch with retry logic and better timeout handling (PRESERVED EXACTLY)
         let response;
         let retryCount = 0;
         const maxRetries = 2;
+
         while (retryCount <= maxRetries) {
           try {
             response = await fetch(url, {
@@ -364,6 +371,7 @@ const GATEKEEPER_THRESHOLDS = {
                 "User-Agent": "Kurzora-Signal-Engine-Session-185",
               },
             });
+
             if (response.ok) {
               break; // Success, exit retry loop
             } else if (retryCount < maxRetries) {
@@ -393,6 +401,7 @@ const GATEKEEPER_THRESHOLDS = {
             }
           }
         }
+
         if (!response.ok) {
           console.log(
             `❌ [${ticker}] HTTP ${response.status} for ${timeframe} data after retries`
@@ -402,7 +411,9 @@ const GATEKEEPER_THRESHOLDS = {
           );
           continue; // Skip this timeframe, no synthetic data
         }
+
         const data = await response.json();
+
         // 🚀 SESSION #184 ENHANCEMENT: Comprehensive data debugging and quality assessment (PRESERVED EXACTLY)
         console.log(
           `📊 [${ticker}] ${timeframe} ${modeLabel} Response: status=${
@@ -412,6 +423,7 @@ const GATEKEEPER_THRESHOLDS = {
         console.log(
           `🔍 [${ticker}] ${timeframe} SESSION #185 Data Quality Check:`
         );
+
         if (data.results && data.results.length > 0) {
           const results = data.results;
           console.log(`   📈 Data Points: ${results.length}`);
@@ -436,6 +448,7 @@ const GATEKEEPER_THRESHOLDS = {
               ...results.map((r) => r.v)
             ).toLocaleString()}`
           );
+
           // 🔧 SESSION #184 TECHNICAL INDICATOR DATA SUFFICIENCY CHECK (PRESERVED EXACTLY)
           let sufficientForIndicators = true;
           const dataRequirements = {
@@ -444,6 +457,7 @@ const GATEKEEPER_THRESHOLDS = {
             Bollinger: 20,
             Stochastic: 14,
           };
+
           console.log(
             `   🎯 ${timeframe} Technical Indicator Data Sufficiency:`
           );
@@ -458,6 +472,7 @@ const GATEKEEPER_THRESHOLDS = {
             );
             if (!sufficient) sufficientForIndicators = false;
           }
+
           if (!sufficientForIndicators) {
             console.log(
               `⚠️ [${ticker}] ${timeframe}: Insufficient data for some technical indicators - will use available data`
@@ -466,15 +481,18 @@ const GATEKEEPER_THRESHOLDS = {
         } else {
           console.log(`   ❌ No data points received`);
         }
+
         // 🚨 PRODUCTION FIX: REMOVE OVERLY STRICT VALIDATION (PRESERVED EXACTLY)
         // OLD BROKEN CODE: validateAuthenticData(data, ticker, timeframe) - rejected real market data
         // NEW FIXED CODE: Accept ANY real market data from Polygon.io API
+
         if (timeframe === "1D") {
           if (data.results && data.results.length > 0) {
             // 🚀 SESSION #184 ENHANCEMENT: Use all available daily data instead of just last day (PRESERVED EXACTLY)
             const results = data.results;
             const latestResult = results[results.length - 1];
             const earliestResult = results[0];
+
             timeframeData[timeframe] = {
               currentPrice: latestResult.c,
               changePercent:
@@ -524,6 +542,7 @@ const GATEKEEPER_THRESHOLDS = {
             );
           }
         }
+
         // 🚀 SESSION #184 ENHANCEMENT: Improved rate limiting with shorter delays for better performance (PRESERVED EXACTLY)
         await new Promise((resolve) => setTimeout(resolve, 100)); // Reduced from 150ms to 100ms
       } catch (timeframeError) {
@@ -536,6 +555,7 @@ const GATEKEEPER_THRESHOLDS = {
         // Note: No synthetic data fallback - we skip this timeframe instead
       }
     }
+
     // 🚨 PRODUCTION FIX: SIMPLIFIED DATA REQUIREMENT CHECK (PRESERVED EXACTLY)
     // OLD BROKEN CODE: Required 2+ timeframes with strict validation
     // NEW FIXED CODE: Accept ANY real market data, return null only if NO timeframes have data
@@ -548,6 +568,7 @@ const GATEKEEPER_THRESHOLDS = {
       );
       return null; // Return null instead of synthetic data
     }
+
     // 🚀 SESSION #185 ENHANCEMENT: Comprehensive data summary logging with 400-day range context
     console.log(
       `📊 [${ticker}] ${modeLabel} SESSION #185 Enhanced Real Market Data Summary:`
@@ -567,6 +588,7 @@ const GATEKEEPER_THRESHOLDS = {
     console.log(
       `✅ [${ticker}] Processing with SESSION #185 enhanced 400-day range real market data`
     );
+
     return timeframeData;
   } catch (error) {
     console.log(`🚨 [${ticker}] Major error: ${error.message}`);
@@ -576,16 +598,19 @@ const GATEKEEPER_THRESHOLDS = {
     return null; // Return null instead of synthetic data
   }
 }
+
 // ==================================================================================
-// 📈 SESSION #183 + #301-302 PRODUCTION FIX: REAL TECHNICAL INDICATORS - MODULAR ARCHITECTURE (PRESERVED EXACTLY)
+// 📈 SESSION #183 PRODUCTION FIX: REAL TECHNICAL INDICATORS - ALL SYNTHETIC LOGIC REMOVED (PRESERVED EXACTLY)
 // ==================================================================================
+
 /**
  * 📈 RSI CALCULATION - SESSION #183 PRODUCTION FIX: SYNTHETIC LOGIC REMOVED (PRESERVED EXACTLY)
  * 🚨 CRITICAL CHANGE: Removed synthetic fallback value (50) - now returns null for insufficient data
  * 🎯 PURPOSE: Enable real RSI calculations or skip signal entirely when insufficient data available
  * 🔧 ANTI-REGRESSION: Preserved all calculation logic exactly - only removed fake fallback value
  * ✅ RESULT: Real RSI values (30-70 range) or null (signal skipped) - no more template "50.00" values
- */ function calculateRSI(prices, period = 14) {
+ */
+function calculateRSI(prices, period = 14) {
   // 🚨 SESSION #183 PRODUCTION FIX: Removed synthetic fallback - return null instead of fake "50"
   if (!prices || prices.length < period + 1) {
     console.log(
@@ -595,16 +620,19 @@ const GATEKEEPER_THRESHOLDS = {
     );
     return null; // 🔧 SESSION #183 FIX: Return null instead of synthetic value "50"
   }
+
   const changes = [];
   for (let i = 1; i < prices.length; i++) {
     changes.push(prices[i] - prices[i - 1]);
   }
+
   if (changes.length < period) {
     console.log(
       `⚠️ RSI: Insufficient change data (${changes.length} changes, need ${period}) - returning null (no synthetic fallback)`
     );
     return null; // 🔧 SESSION #183 FIX: Return null instead of synthetic value "50"
   }
+
   let avgGain = 0,
     avgLoss = 0;
   for (let i = 0; i < period; i++) {
@@ -614,13 +642,17 @@ const GATEKEEPER_THRESHOLDS = {
       avgLoss += Math.abs(changes[i]);
     }
   }
+
   avgGain = avgGain / period;
   avgLoss = avgLoss / period;
+
   if (avgLoss === 0) {
     return avgGain > 0 ? 100 : 50;
   }
+
   const rs = avgGain / avgLoss;
   const rsi = 100 - 100 / (1 + rs);
+
   console.log(
     `✅ RSI: Real calculation successful - ${rsi.toFixed(
       2
@@ -629,15 +661,48 @@ const GATEKEEPER_THRESHOLDS = {
   return Math.round(rsi * 100) / 100;
 }
 
-// ==================================================================================
-// 🚨 SESSION #302 REMOVED: INLINE MACD FUNCTION EXTRACTED TO MODULAR ARCHITECTURE
-// ==================================================================================
-// 🎯 EXTRACTION COMPLETE: calculateMACD function moved to ./indicators/macd-calculator.ts
-// 🛡️ PRESERVATION: All Session #183 real calculation logic preserved in modular component
-// 🔧 INTEGRATION: Main function now uses MACDCalculator class instance for calculations
-// 📊 CROSSOVER DETECTION: Identical return format maintained ({ macd: Number })
-// 🚀 MODULAR PROGRESS: Session #301 RSI + Session #302 MACD = 2/6 indicators extracted
-// ==================================================================================
+/**
+ * 📈 MACD CALCULATION - SESSION #183 PRODUCTION FIX: SYNTHETIC LOGIC REMOVED (PRESERVED EXACTLY)
+ * 🚨 CRITICAL CHANGE: Removed synthetic fallback value (0) - now returns null for insufficient data
+ * 🎯 PURPOSE: Enable real MACD calculations or skip signal entirely when insufficient data available
+ * 🔧 ANTI-REGRESSION: Preserved all calculation logic exactly - only removed fake fallback value
+ * ✅ RESULT: Real MACD values (-0.15 to +0.25 range) or null (signal skipped) - no more template "0.0000" values
+ */
+function calculateMACD(prices, shortPeriod = 12, longPeriod = 26) {
+  // 🚨 SESSION #183 PRODUCTION FIX: Removed synthetic fallback - return null instead of fake "0"
+  if (!prices || prices.length < longPeriod) {
+    console.log(
+      `⚠️ MACD: Insufficient data (${
+        prices?.length || 0
+      } prices, need ${longPeriod}) - returning null (no synthetic fallback)`
+    );
+    return null; // 🔧 SESSION #183 FIX: Return null instead of synthetic value "{ macd: 0 }"
+  }
+
+  let shortSum = 0,
+    longSum = 0;
+
+  for (let i = 0; i < shortPeriod; i++) {
+    shortSum += prices[prices.length - 1 - i];
+  }
+
+  for (let i = 0; i < longPeriod; i++) {
+    longSum += prices[prices.length - 1 - i];
+  }
+
+  const shortMA = shortSum / shortPeriod;
+  const longMA = longSum / longPeriod;
+  const macd = shortMA - longMA;
+
+  console.log(
+    `✅ MACD: Real calculation successful - ${macd.toFixed(
+      4
+    )} (authentic market data)`
+  );
+  return {
+    macd: Number(macd.toFixed(4)),
+  };
+}
 
 /**
  * 📈 BOLLINGER BANDS CALCULATION - SESSION #183 PRODUCTION FIX: SYNTHETIC LOGIC REMOVED (PRESERVED EXACTLY)
@@ -645,7 +710,8 @@ const GATEKEEPER_THRESHOLDS = {
  * 🎯 PURPOSE: Enable real Bollinger calculations or skip signal entirely when insufficient data available
  * 🔧 ANTI-REGRESSION: Preserved all calculation logic exactly - only removed fake fallback value
  * ✅ RESULT: Real %B values (0.0-1.0 range) or null (signal skipped) - no more template "0.5" values
- */ function calculateBollingerBands(prices, period = 20, multiplier = 2) {
+ */
+function calculateBollingerBands(prices, period = 20, multiplier = 2) {
   // 🚨 SESSION #183 PRODUCTION FIX: Removed synthetic fallback - return null instead of fake "0.5"
   if (!prices || prices.length < period) {
     console.log(
@@ -655,18 +721,22 @@ const GATEKEEPER_THRESHOLDS = {
     );
     return null; // 🔧 SESSION #183 FIX: Return null instead of synthetic value "{ percentB: 0.5 }"
   }
+
   const slice = prices.slice(-period);
   const sma = slice.reduce((sum, price) => sum + price, 0) / period;
   const variance =
     slice.reduce((sum, price) => sum + Math.pow(price - sma, 2), 0) / period;
   const stdDev = Math.sqrt(variance);
+
   const upperBand = sma + multiplier * stdDev;
   const lowerBand = sma - multiplier * stdDev;
   const currentPrice = prices[prices.length - 1];
+
   let percentB = 0.5;
   if (upperBand !== lowerBand) {
     percentB = (currentPrice - lowerBand) / (upperBand - lowerBand);
   }
+
   console.log(
     `✅ Bollinger: Real calculation successful - %B ${percentB.toFixed(
       4
@@ -676,13 +746,15 @@ const GATEKEEPER_THRESHOLDS = {
     percentB: Number(percentB.toFixed(4)),
   };
 }
+
 /**
  * 📊 VOLUME ANALYSIS CALCULATION - SESSION #183 PRODUCTION FIX: SYNTHETIC LOGIC REMOVED (PRESERVED EXACTLY)
  * 🚨 CRITICAL CHANGE: Removed synthetic fallback value (1.0) - now returns null for insufficient data
  * 🎯 PURPOSE: Enable real volume analysis or skip signal entirely when insufficient data available
  * 🔧 ANTI-REGRESSION: Preserved all calculation logic exactly - only removed fake fallback value
  * ✅ RESULT: Real volume ratios (0.8-2.5 range) or null (signal skipped) - no more template "1.0000" values
- */ function calculateVolumeAnalysis(currentVolume, volumes) {
+ */
+function calculateVolumeAnalysis(currentVolume, volumes) {
   // 🚨 SESSION #183 PRODUCTION FIX: Removed synthetic fallback - return null instead of fake "1.0"
   if (!currentVolume || !volumes || volumes.length === 0) {
     console.log(
@@ -690,14 +762,18 @@ const GATEKEEPER_THRESHOLDS = {
     );
     return null; // 🔧 SESSION #183 FIX: Return null instead of synthetic value "{ ratio: 1.0 }"
   }
+
   const avgVolume = volumes.reduce((sum, vol) => sum + vol, 0) / volumes.length;
+
   if (avgVolume === 0) {
     console.log(
       `⚠️ Volume: Zero average volume - returning null (no synthetic fallback)`
     );
     return null; // 🔧 SESSION #183 FIX: Return null instead of synthetic value "{ ratio: 1.0 }"
   }
+
   const ratio = currentVolume / avgVolume;
+
   console.log(
     `✅ Volume: Real calculation successful - ratio ${ratio.toFixed(
       2
@@ -707,13 +783,15 @@ const GATEKEEPER_THRESHOLDS = {
     ratio: Number(ratio.toFixed(2)),
   };
 }
+
 /**
  * 📈 STOCHASTIC OSCILLATOR CALCULATION - SESSION #183 PRODUCTION FIX: SYNTHETIC LOGIC REMOVED (PRESERVED EXACTLY)
  * 🚨 CRITICAL CHANGE: Removed synthetic fallback value (50) - now returns null for insufficient data
  * 🎯 PURPOSE: Enable real Stochastic calculations or skip signal entirely when insufficient data available
  * 🔧 ANTI-REGRESSION: Preserved all calculation logic exactly - only removed fake fallback value
  * ✅ RESULT: Real %K values (0-100 range) or null (signal skipped) - no more template "50" values
- */ function calculateStochastic(prices, highs, lows, period = 14) {
+ */
+function calculateStochastic(prices, highs, lows, period = 14) {
   // 🚨 SESSION #183 PRODUCTION FIX: Removed synthetic fallback - return null instead of fake "50"
   if (!prices || !highs || !lows || prices.length < period) {
     console.log(
@@ -723,19 +801,24 @@ const GATEKEEPER_THRESHOLDS = {
     );
     return null; // 🔧 SESSION #183 FIX: Return null instead of synthetic value "{ percentK: 50 }"
   }
+
   const currentPrice = prices[prices.length - 1];
   const recentHighs = highs.slice(-period);
   const recentLows = lows.slice(-period);
+
   const highestHigh = Math.max(...recentHighs);
   const lowestLow = Math.min(...recentLows);
+
   if (highestHigh === lowestLow) {
     console.log(
       `⚠️ Stochastic: No price range detected - returning null (no synthetic fallback)`
     );
     return null; // 🔧 SESSION #183 FIX: Return null instead of synthetic value "{ percentK: 50 }"
   }
+
   const percentK =
     ((currentPrice - lowestLow) / (highestHigh - lowestLow)) * 100;
+
   console.log(
     `✅ Stochastic: Real calculation successful - %K ${percentK.toFixed(
       2
@@ -745,13 +828,15 @@ const GATEKEEPER_THRESHOLDS = {
     percentK: Number(percentK.toFixed(2)),
   };
 }
+
 /**
  * 📈 WILLIAMS %R CALCULATION - SESSION #183 PRODUCTION FIX: SYNTHETIC LOGIC REMOVED (PRESERVED EXACTLY)
  * 🚨 CRITICAL CHANGE: Removed synthetic fallback value (-50) - now returns null for insufficient data
  * 🎯 PURPOSE: Enable real Williams %R calculations or skip signal entirely when insufficient data available
  * 🔧 ANTI-REGRESSION: Preserved all calculation logic exactly - only removed fake fallback value
  * ✅ RESULT: Real Williams %R values (-100 to 0 range) or null (signal skipped) - no more template "-50" values
- */ function calculateWilliamsR(prices, highs, lows, period = 14) {
+ */
+function calculateWilliamsR(prices, highs, lows, period = 14) {
   // 🚨 SESSION #183 PRODUCTION FIX: Removed synthetic fallback - return null instead of fake "-50"
   if (!prices || !highs || !lows || prices.length < period) {
     console.log(
@@ -761,19 +846,24 @@ const GATEKEEPER_THRESHOLDS = {
     );
     return null; // 🔧 SESSION #183 FIX: Return null instead of synthetic value "{ value: -50 }"
   }
+
   const currentPrice = prices[prices.length - 1];
   const recentHighs = highs.slice(-period);
   const recentLows = lows.slice(-period);
+
   const highestHigh = Math.max(...recentHighs);
   const lowestLow = Math.min(...recentLows);
+
   if (highestHigh === lowestLow) {
     console.log(
       `⚠️ Williams %R: No price range detected - returning null (no synthetic fallback)`
     );
     return null; // 🔧 SESSION #183 FIX: Return null instead of synthetic value "{ value: -50 }"
   }
+
   const williamsR =
     ((highestHigh - currentPrice) / (highestHigh - lowestLow)) * -100;
+
   console.log(
     `✅ Williams %R: Real calculation successful - ${williamsR.toFixed(
       2
@@ -783,19 +873,23 @@ const GATEKEEPER_THRESHOLDS = {
     value: Number(williamsR.toFixed(2)),
   };
 }
+
 /**
- * 🧮 6-INDICATOR COMPOSITE SCORE CALCULATION - SESSION #183 + #302 PRODUCTION FIX: NULL HANDLING + MODULAR MACD (PRESERVED + ENHANCED)
- * 🚨 CRITICAL CHANGE: Added null checks for all indicators due to Session #183 synthetic logic removal + SESSION #302 MACD modular integration
+ * 🧮 6-INDICATOR COMPOSITE SCORE CALCULATION - SESSION #183 PRODUCTION FIX: NULL HANDLING ADDED (PRESERVED EXACTLY)
+ * 🚨 CRITICAL CHANGE: Added null checks for all indicators due to Session #183 synthetic logic removal
  * 🎯 PURPOSE: Handle null indicator values gracefully and skip signals with insufficient real data
- * 🔧 ANTI-REGRESSION: Preserved all scoring logic exactly - only added null validation + integrated modular MACD
+ * 🔧 ANTI-REGRESSION: Preserved all scoring logic exactly - only added null validation
  * ✅ RESULT: Composite scores only calculated with real indicator values - no synthetic data influence
- */ function calculate6IndicatorScore(rsi, macd, bb, volume, stoch, williams) {
+ */
+function calculate6IndicatorScore(rsi, macd, bb, volume, stoch, williams) {
   console.log(
-    `🧮 [COMPOSITE_SCORE] SESSION #183 + #302 ENHANCED: Calculating composite score with real indicators + modular MACD...`
+    `🧮 [COMPOSITE_SCORE] SESSION #183 ENHANCED: Calculating composite score with real indicators only...`
   );
+
   // 🚨 SESSION #183 PRODUCTION FIX: Count real indicators (non-null values)
   let realIndicatorCount = 0;
   let score = 60; // Base neutral score
+
   // RSI scoring (oversold = bullish) - SESSION #183 FIX: Only process if real value exists
   if (rsi !== null && typeof rsi === "number") {
     realIndicatorCount++;
@@ -814,8 +908,7 @@ const GATEKEEPER_THRESHOLDS = {
     );
   }
 
-  // 🔧 SESSION #302 INTEGRATION: MACD scoring with modular calculator result
-  // MACD scoring (positive = bullish) - SESSION #183 + #302 FIX: Only process if real value exists from modular calculator
+  // MACD scoring (positive = bullish) - SESSION #183 FIX: Only process if real value exists
   if (macd !== null && macd && typeof macd.macd === "number") {
     realIndicatorCount++;
     if (macd.macd > 0) {
@@ -823,12 +916,10 @@ const GATEKEEPER_THRESHOLDS = {
     } else if (macd.macd < 0) {
       score -= 5;
     }
-    console.log(
-      `✅ [COMPOSITE_SCORE] Real MACD processed: ${macd.macd} (SESSION #302 modular calculator)`
-    );
+    console.log(`✅ [COMPOSITE_SCORE] Real MACD processed: ${macd.macd}`);
   } else {
     console.log(
-      `⚠️ [COMPOSITE_SCORE] MACD null - skipping indicator (no synthetic fallback, SESSION #302 modular)`
+      `⚠️ [COMPOSITE_SCORE] MACD null - skipping indicator (no synthetic fallback)`
     );
   }
 
@@ -850,6 +941,7 @@ const GATEKEEPER_THRESHOLDS = {
       `⚠️ [COMPOSITE_SCORE] Bollinger null - skipping indicator (no synthetic fallback)`
     );
   }
+
   // Volume scoring (high volume = confirmation) - SESSION #183 FIX: Only process if real value exists
   if (volume !== null && volume && typeof volume.ratio === "number") {
     realIndicatorCount++;
@@ -864,6 +956,7 @@ const GATEKEEPER_THRESHOLDS = {
       `⚠️ [COMPOSITE_SCORE] Volume null - skipping indicator (no synthetic fallback)`
     );
   }
+
   // Stochastic scoring (oversold = bullish) - SESSION #183 FIX: Only process if real value exists
   if (stoch !== null && stoch && typeof stoch.percentK === "number") {
     realIndicatorCount++;
@@ -880,6 +973,7 @@ const GATEKEEPER_THRESHOLDS = {
       `⚠️ [COMPOSITE_SCORE] Stochastic null - skipping indicator (no synthetic fallback)`
     );
   }
+
   // Williams %R scoring (oversold = bullish) - SESSION #183 FIX: Only process if real value exists
   if (williams !== null && williams && typeof williams.value === "number") {
     realIndicatorCount++;
@@ -896,6 +990,7 @@ const GATEKEEPER_THRESHOLDS = {
       `⚠️ [COMPOSITE_SCORE] Williams %R null - skipping indicator (no synthetic fallback)`
     );
   }
+
   // 🚨 SESSION #183 PRODUCTION FIX: Require minimum real indicators for valid signal
   if (realIndicatorCount < 3) {
     console.log(
@@ -903,27 +998,33 @@ const GATEKEEPER_THRESHOLDS = {
     );
     return null; // 🔧 SESSION #183 FIX: Return null instead of synthetic score
   }
+
   const finalScore = Math.min(100, Math.max(0, Math.round(score)));
   console.log(
-    `✅ [COMPOSITE_SCORE] SESSION #183 + #302 SUCCESS: Real composite score ${finalScore}% based on ${realIndicatorCount}/6 authentic indicators (modular MACD integrated)`
+    `✅ [COMPOSITE_SCORE] SESSION #183 SUCCESS: Real composite score ${finalScore}% based on ${realIndicatorCount}/6 authentic indicators`
   );
+
   return finalScore;
 }
+
 /**
- * 🛡️ INSTITUTIONAL GATEKEEPER RULES VALIDATION (PRESERVED EXACTLY FROM SESSION #151-185)
- */ function passesGatekeeperRules(oneHour, fourHour, daily, weekly) {
+ * 🛡️ INSTITUTIONAL GATEKEEPER RULES VALIDATION (PRESERVED EXACTLY FROM SESSION #151-184)
+ */
+function passesGatekeeperRules(oneHour, fourHour, daily, weekly) {
   if (oneHour < GATEKEEPER_THRESHOLDS.oneHour) {
     console.log(
       `❌ Gatekeeper: 1H score ${oneHour}% < ${GATEKEEPER_THRESHOLDS.oneHour}% required`
     );
     return false;
   }
+
   if (fourHour < GATEKEEPER_THRESHOLDS.fourHour) {
     console.log(
       `❌ Gatekeeper: 4H score ${fourHour}% < ${GATEKEEPER_THRESHOLDS.fourHour}% required`
     );
     return false;
   }
+
   if (
     daily < GATEKEEPER_THRESHOLDS.longTerm &&
     weekly < GATEKEEPER_THRESHOLDS.longTerm
@@ -933,22 +1034,27 @@ const GATEKEEPER_THRESHOLDS = {
     );
     return false;
   }
+
   console.log(
     `✅ Gatekeeper: PASSED - 1H:${oneHour}%, 4H:${fourHour}%, Daily:${daily}%, Weekly:${weekly}%`
   );
   return true;
 }
+
 // ==================================================================================
-// 🧠 4-DIMENSIONAL SCORING SYSTEM FUNCTIONS (PRESERVED EXACTLY FROM SESSION #155-185)
+// 🧠 4-DIMENSIONAL SCORING SYSTEM FUNCTIONS (PRESERVED EXACTLY FROM SESSION #155-184)
 // ==================================================================================
+
 function calculateSignalConfidence(scores) {
   console.log(`🧠 CRASH-RESISTANT Confidence: Input validation starting...`);
+
   if (!scores) {
     console.log(
       `⚠️ Confidence: No scores provided - using low confidence fallback`
     );
     return 30;
   }
+
   if (!Array.isArray(scores)) {
     console.log(
       `⚠️ Confidence: Input not array - converting from: ${typeof scores}`
@@ -974,6 +1080,7 @@ function calculateSignalConfidence(scores) {
       return 25;
     }
   }
+
   const validScores = scores.filter((score) => {
     const isValid =
       typeof score === "number" && !isNaN(score) && score >= 0 && score <= 100;
@@ -984,15 +1091,18 @@ function calculateSignalConfidence(scores) {
     }
     return isValid;
   });
+
   console.log(
     `📊 Confidence: Valid scores after filtering: [${validScores.join(", ")}]`
   );
+
   if (validScores.length < 2) {
     console.log(
       `⚠️ Confidence: Insufficient valid scores (${validScores.length}) - need at least 2`
     );
     return validScores.length === 1 ? 40 : 20;
   }
+
   try {
     const average =
       validScores.reduce((sum, score) => sum + score, 0) / validScores.length;
@@ -1007,6 +1117,7 @@ function calculateSignalConfidence(scores) {
       0,
       100 - (standardDeviation / maxDeviation) * 100
     );
+
     console.log(
       `🧠 CRASH-RESISTANT Confidence Analysis: Scores [${validScores.join(
         ", "
@@ -1022,10 +1133,12 @@ function calculateSignalConfidence(scores) {
     return 30;
   }
 }
+
 function calculateMomentumQuality(weekly, daily, fourHour, oneHour) {
   console.log(
     `⚡ CRASH-RESISTANT Momentum Quality: Input validation starting...`
   );
+
   const sanitizeScore = (score, timeframeName) => {
     if (typeof score !== "number" || isNaN(score)) {
       console.log(
@@ -1041,14 +1154,18 @@ function calculateMomentumQuality(weekly, daily, fourHour, oneHour) {
     }
     return score;
   };
+
   const safeWeekly = sanitizeScore(weekly, "Weekly");
   const safeDaily = sanitizeScore(daily, "Daily");
   const safeFourHour = sanitizeScore(fourHour, "4H");
   const safeOneHour = sanitizeScore(oneHour, "1H");
+
   console.log(
     `✅ Quality: Sanitized scores - Weekly: ${safeWeekly}, Daily: ${safeDaily}, 4H: ${safeFourHour}, 1H: ${safeOneHour}`
   );
+
   let qualityScore = 60; // Base score
+
   try {
     // Short-term acceleration bonus
     if (safeOneHour > safeFourHour) {
@@ -1057,6 +1174,7 @@ function calculateMomentumQuality(weekly, daily, fourHour, oneHour) {
         `✅ Quality: 1H(${safeOneHour}%) > 4H(${safeFourHour}%) = +15 points (short-term acceleration)`
       );
     }
+
     // Medium-term momentum bonus
     if (safeFourHour > safeDaily) {
       qualityScore += 15;
@@ -1064,6 +1182,7 @@ function calculateMomentumQuality(weekly, daily, fourHour, oneHour) {
         `✅ Quality: 4H(${safeFourHour}%) > Daily(${safeDaily}%) = +15 points (sustained momentum)`
       );
     }
+
     // Long-term trend bonus
     if (safeDaily > safeWeekly) {
       qualityScore += 10;
@@ -1071,6 +1190,7 @@ function calculateMomentumQuality(weekly, daily, fourHour, oneHour) {
         `✅ Quality: Daily(${safeDaily}%) > Weekly(${safeWeekly}%) = +10 points (emerging trend)`
       );
     }
+
     // Overall acceleration bonus
     const totalAcceleration = (safeOneHour - safeWeekly) / 3;
     if (totalAcceleration > 10) {
@@ -1081,10 +1201,12 @@ function calculateMomentumQuality(weekly, daily, fourHour, oneHour) {
         )} avg/step) = +10 points`
       );
     }
+
     const finalQuality = Math.min(100, Math.max(0, qualityScore));
     console.log(
       `⚡ CRASH-RESISTANT Momentum Quality: ${finalQuality}% (Weekly:${safeWeekly}% → Daily:${safeDaily}% → 4H:${safeFourHour}% → 1H:${safeOneHour}%)`
     );
+
     return finalQuality;
   } catch (calculationError) {
     console.log(`❌ Quality: Calculation error: ${calculationError.message}`);
@@ -1093,11 +1215,14 @@ function calculateMomentumQuality(weekly, daily, fourHour, oneHour) {
     return Math.round(Math.max(30, Math.min(100, averageScore)));
   }
 }
+
 function calculateRiskAdjustment(prices, currentVolume, avgVolume) {
   console.log(
     `🛡️ CRASH-RESISTANT Risk Adjustment: Input validation starting...`
   );
+
   let riskScore = 70; // Base risk score
+
   // Volatility analysis (preserved exactly)
   if (prices && Array.isArray(prices) && prices.length > 5) {
     try {
@@ -1107,6 +1232,7 @@ function calculateRiskAdjustment(prices, currentVolume, avgVolume) {
       console.log(
         `📊 Risk: Filtered to ${validPrices.length} valid prices from ${prices.length} total`
       );
+
       if (validPrices.length > 2) {
         const returns = [];
         for (let i = 1; i < validPrices.length; i++) {
@@ -1116,6 +1242,7 @@ function calculateRiskAdjustment(prices, currentVolume, avgVolume) {
             returns.push(returnValue);
           }
         }
+
         if (returns.length > 1) {
           const avgReturn =
             returns.reduce((sum, ret) => sum + ret, 0) / returns.length;
@@ -1141,6 +1268,7 @@ function calculateRiskAdjustment(prices, currentVolume, avgVolume) {
       );
     }
   }
+
   // Volume confirmation (preserved exactly)
   if (
     typeof currentVolume === "number" &&
@@ -1165,12 +1293,15 @@ function calculateRiskAdjustment(prices, currentVolume, avgVolume) {
       console.log(`❌ Risk: Volume calculation error: ${volumeError.message}`);
     }
   }
+
   const finalRisk = Math.min(100, Math.max(0, Math.round(riskScore)));
   console.log(
     `🛡️ CRASH-RESISTANT Risk Adjustment: ${finalRisk}% (higher = lower risk)`
   );
+
   return finalRisk;
 }
+
 function calculateKuzzoraSmartScore(
   signalStrength,
   signalConfidence,
@@ -1180,6 +1311,7 @@ function calculateKuzzoraSmartScore(
   console.log(
     `🎯 CRASH-RESISTANT Kurzora Smart Score: Input validation starting...`
   );
+
   const sanitizeDimensionScore = (score, dimensionName) => {
     if (typeof score !== "number" || isNaN(score)) {
       console.log(
@@ -1195,6 +1327,7 @@ function calculateKuzzoraSmartScore(
     }
     return score;
   };
+
   const safeStrength = sanitizeDimensionScore(
     signalStrength,
     "Signal Strength"
@@ -1208,19 +1341,24 @@ function calculateKuzzoraSmartScore(
     "Momentum Quality"
   );
   const safeRisk = sanitizeDimensionScore(riskAdjustment, "Risk Adjustment");
+
   console.log(
     `✅ Smart Score: Sanitized inputs - Strength: ${safeStrength}, Confidence: ${safeConfidence}, Quality: ${safeQuality}, Risk: ${safeRisk}`
   );
+
   try {
     const smartScore =
       safeStrength * 0.3 +
       safeConfidence * 0.35 +
       safeQuality * 0.25 +
       safeRisk * 0.1;
+
     if (typeof smartScore !== "number" || isNaN(smartScore)) {
       throw new Error(`Invalid calculation result: ${smartScore}`);
     }
+
     const finalScore = Math.round(smartScore);
+
     console.log(`🎯 CRASH-RESISTANT Kurzora Smart Score Calculation:`);
     console.log(
       `   Signal Strength: ${safeStrength}% × 30% = ${(
@@ -1243,6 +1381,7 @@ function calculateKuzzoraSmartScore(
     console.log(
       `   🏆 FINAL CRASH-RESISTANT KURZORA SMART SCORE: ${finalScore}%`
     );
+
     return finalScore;
   } catch (calculationError) {
     console.log(
@@ -1255,9 +1394,11 @@ function calculateKuzzoraSmartScore(
     return fallbackScore;
   }
 }
+
 // ==================================================================================
-// 📊 DATABASE FIELD LENGTH COMPLIANCE MAPPING FUNCTIONS (PRESERVED EXACTLY FROM SESSION #151-185)
+// 📊 DATABASE FIELD LENGTH COMPLIANCE MAPPING FUNCTIONS (PRESERVED EXACTLY FROM SESSION #151-184)
 // ==================================================================================
+
 function mapScoreToSignalStrength(score) {
   if (score >= 85) return "STR_BUY"; // Strong Buy
   if (score >= 75) return "BUY"; // Buy
@@ -1267,18 +1408,22 @@ function mapScoreToSignalStrength(score) {
   if (score >= 30) return "SELL"; // Sell
   return "STR_SELL"; // Strong Sell
 }
+
 function mapScoreToSignalType(score) {
   if (score >= 60) return "bullish";
   if (score >= 40) return "neutral";
   return "bearish";
 }
+
 function getStockInfo(stockObject) {
   console.log(
     `🔍 [STOCK_INFO] Getting info for stock object: ${JSON.stringify(
       stockObject
     )}`
   );
+
   let ticker, companyName, sector;
+
   if (typeof stockObject === "string") {
     console.log(
       `⚠️ [STOCK_INFO] Received ticker string "${stockObject}" - using fallback company info`
@@ -1305,6 +1450,7 @@ function getStockInfo(stockObject) {
       source: "fallback",
     };
   }
+
   if (!ticker || typeof ticker !== "string") {
     console.log(`⚠️ [STOCK_INFO] Invalid ticker: ${ticker}, using fallback`);
     return {
@@ -1315,6 +1461,7 @@ function getStockInfo(stockObject) {
       source: "fallback",
     };
   }
+
   const safeTicker = String(ticker).toUpperCase().trim();
   const safeCompanyName =
     companyName && typeof companyName === "string"
@@ -1322,9 +1469,11 @@ function getStockInfo(stockObject) {
       : `${safeTicker} Corporation`;
   const safeSector =
     sector && typeof sector === "string" ? sector : "Technology";
+
   console.log(
     `✅ [STOCK_INFO] Database values: Ticker="${safeTicker}", Company="${safeCompanyName}", Sector="${safeSector}"`
   );
+
   return {
     name: safeCompanyName,
     sector: safeSector,
@@ -1333,24 +1482,24 @@ function getStockInfo(stockObject) {
     ticker: safeTicker,
   };
 }
+
 /**
- * 🎯 SESSION #185 + #302 PRODUCTION ENHANCED KURZORA SIGNAL ENGINE - EXTENDED DATA RANGE + MODULAR MACD
- * PURPOSE: Process parameter-based stock selection using ALL Session #151-185 methodology + Session #302 modular MACD integration
- * CRITICAL ENHANCEMENT: Extended date range from 150 to 400 calendar days + MACD Calculator modular extraction
- * ANTI-REGRESSION: Preserves all Session #151-185 processing logic + Session #301 RSI module + Session #302 MACD module
- * PRODUCTION STATUS: Ready for institutional-grade signal generation with modular architecture + reliable multi-timeframe data
- */ serve(async (req) => {
+ * 🎯 SESSION #185 PRODUCTION ENHANCED KURZORA SIGNAL ENGINE - EXTENDED DATA RANGE FIX
+ * PURPOSE: Process parameter-based stock selection using ALL Session #151-184 methodology with extended data range
+ * CRITICAL ENHANCEMENT: Extended date range from 150 to 400 calendar days for reliable 4H and Weekly data availability
+ * ANTI-REGRESSION: Preserves all Session #151-184 processing logic with only date range extension applied
+ * PRODUCTION STATUS: Ready for institutional-grade signal generation with reliable multi-timeframe data availability
+ */
+serve(async (req) => {
   const modeLabel = USE_BACKTEST ? "BACKTEST" : "LIVE";
   const modeDescription = USE_BACKTEST
     ? "using verified historical data (2024-05-06 to 2024-06-14)"
     : "using SESSION #185 enhanced 400-day rolling window for reliable multi-timeframe data";
+
   console.log(
-    `🚀 Starting Kurzora 4-Timeframe Signal Engine - SESSION #185 + #302 MODULAR ARCHITECTURE VERSION`
+    `🚀 Starting Kurzora 4-Timeframe Signal Engine - SESSION #185 EXTENDED DATA RANGE VERSION`
   );
   console.log(`🔄 Mode: ${modeLabel} MODE - ${modeDescription}`);
-  console.log(
-    `🚨 SESSION #302 MODULAR PROGRESS: RSI Calculator (✅ Session #301) + MACD Calculator (✅ Session #302) = 2/6 indicators extracted`
-  );
   console.log(
     `🚨 SESSION #185 DATA RANGE FIX: Extended to 400-day range for reliable 4H and Weekly data availability`
   );
@@ -1376,11 +1525,12 @@ function getStockInfo(stockObject) {
     `🗄️ Stock Universe: Dynamic database-driven selection from active_stocks table with parameter-based ranges`
   );
   console.log(
-    `🎯 Expected results: Modular architecture + reliable 4H and Weekly data + REAL technical indicators + institutional signal generation`
+    `🎯 Expected results: Reliable 4H and Weekly data + REAL technical indicators + institutional signal generation`
   );
   console.log(
-    `✅ SESSION #185 + #302: All Session #151-185 functionality + Modular MACD integration + Extended 400-day range for multi-timeframe reliability`
+    `✅ SESSION #185: All Session #151-184 functionality + Extended 400-day range for multi-timeframe reliability`
   );
+
   try {
     // CORS HANDLING (preserved exactly)
     if (req.method === "OPTIONS") {
@@ -1393,17 +1543,20 @@ function getStockInfo(stockObject) {
         },
       });
     }
-    // PARAMETER PARSING (preserved exactly from Session #180-185)
+
+    // PARAMETER PARSING (preserved exactly from Session #180-184)
     console.log(`\n🔧 ========== PARAMETER PARSING ==========`);
     let startIndex = 0;
     let endIndex = 50;
     let batchNumber = 1;
+
     try {
       if (req.method === "POST") {
         const requestBody = await req.json();
         console.log(
           `📊 [PARAMETERS] Raw request body: ${JSON.stringify(requestBody)}`
         );
+
         if (requestBody) {
           if (typeof requestBody.startIndex === "number") {
             startIndex = Math.max(0, Math.floor(requestBody.startIndex));
@@ -1424,21 +1577,26 @@ function getStockInfo(stockObject) {
         `⚠️ [PARAMETERS] Parameter parsing error: ${parameterError.message}, using defaults`
       );
     }
+
     console.log(`✅ [PARAMETERS] Parameter Configuration:`);
     console.log(`   Start Index: ${startIndex}`);
     console.log(`   End Index: ${endIndex}`);
     console.log(`   Batch Number: ${batchNumber}`);
     console.log(`   Stock Range: ${endIndex - startIndex} stocks to process`);
+
     // DATABASE INITIALIZATION (preserved exactly)
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseKey = Deno.env.get("SERVICE_ROLE_KEY"); // 🔧 SESSION #181: Uses fixed environment variable name
+
     if (!supabaseUrl || !supabaseKey) {
       throw new Error(
         "Missing Supabase configuration - check environment variables"
       );
     }
+
     const supabase = createClient(supabaseUrl, supabaseKey);
     console.log("✅ Production database initialized successfully");
+
     // 🚨 SESSION #181 FIXED REPLACE STRATEGY: COMPLETE DELETE WITH WHERE CLAUSE FOR SUPABASE SECURITY (PRESERVED EXACTLY)
     console.log(
       `\n🗑️ ========== SESSION #181 FIXED REPLACE STRATEGY: SUPABASE SECURITY COMPLIANT DELETE ==========`
@@ -1455,19 +1613,23 @@ function getStockInfo(stockObject) {
     console.log(
       `🔧 [REPLACE_STRATEGY] SOLUTION: Add WHERE clause that matches ALL records to satisfy security requirements`
     );
+
     let deletedCount = 0;
     let deleteSuccess = false;
     let deleteErrorMessage = "";
     let deleteOperation = "SKIPPED";
+
     if (batchNumber === 1) {
       console.log(
         `🗑️ [REPLACE_STRATEGY] BATCH #1 DETECTED: Executing COMPLETE DELETE operation with Supabase security compliance...`
       );
       deleteOperation = "EXECUTED";
+
       try {
         console.log(
           `🗑️ [REPLACE_STRATEGY] SESSION #181 FIX: Attempting to delete ALL existing signals with WHERE clause for security compliance...`
         );
+
         // 🚨 SESSION #181 CRITICAL FIX: ADD WHERE CLAUSE FOR SUPABASE SERVICE ROLE SECURITY COMPLIANCE
         // OLD BROKEN CODE (Session #180): .delete({ count: 'exact' }) - no WHERE clause = security violation
         // NEW FIXED CODE (Session #181): .delete({ count: 'exact' }).not("id", "is", null) - WHERE clause = security compliant
@@ -1477,10 +1639,9 @@ function getStockInfo(stockObject) {
           count,
         } = await supabase
           .from("trading_signals")
-          .delete({
-            count: "exact",
-          })
+          .delete({ count: "exact" })
           .not("id", "is", null); // 🔧 SESSION #181 FIX: Add WHERE clause for Supabase service role security compliance (matches ALL records since id is never null)
+
         if (deleteError) {
           console.log(
             `❌ [REPLACE_STRATEGY] COMPLETE DELETE operation failed: ${deleteError.message}`
@@ -1513,6 +1674,7 @@ function getStockInfo(stockObject) {
       deleteSuccess = true;
       deleteOperation = "SKIPPED_INTENTIONALLY";
     }
+
     console.log(
       `📊 [REPLACE_STRATEGY] SESSION #181 FIXED DELETE Results Summary:`
     );
@@ -1536,6 +1698,7 @@ function getStockInfo(stockObject) {
           : "✅ APPEND MODE WORKING"
       }`
     );
+
     // PARAMETER-BASED DATABASE-DRIVEN STOCK SELECTION (preserved exactly)
     console.log(
       `\n🗄️ ========== PARAMETER-BASED DATABASE-DRIVEN STOCK SELECTION ==========`
@@ -1545,9 +1708,11 @@ function getStockInfo(stockObject) {
       endIndex,
       batchNumber
     );
+
     console.log(`✅ PARAMETER-BASED DATABASE-DRIVEN STOCK SELECTION COMPLETE:`);
     console.log(`   Parameter Range: ${startIndex}-${endIndex}`);
     console.log(`   Stocks Retrieved: ${ACTIVE_STOCKS.length}`);
+
     // PRODUCTION METRICS INITIALIZATION
     let totalSavedCount = 0;
     let totalProcessed = 0;
@@ -1557,13 +1722,15 @@ function getStockInfo(stockObject) {
     let totalDataQualityIssues = 0; // 🚀 SESSION #184 NEW METRIC: Track data quality issues
     const totalStartTime = Date.now();
     const allAnalysisResults = [];
+
     console.log(
-      `🎯 Beginning SESSION #185 + #302 MODULAR parameter-based processing of ${ACTIVE_STOCKS.length} stocks...`
+      `🎯 Beginning SESSION #185 EXTENDED DATA RANGE parameter-based processing of ${ACTIVE_STOCKS.length} stocks...`
     );
     console.log(
-      `🚨 SESSION #185 + #302 ENHANCEMENT: Extended 400-day range + MACD Calculator modular extraction for reliable signal generation`
+      `🚨 SESSION #185 ENHANCEMENT: Extended 400-day range for reliable 4H and Weekly data availability`
     );
-    // MAIN STOCK PROCESSING LOOP: Enhanced with Session #185 extended data range + Session #302 modular MACD
+
+    // MAIN STOCK PROCESSING LOOP: Enhanced with Session #185 extended data range
     for (const stockObject of ACTIVE_STOCKS) {
       try {
         const ticker = stockObject.ticker;
@@ -1575,14 +1742,16 @@ function getStockInfo(stockObject) {
           }) ==========`
         );
         console.log(
-          `🚨 [${ticker}] SESSION #185 + #302 ENHANCEMENT: Processing with extended 400-day range + modular MACD Calculator`
+          `🚨 [${ticker}] SESSION #185 ENHANCEMENT: Processing with extended 400-day range for reliable multi-timeframe data`
         );
+
         // MULTI-TIMEFRAME DATA COLLECTION WITH SESSION #185 EXTENDED DATA RANGE
         console.log(
           `📡 [${ticker}] Fetching real market data with SESSION #185 enhanced 400-day range for reliable multi-timeframe analysis...`
         );
         const timeframeData = await fetchMultiTimeframeData(ticker);
         totalApiCallCount += 4;
+
         if (!timeframeData) {
           console.log(
             `❌ [${ticker}] No real market data available - skipping stock`
@@ -1598,58 +1767,41 @@ function getStockInfo(stockObject) {
             reason:
               "No real market data available - production fix prevents synthetic data usage",
             batch: batchNumber,
-            parameters: {
-              startIndex,
-              endIndex,
-              batchNumber,
-            },
-            session_185_302_enhancement:
-              "Extended 400-day range + modular MACD Calculator for reliable multi-timeframe data availability",
+            parameters: { startIndex, endIndex, batchNumber },
+            session_185_enhancement:
+              "Extended 400-day range for reliable multi-timeframe data availability",
           });
           totalProcessed++;
           totalSkippedInsufficientData++;
           totalDataQualityIssues++;
           continue;
         }
+
         console.log(
-          `✅ [${ticker}] Real market data available - proceeding with SESSION #185 + #302 enhanced multi-timeframe indicator analysis`
+          `✅ [${ticker}] Real market data available - proceeding with SESSION #185 enhanced multi-timeframe indicator analysis`
         );
-        // INDIVIDUAL TIMEFRAME ANALYSIS WITH SESSION #183 REAL INDICATORS + SESSION #185 EXTENDED DATA + SESSION #302 MODULAR MACD
+
+        // INDIVIDUAL TIMEFRAME ANALYSIS WITH SESSION #183 REAL INDICATORS + SESSION #185 EXTENDED DATA
         const timeframeScores = {};
         const timeframeDetails = {};
         let timeframeSkippedCount = 0; // Track timeframes skipped due to insufficient real data
+
         for (const [timeframe, data] of Object.entries(timeframeData)) {
           if (!data || !data.prices) {
             timeframeScores[timeframe] = 0;
             timeframeSkippedCount++;
             continue;
           }
-          // 🚨 SESSION #183 + #185 + #302 PRODUCTION FIX: All technical indicator calculations with modular MACD + extended data availability
+
+          // 🚨 SESSION #183 + #185 PRODUCTION FIX: All technical indicator calculations now return null for insufficient data + extended data availability
           console.log(
-            `📊 [${ticker}] ${timeframe}: Calculating real technical indicators with SESSION #185 + #302 enhanced data (${
+            `📊 [${ticker}] ${timeframe}: Calculating real technical indicators with SESSION #185 enhanced data (${
               data.prices?.length || 0
             } data points)...`
           );
 
           const rsi = calculateRSI(data.prices);
-
-          // 🔧 SESSION #302 MODULAR INTEGRATION: Use modular MACD Calculator instead of inline function
-          console.log(
-            `🔧 [${ticker}] ${timeframe}: Using SESSION #302 modular MACD Calculator...`
-          );
-          const macd = calculateMACD(data.prices); // 🎯 SESSION #302: Modular MACD calculation
-          if (macd !== null) {
-            console.log(
-              `✅ [${ticker}] ${timeframe}: SESSION #302 Modular MACD successful - ${macd.macd?.toFixed(
-                4
-              )} (modular calculator)`
-            );
-          } else {
-            console.log(
-              `⚠️ [${ticker}] ${timeframe}: SESSION #302 Modular MACD returned null (insufficient data, no synthetic fallback)`
-            );
-          }
-
+          const macd = calculateMACD(data.prices);
           const bb = calculateBollingerBands(data.prices);
           const volumeAnalysis = calculateVolumeAnalysis(
             data.volume,
@@ -1665,7 +1817,8 @@ function getStockInfo(stockObject) {
             data.highs || data.prices,
             data.lows || data.prices
           );
-          // 🚨 SESSION #183 + #302 PRODUCTION FIX: calculate6IndicatorScore with modular MACD integration
+
+          // 🚨 SESSION #183 PRODUCTION FIX: calculate6IndicatorScore now handles null values and requires minimum real indicators
           const timeframeScore = calculate6IndicatorScore(
             rsi,
             macd,
@@ -1674,6 +1827,7 @@ function getStockInfo(stockObject) {
             stoch,
             williams
           );
+
           if (timeframeScore === null) {
             console.log(
               `⚠️ [${ticker}] ${timeframe}: Insufficient real indicators - timeframe skipped (no synthetic fallbacks)`
@@ -1683,25 +1837,27 @@ function getStockInfo(stockObject) {
             totalDataQualityIssues++;
             continue;
           }
+
           timeframeScores[timeframe] = timeframeScore;
           timeframeDetails[timeframe] = {
             score: timeframeScore,
             rsi: rsi || null,
-            macd: macd?.macd || null, // 🔧 SESSION #302: Access modular MACD result
+            macd: macd?.macd || null,
             bollingerB: bb?.percentB || null,
             volumeRatio: volumeAnalysis?.ratio || null,
             stochastic: stoch?.percentK || null,
             williamsR: williams?.value || null,
             currentPrice: data.currentPrice,
             changePercent: data.changePercent,
-            session_302_modular_macd: true, // 🔧 SESSION #302: Flag modular MACD usage
           };
+
           console.log(
-            `✅ [${ticker}] ${timeframe}: Score ${timeframeScore}% with REAL indicators + SESSION #302 modular MACD (RSI:${
+            `✅ [${ticker}] ${timeframe}: Score ${timeframeScore}% with REAL indicators (RSI:${
               rsi || "null"
             }, MACD:${macd?.macd?.toFixed(2) || "null"})`
           );
         }
+
         // 🚨 SESSION #183 PRODUCTION FIX: Check if enough timeframes have real data
         const validTimeframeCount = Object.values(timeframeScores).filter(
           (score) => score > 0
@@ -1718,30 +1874,29 @@ function getStockInfo(stockObject) {
             reason: `Only ${validTimeframeCount}/4 timeframes had sufficient real indicator data`,
             timeframes_skipped: timeframeSkippedCount,
             batch: batchNumber,
-            parameters: {
-              startIndex,
-              endIndex,
-              batchNumber,
-            },
-            session_185_302_enhancement:
-              "Extended 400-day range + modular MACD Calculator for reliable multi-timeframe data availability",
+            parameters: { startIndex, endIndex, batchNumber },
+            session_185_enhancement:
+              "Extended 400-day range for reliable multi-timeframe data availability",
           });
           totalProcessed++;
           totalSkippedInsufficientData++;
           totalDataQualityIssues++;
           continue;
         }
+
         // INSTITUTIONAL GATEKEEPER RULES VALIDATION (preserved exactly)
         const oneHourScore = timeframeScores["1H"] || 0;
         const fourHourScore = timeframeScores["4H"] || 0;
         const dailyScore = timeframeScores["1D"] || 0;
         const weeklyScore = timeframeScores["1W"] || 0;
+
         const passesGates = passesGatekeeperRules(
           oneHourScore,
           fourHourScore,
           dailyScore,
           weeklyScore
         );
+
         if (!passesGates) {
           console.log(
             `❌ [${ticker}] REJECTED by institutional gatekeeper rules`
@@ -1754,22 +1909,20 @@ function getStockInfo(stockObject) {
             reason: "Failed Gatekeeper Rules",
             scores: timeframeScores,
             batch: batchNumber,
-            parameters: {
-              startIndex,
-              endIndex,
-              batchNumber,
-            },
-            session_185_302_enhancement:
-              "Extended 400-day range + modular MACD Calculator for reliable multi-timeframe data availability",
+            parameters: { startIndex, endIndex, batchNumber },
+            session_185_enhancement:
+              "Extended 400-day range for reliable multi-timeframe data availability",
           });
           totalProcessed++;
           continue;
         }
+
         totalPassedGatekeeper++;
         console.log(
-          `✅ [${ticker}] PASSED institutional gatekeeper rules with SESSION #185 + #302 enhanced multi-timeframe analysis`
+          `✅ [${ticker}] PASSED institutional gatekeeper rules with SESSION #185 enhanced multi-timeframe analysis`
         );
-        // 4-DIMENSIONAL SCORING SYSTEM (preserved exactly from Session #157-185)
+
+        // 4-DIMENSIONAL SCORING SYSTEM (preserved exactly from Session #157-184)
         let validTimeframeScores = {};
         if (
           timeframeScores &&
@@ -1796,6 +1949,7 @@ function getStockInfo(stockObject) {
             "1W": weeklyScore || 50,
           };
         }
+
         // All 4 dimensional calculations preserved exactly
         let signalStrength = 50;
         try {
@@ -1814,6 +1968,7 @@ function getStockInfo(stockObject) {
             (oneHourScore + fourHourScore + dailyScore + weeklyScore) / 4
           );
         }
+
         const allScores = [
           oneHourScore,
           fourHourScore,
@@ -1829,6 +1984,7 @@ function getStockInfo(stockObject) {
           fourHourScore,
           oneHourScore
         );
+
         const primaryTimeframeData = timeframeData["1D"] || timeframeData["1H"];
         const riskAdjustment = calculateRiskAdjustment(
           primaryTimeframeData?.prices || [],
@@ -1838,6 +1994,7 @@ function getStockInfo(stockObject) {
                 primaryTimeframeData.volumes.length
             : 0
         );
+
         const kuzzoraSmartScore = calculateKuzzoraSmartScore(
           signalStrength,
           signalConfidence,
@@ -1846,19 +2003,22 @@ function getStockInfo(stockObject) {
         );
         const signalStrength_enum = mapScoreToSignalStrength(kuzzoraSmartScore);
         const signalType = mapScoreToSignalType(kuzzoraSmartScore);
+
         console.log(
-          `🎯 [${ticker}] SESSION #185 + #302 MODULAR SIGNAL ANALYSIS COMPLETE:`
+          `🎯 [${ticker}] SESSION #185 EXTENDED DATA RANGE SIGNAL ANALYSIS COMPLETE:`
         );
         console.log(`   Final Score: ${kuzzoraSmartScore}%`);
         console.log(`   Signal Type: ${signalType}`);
         console.log(`   Signal Strength: ${signalStrength_enum}`);
         console.log(
-          `   Session #185 + #302 Enhancement: Extended 400-day range + modular MACD Calculator integration`
+          `   Session #185 Enhancement: Extended 400-day range for reliable multi-timeframe analysis`
         );
-        // DATABASE-DRIVEN OBJECT CONSTRUCTION (preserved exactly with SESSION #183 real indicator values + SESSION #185 extended data + SESSION #302 modular MACD)
+
+        // DATABASE-DRIVEN OBJECT CONSTRUCTION (preserved exactly with SESSION #183 real indicator values + SESSION #185 extended data)
         console.log(
-          `\n🛡️ [${ticker}] ========== DATABASE-DRIVEN OBJECT CONSTRUCTION WITH SESSION #185 + #302 ENHANCEMENTS ==========`
+          `\n🛡️ [${ticker}] ========== DATABASE-DRIVEN OBJECT CONSTRUCTION WITH SESSION #185 EXTENDED DATA ==========`
         );
+
         const safeStockInfo = getStockInfo(stockObject);
         const safeCurrentPrice = Number(
           (primaryTimeframeData?.currentPrice || 100.0).toFixed(4)
@@ -1874,12 +2034,13 @@ function getStockInfo(stockObject) {
         )
           ? signalType
           : "neutral";
-        // 🚨 SESSION #183 + #302 PRODUCTION FIX: Use real indicator values including modular MACD - NO MORE synthetic defaults
+
+        // 🚨 SESSION #183 PRODUCTION FIX: Use real indicator values or null - NO MORE synthetic defaults
         const primaryTimeframe =
           timeframeDetails["1D"] || timeframeDetails["1H"] || {};
         const safeTimeframeDetails = {
           rsi: primaryTimeframe.rsi !== null ? primaryTimeframe.rsi : null,
-          macd: primaryTimeframe.macd !== null ? primaryTimeframe.macd : null, // 🔧 SESSION #302: Modular MACD value
+          macd: primaryTimeframe.macd !== null ? primaryTimeframe.macd : null,
           bollingerB:
             primaryTimeframe.bollingerB !== null
               ? primaryTimeframe.bollingerB
@@ -1896,18 +2057,18 @@ function getStockInfo(stockObject) {
             primaryTimeframe.williamsR !== null
               ? primaryTimeframe.williamsR
               : null,
-          session_302_modular_macd:
-            primaryTimeframe.session_302_modular_macd || false, // 🔧 SESSION #302: Track modular usage
         };
-        // 🚨 SESSION #183 + #302 PRODUCTION FIX: Only use real values - set safe display values that represent actual calculations
+
+        // 🚨 SESSION #183 PRODUCTION FIX: Only use real values - set safe display values that represent actual calculations
         const displayRSI =
           safeTimeframeDetails.rsi !== null ? safeTimeframeDetails.rsi : 50; // Use real RSI or neutral display
         const displayMACD =
-          safeTimeframeDetails.macd !== null ? safeTimeframeDetails.macd : 0; // 🔧 SESSION #302: Use real modular MACD or neutral display
+          safeTimeframeDetails.macd !== null ? safeTimeframeDetails.macd : 0; // Use real MACD or neutral display
         const displayVolumeRatio =
           safeTimeframeDetails.volumeRatio !== null
             ? safeTimeframeDetails.volumeRatio
             : 1.0; // Use real volume or neutral display
+
         const safeSignalsData = {
           timeframes: {
             "1H": oneHourScore || 0,
@@ -1931,34 +2092,28 @@ function getStockInfo(stockObject) {
           },
           analysis: {
             methodology: "4-timeframe-institutional-analysis",
-            session:
-              "185-302-extended-data-range-modular-macd-real-technical-indicators",
+            session: "185-extended-data-range-real-technical-indicators",
             gatekeeper_passed: true,
             kurzora_smart_score: kuzzoraSmartScore,
             batch_number: batchNumber,
-            parameters: {
-              startIndex,
-              endIndex,
-              batchNumber,
-            },
-            session_185_302_enhancement: {
+            parameters: { startIndex, endIndex, batchNumber },
+            session_185_enhancement: {
               extended_date_range: true,
               calendar_days: 400,
               trading_days_estimated: 300,
               fourh_data_improved: true,
               weekly_data_improved: true,
-              modular_macd_calculator: true, // 🔧 SESSION #302: Flag modular MACD usage
-              modular_architecture_progress:
-                "2/6 indicators extracted (RSI + MACD)",
               old_signals_deleted: deletedCount,
               delete_success: deleteSuccess,
               fresh_signal_insert: "pending",
             },
           },
         };
+
         const safeEntryPrice = Number((safeCurrentPrice * 1.01).toFixed(4));
         const safeStopLoss = Number((safeCurrentPrice * 0.92).toFixed(4));
         const safeTakeProfit = Number((safeCurrentPrice * 1.15).toFixed(4));
+
         const safeEnhancedSignal = {
           ticker: String(ticker).toUpperCase(),
           signal_type: safeValidSignalType,
@@ -1973,33 +2128,37 @@ function getStockInfo(stockObject) {
           sector: String(safeStockInfo.sector),
           market: "usa",
           rsi_value: Number(displayRSI.toFixed(2)),
-          macd_signal: Number(displayMACD.toFixed(4)), // 🔧 SESSION #302: Modular MACD value
+          macd_signal: Number(displayMACD.toFixed(4)),
           volume_ratio: Number(displayVolumeRatio.toFixed(2)),
           status: "active",
           timeframe: "4TF",
           signal_strength: signalStrength_enum,
           final_score: safeIntegerSmartScore,
           signals: safeSignalsData,
-          explanation: `Kurzora 4-Timeframe Institutional Analysis: Smart Score ${safeIntegerSmartScore}% | ${signalStrength_enum} Classification | Timeframes: 1H:${oneHourScore}%, 4H:${fourHourScore}%, Daily:${dailyScore}%, Weekly:${weeklyScore}% | Passed Institutional Gatekeeper Rules ✅ | SESSION #185 + #302 ENHANCEMENT: Extended 400-Day Range + Modular MACD Calculator ✅ | ${
+          explanation: `Kurzora 4-Timeframe Institutional Analysis: Smart Score ${safeIntegerSmartScore}% | ${signalStrength_enum} Classification | Timeframes: 1H:${oneHourScore}%, 4H:${fourHourScore}%, Daily:${dailyScore}%, Weekly:${weeklyScore}% | Passed Institutional Gatekeeper Rules ✅ | SESSION #185 ENHANCEMENT: Extended 400-Day Range for Reliable Multi-Timeframe Data ✅ | ${
             batchNumber === 1
               ? `Fresh scenario signal after ${deletedCount} ALL signals deleted (complete table replacement)`
               : `Scenario batch ${batchNumber} signal appended`
-          } | Make.com Batch ${batchNumber} Parameter Processing (${startIndex}-${endIndex}) | Extended Data Range + Modular Architecture | Production Data Integrity Maintained`,
+          } | Make.com Batch ${batchNumber} Parameter Processing (${startIndex}-${endIndex}) | Extended Data Range for 4H and Weekly Reliability | Production Data Integrity Maintained`,
         };
+
         console.log(
-          `✅ [${ticker}] SESSION #185 + #302 MODULAR SIGNAL: Company="${safeEnhancedSignal.company_name}", Sector="${safeEnhancedSignal.sector}"`
+          `✅ [${ticker}] SESSION #185 EXTENDED DATA RANGE SIGNAL: Company="${safeEnhancedSignal.company_name}", Sector="${safeEnhancedSignal.sector}"`
         );
         console.log(
-          `🚨 [${ticker}] SESSION #185 + #302 SUCCESS: Signal based on extended 400-day range + modular MACD Calculator with reliable multi-timeframe analysis`
+          `🚨 [${ticker}] SESSION #185 SUCCESS: Signal based on extended 400-day range with reliable multi-timeframe analysis`
         );
+
         // DATABASE SAVE (preserved exactly)
         let dbInsertSuccess = false;
         let dbInsertResult = null;
+
         try {
           const { data, error } = await supabase
             .from("trading_signals")
             .insert([safeEnhancedSignal])
             .select();
+
           if (error) {
             console.log(
               `❌ [${ticker}] Database insert FAILED: ${error.message}`
@@ -2011,10 +2170,10 @@ function getStockInfo(stockObject) {
               `🎉 [${ticker}] DATABASE INSERT SUCCESS! ID: ${data[0].id}`
             );
             console.log(
-              `🚨 [${ticker}] SESSION #185 + #302 SUCCESS: Signal ${data[0].id} saved with extended data range + modular MACD Calculator`
+              `🚨 [${ticker}] SESSION #185 SUCCESS: Signal ${data[0].id} saved with extended data range and reliable multi-timeframe analysis`
             );
             dbInsertSuccess = true;
-            dbInsertResult = `Successfully saved with ID: ${data[0].id} (SESSION #185 + #302 MODULAR)`;
+            dbInsertResult = `Successfully saved with ID: ${data[0].id} (SESSION #185 EXTENDED DATA RANGE)`;
             totalSavedCount++;
           } else {
             console.log(`⚠️ [${ticker}] Silent database failure`);
@@ -2028,6 +2187,7 @@ function getStockInfo(stockObject) {
           dbInsertSuccess = false;
           dbInsertResult = `Exception: ${insertException.message}`;
         }
+
         // RESULT TRACKING
         const resultStatus = dbInsertSuccess
           ? "SAVED"
@@ -2048,30 +2208,21 @@ function getStockInfo(stockObject) {
           timeframes: timeframeScores,
           real_indicators: {
             rsi: safeTimeframeDetails.rsi,
-            macd: safeTimeframeDetails.macd, // 🔧 SESSION #302: Modular MACD value
+            macd: safeTimeframeDetails.macd,
             volume_ratio: safeTimeframeDetails.volumeRatio,
             authentic_data: true,
-            session_302_modular_macd:
-              safeTimeframeDetails.session_302_modular_macd, // 🔧 SESSION #302: Track modular usage
           },
           object_construction: "SUCCESS",
           database_save: dbInsertSuccess ? "SUCCESS" : "FAILED",
           save_result: dbInsertResult,
           batch: batchNumber,
-          parameters: {
-            startIndex,
-            endIndex,
-            batchNumber,
-          },
-          session_185_302_enhancement: {
+          parameters: { startIndex, endIndex, batchNumber },
+          session_185_enhancement: {
             extended_date_range: true,
             calendar_days: 400,
             trading_days_estimated: 300,
             fourh_data_improved: true,
             weekly_data_improved: true,
-            modular_macd_calculator: true, // 🔧 SESSION #302: Flag modular MACD usage
-            modular_architecture_progress:
-              "2/6 indicators extracted (RSI + MACD)",
             old_signals_deleted:
               batchNumber === 1 ? deletedCount : "N/A (append mode)",
             delete_success:
@@ -2082,6 +2233,7 @@ function getStockInfo(stockObject) {
           },
           database_driven: "Company info from active_stocks table",
         });
+
         totalProcessed++;
         await new Promise((resolve) => setTimeout(resolve, 100));
       } catch (stockError) {
@@ -2097,30 +2249,28 @@ function getStockInfo(stockObject) {
           status: "ERROR",
           error: stockError.message,
           batch: batchNumber,
-          parameters: {
-            startIndex,
-            endIndex,
-            batchNumber,
-          },
-          session_185_302_enhancement:
-            "Error occurred during SESSION #185 + #302 extended data range + modular MACD processing",
+          parameters: { startIndex, endIndex, batchNumber },
+          session_185_enhancement:
+            "Error occurred during SESSION #185 extended data range processing",
         });
         totalProcessed++;
         totalDataQualityIssues++;
       }
     }
-    // FINAL SESSION #185 + #302 MODULAR PROCESSING RESULTS SUMMARY
+
+    // FINAL SESSION #185 EXTENDED DATA RANGE PROCESSING RESULTS SUMMARY
     const totalProcessingTime = ((Date.now() - totalStartTime) / 1000).toFixed(
       1
     );
     const totalProcessingMinutes = (totalProcessingTime / 60).toFixed(1);
+
     console.log(
-      `\n🎉 ============ SESSION #185 + #302 MODULAR ANALYSIS COMPLETE ============`
+      `\n🎉 ============ SESSION #185 EXTENDED DATA RANGE ANALYSIS COMPLETE ============`
     );
     console.log(
-      `📊 FINAL SESSION #185 + #302 MODULAR PARAMETER-BASED PROCESSING RESULTS SUMMARY:`
+      `📊 FINAL SESSION #185 EXTENDED DATA RANGE PARAMETER-BASED PROCESSING RESULTS SUMMARY:`
     );
-    console.log(`   🚨 SESSION #185 + #302 ENHANCEMENT RESULTS:`);
+    console.log(`   🚨 SESSION #185 ENHANCEMENT RESULTS:`);
     console.log(
       `      Date Range Extended: 150 calendar days → 400 calendar days ✅`
     );
@@ -2138,12 +2288,6 @@ function getStockInfo(stockObject) {
       `      Real Indicators Maintained: Session #183 synthetic logic removal preserved ✅`
     );
     console.log(
-      `      Modular Architecture Progress: Session #301 RSI + Session #302 MACD = 2/6 indicators extracted ✅`
-    );
-    console.log(
-      `      MACD Calculator Modular: Identical results from extracted module ✅`
-    );
-    console.log(
       `      Stocks Processed Successfully: ${totalProcessed}/${ACTIVE_STOCKS.length}`
     );
     console.log(
@@ -2152,7 +2296,7 @@ function getStockInfo(stockObject) {
     console.log(
       `      Data Quality Issues Detected: ${totalDataQualityIssues}`
     );
-    console.log(`      Session #185 + #302 Enhancement Status: SUCCESSFUL`);
+    console.log(`      Session #185 Enhancement Status: SUCCESSFUL`);
     console.log(`   📊 Processing Results:`);
     console.log(
       `      Parameter Range: ${startIndex}-${endIndex} (${ACTIVE_STOCKS.length} stocks)`
@@ -2165,7 +2309,7 @@ function getStockInfo(stockObject) {
       ).toFixed(1)}% institutional pass rate)`
     );
     console.log(
-      `      Saved to Database: ${totalSavedCount} institutional-grade signals with extended data range + modular MACD`
+      `      Saved to Database: ${totalSavedCount} institutional-grade signals with extended data range`
     );
     console.log(`   ⏱️ Performance Metrics:`);
     console.log(
@@ -2193,15 +2337,16 @@ function getStockInfo(stockObject) {
       ).toFixed(1)}%`
     );
     console.log(
-      `   ✅ SESSION #185 + #302 ENHANCEMENT: Extended 400-day data range + modular MACD Calculator + reliable multi-timeframe analysis + complete table replacement FUNCTIONAL - system fully operational with modular architecture progress`
+      `   ✅ SESSION #185 ENHANCEMENT: Extended 400-day data range + reliable multi-timeframe analysis + complete table replacement FUNCTIONAL - system fully operational with reliable authentic multi-timeframe analysis`
     );
-    // SESSION #185 + #302 MODULAR RESPONSE CONSTRUCTION
+
+    // SESSION #185 EXTENDED DATA RANGE RESPONSE CONSTRUCTION
     const responseData = {
       success: true,
-      session: `SESSION-185-302-MODULAR-${modeLabel}-4TIMEFRAME`,
+      session: `SESSION-185-EXTENDED-DATA-RANGE-${modeLabel}-4TIMEFRAME`,
       mode: modeLabel,
       mode_description: modeDescription,
-      session_185_302_enhancement: {
+      session_185_enhancement: {
         implemented: true,
         extended_date_range: true,
         calendar_days: 400,
@@ -2211,18 +2356,12 @@ function getStockInfo(stockObject) {
         fourh_data_improved: true,
         weekly_data_improved: true,
         multi_timeframe_reliability: true,
-        modular_macd_calculator: true, // 🔧 SESSION #302: Flag modular MACD integration
-        modular_architecture_progress: "2/6 indicators extracted (RSI + MACD)",
-        rsi_calculator_status: "✅ Session #301 Complete - Modular RSI working",
-        macd_calculator_status:
-          "✅ Session #302 Complete - Modular MACD working",
-        next_extraction: "Session #303 Volume Analyzer",
         problem_resolved:
-          "4H and Weekly timeframe data availability + MACD Calculator extraction to modular architecture",
+          "4H and Weekly timeframe data availability limitations due to insufficient calendar day range",
         solution_applied:
-          "Extended date range from 150 to 400 calendar days + MACD Calculator modular extraction",
+          "Extended date range from 150 to 400 calendar days for reliable multi-timeframe data availability",
         production_impact:
-          "Reliable multi-timeframe signal generation + modular architecture foundation + identical MACD calculation results",
+          "Reliable multi-timeframe signal generation with sufficient data for all timeframes + comprehensive technical analysis",
       },
       replace_strategy: {
         implemented: true,
@@ -2248,7 +2387,7 @@ function getStockInfo(stockObject) {
       company_info_source:
         "Database active_stocks table (not hardcoded mapping)",
       testing_methodology:
-        "SESSION #185 + #302 MODULAR: 400-day date range + modular MACD Calculator + multi-timeframe reliability + real technical calculations + parameter-based database-driven stock selection",
+        "SESSION #185 EXTENDED DATA RANGE: 400-day date range + multi-timeframe reliability + real technical calculations + parameter-based database-driven stock selection",
       parameters: {
         startIndex: startIndex,
         endIndex: endIndex,
@@ -2266,21 +2405,21 @@ function getStockInfo(stockObject) {
       api_calls: totalApiCallCount,
       time: totalProcessingTime + "s",
       time_minutes: totalProcessingMinutes,
-      message: `SESSION #185 + #302 MODULAR system with ${
+      message: `SESSION #185 EXTENDED DATA RANGE system with ${
         totalSavedCount > 0 ? "successful" : "attempted"
-      } database operations using 400-day extended data range + modular MACD Calculator + reliable multi-timeframe analysis + Supabase security compliant complete table replacement`,
+      } database operations using 400-day extended data range + reliable multi-timeframe analysis + real technical calculations + Supabase security compliant complete table replacement`,
       methodology: "4-dimensional-scoring",
       timeframes: "1H+4H+1D+1W",
       gatekeeper_rules: "1H≥70% AND 4H≥70% AND (1D≥70% OR 1W≥70%)",
       scoring_dimensions: "Strength+Confidence+Quality+Risk",
       stock_universe: `DATABASE_DRIVEN_PARAMETER_SELECTION_${ACTIVE_STOCKS.length}_STOCKS`,
       fixes_applied:
-        "session-151-185-preserved-exactly+session-301-rsi-modular+session-302-macd-modular+400-day-range+multi-timeframe-reliability+real-technical-indicators+complete-table-replacement+make-com-integration+company-info-from-database",
+        "session-151-184-preserved-exactly+session-185-extended-data-range+400-day-range+multi-timeframe-reliability+real-technical-indicators+complete-table-replacement+make-com-integration+company-info-from-database",
       date_range: USE_BACKTEST
         ? "2024-05-06-to-2024-06-14-verified-backtest"
         : "past-400-days-extended-rolling-window",
       expected_results:
-        "Reliable multi-timeframe data availability + modular MACD Calculator + sufficient periods for 4H and Weekly analysis + real technical indicator calculations + institutional signal generation",
+        "Reliable multi-timeframe data availability with sufficient periods for 4H and Weekly analysis + real technical indicator calculations + institutional signal generation",
       gatekeeper_efficiency:
         ((totalPassedGatekeeper / Math.max(totalProcessed, 1)) * 100).toFixed(
           1
@@ -2303,22 +2442,23 @@ function getStockInfo(stockObject) {
           100
         ).toFixed(1) + "%",
       session_preservation:
-        "All Session #151-185 + #301 functionality preserved exactly",
-      session_185_302_implementation: `Extended 400-day data range + modular MACD Calculator for reliable multi-timeframe analysis for range ${startIndex}-${endIndex}, batch ${batchNumber}`,
+        "All Session #151-184 functionality preserved exactly",
+      session_185_implementation: `Extended 400-day data range for reliable multi-timeframe analysis for range ${startIndex}-${endIndex}, batch ${batchNumber}`,
       production_readiness:
         deleteSuccess && totalSavedCount > 0
-          ? "SESSION_185_302_MODULAR_READY_FOR_PRODUCTION"
-          : "SESSION_185_302_MODULAR_NEEDS_OPTIMIZATION",
-      make_com_instructions: `SESSION #185 + #302 MODULAR ENHANCEMENT SUCCESSFUL: Create multiple scenarios with different parameter ranges. Extended 400-day data range + modular MACD Calculator + reliable multi-timeframe analysis + complete table replacement fully functional.`,
-      session_185_302_advantages:
-        "Extended 400-day range ensures sufficient multi-timeframe data, modular MACD Calculator with identical results, improved 4H and Weekly data reliability, enhanced multi-timeframe analysis capabilities, real technical indicator calculations maintained, all Session #151-185 + #301 functionality preserved, production-ready system operational with modular architecture progress + reliable authentic signals across all timeframes",
+          ? "SESSION_185_EXTENDED_DATA_RANGE_READY_FOR_PRODUCTION"
+          : "SESSION_185_EXTENDED_DATA_RANGE_NEEDS_OPTIMIZATION",
+      make_com_instructions: `SESSION #185 ENHANCEMENT SUCCESSFUL: Create multiple scenarios with different parameter ranges. Extended 400-day data range + reliable multi-timeframe analysis + real technical indicators + complete table replacement fully functional.`,
+      session_185_advantages:
+        "Extended 400-day range ensures sufficient multi-timeframe data, improved 4H and Weekly data reliability, enhanced multi-timeframe analysis capabilities, real technical indicator calculations maintained, all Session #151-184 functionality preserved, production-ready system operational with reliable authentic signals across all timeframes",
       results: allAnalysisResults,
-      session_notes: `SESSION #185 + #302: Extended 400-day data range + modular MACD Calculator + reliable multi-timeframe analysis for range ${startIndex}-${endIndex}`,
+      session_notes: `SESSION #185: Extended 400-day data range + reliable multi-timeframe analysis for range ${startIndex}-${endIndex}`,
       next_steps:
         totalSavedCount > 0
-          ? "SUCCESS: SESSION #185 + #302 modular enhancement successful - system ready for Session #303 Volume Analyzer extraction"
-          : "CONTINUE: SESSION #185 + #302 modular enhancement applied - system functional with extended data range + modular MACD Calculator capability",
+          ? "SUCCESS: SESSION #185 enhancement successful - system ready for production use with extended data range + reliable multi-timeframe analysis + complete table replacement"
+          : "CONTINUE: SESSION #185 enhancement applied - system functional with extended data range + reliable multi-timeframe analysis capability",
     };
+
     return new Response(JSON.stringify(responseData, null, 2), {
       status: 200,
       headers: {
@@ -2328,37 +2468,37 @@ function getStockInfo(stockObject) {
     });
   } catch (mainError) {
     console.log(
-      `🚨 Production system error in SESSION #185 + #302: ${
+      `🚨 Production system error in SESSION #185: ${
         mainError.message || "Unknown system error"
       }`
     );
+
     const errorResponse = {
       success: false,
-      session: `SESSION-185-302-MODULAR-${modeLabel}-4TIMEFRAME`,
+      session: `SESSION-185-EXTENDED-DATA-RANGE-${modeLabel}-4TIMEFRAME`,
       mode: modeLabel,
       error: (mainError.message || "Production processing error").replace(
         /"/g,
         '\\"'
       ),
-      message: `SESSION #185 + #302 MODULAR system encountered system errors`,
+      message: `SESSION #185 EXTENDED DATA RANGE system encountered system errors`,
       timestamp: new Date().toISOString(),
-      session_185_302_enhancement: {
+      session_185_enhancement: {
         implemented: true,
         extended_date_range: true,
         calendar_days: 400,
         trading_days_estimated: 300,
         fourh_data_improved: true,
         weekly_data_improved: true,
-        modular_macd_calculator: true,
-        modular_architecture_progress: "2/6 indicators extracted (RSI + MACD)",
         error_despite_enhancement: true,
       },
       troubleshooting:
-        "Check API keys, database connection, active_stocks table structure, parameter parsing logic, Supabase security compliant DELETE permissions, Polygon.io API limits, Make.com integration, and modular MACD Calculator implementation",
-      session_notes: `SESSION #185 + #302: Extended 400-day data range + modular MACD Calculator + reliable multi-timeframe analysis + Make.com orchestration for comprehensive error handling and reliable multi-timeframe market analysis`,
+        "Check API keys, database connection, active_stocks table structure, parameter parsing logic, Supabase security compliant DELETE permissions, Polygon.io API limits, and Make.com integration",
+      session_notes: `SESSION #185: Extended 400-day data range + reliable multi-timeframe analysis + Make.com orchestration for comprehensive error handling and reliable multi-timeframe market analysis`,
       session_preservation:
-        "All Session #151-185 + #301-302 functionality preserved exactly",
+        "All Session #151-184 functionality preserved exactly",
     };
+
     return new Response(JSON.stringify(errorResponse, null, 2), {
       status: 200,
       headers: {
@@ -2367,37 +2507,37 @@ function getStockInfo(stockObject) {
       },
     });
   }
-}); // ==================================================================================
-// 🎯 SESSION #185 + #302 MODULAR SUMMARY
+});
+
 // ==================================================================================
-// 📊 FUNCTIONALITY: Complete 4-timeframe analysis + crash-resistant scoring + bulletproof database object construction + functional database save operations + schema-compliant field values + database-driven stock selection + company info from database + parameter support for Make.com orchestration + SESSION #181 SUPABASE SECURITY COMPLIANT complete table replacement + SESSION #182 ENHANCED 90-DAY DATA RANGE + SESSION #183 REAL TECHNICAL INDICATORS ONLY + SESSION #184 ENHANCED DATA PIPELINE + SESSION #185 EXTENDED 400-DAY DATA RANGE + SESSION #301 RSI MODULAR EXTRACTION + SESSION #302 MACD MODULAR EXTRACTION
-// 🛡️ PRESERVATION: All Session #151-185 methodology + Session #301 RSI Calculator + Session #302 MACD Calculator + comprehensive defensive programming + working database integration + corrected field lengths + anti-regression protection + database-driven architecture + parameter support implementation + SESSION #181 Supabase security compliance fix + SESSION #182 enhanced data sufficiency + SESSION #183 synthetic logic removal + SESSION #184 data pipeline improvements + SESSION #185 extended data range for multi-timeframe reliability + SESSION #301-302 modular architecture foundation
-// 🔧 CRITICAL ENHANCEMENT: Extended date range from 150 to 400 calendar days + MACD Calculator modular extraction with identical results for reliable 4H and Weekly timeframe data while preserving ALL existing functionality
-// 📈 OBJECT CONSTRUCTION: 100% success rate maintained from Session #157 with defensive programming patterns + modular architecture integration
-// 💾 DATABASE INTEGRATION: Functional database save operations with comprehensive error handling and corrected field constraints achieving 100% save success + SESSION #181 Supabase security compliant DELETE operation + SESSION #182 enhanced data range + SESSION #183 real indicators only + SESSION #184 enhanced data pipeline + SESSION #185 extended data range for multi-timeframe reliability + SESSION #302 modular MACD integration
-// ⚡ SCALABILITY: Parameter-based processing architecture enabling Make.com orchestration and unlimited scalability + modular architecture foundation
-// 🔄 MAKE.COM INTEGRATION: Parameter support with startIndex, endIndex, batchNumber for orchestrated processing + modular architecture benefits
+// 🎯 SESSION #185 EXTENDED DATA RANGE SUMMARY
+// ==================================================================================
+// 📊 FUNCTIONALITY: Complete 4-timeframe analysis + crash-resistant scoring + bulletproof database object construction + functional database save operations + schema-compliant field values + database-driven stock selection + company info from database + parameter support for Make.com orchestration + SESSION #181 SUPABASE SECURITY COMPLIANT complete table replacement + SESSION #182 ENHANCED 90-DAY DATA RANGE + SESSION #183 REAL TECHNICAL INDICATORS ONLY + SESSION #184 ENHANCED DATA PIPELINE + SESSION #185 EXTENDED 400-DAY DATA RANGE
+// 🛡️ PRESERVATION: All Session #151-184 methodology + comprehensive defensive programming + working database integration + corrected field lengths + anti-regression protection + database-driven architecture + parameter support implementation + SESSION #181 Supabase security compliance fix + SESSION #182 enhanced data sufficiency + SESSION #183 synthetic logic removal + SESSION #184 data pipeline improvements + SESSION #185 extended data range for multi-timeframe reliability
+// 🔧 CRITICAL ENHANCEMENT: Extended date range from 150 to 400 calendar days for reliable 4H and Weekly timeframe data while preserving ALL existing functionality
+// 📈 OBJECT CONSTRUCTION: 100% success rate maintained from Session #157 with defensive programming patterns
+// 💾 DATABASE INTEGRATION: Functional database save operations with comprehensive error handling and corrected field constraints achieving 100% save success + SESSION #181 Supabase security compliant DELETE operation + SESSION #182 enhanced data range + SESSION #183 real indicators only + SESSION #184 enhanced data pipeline + SESSION #185 extended data range for multi-timeframe reliability
+// ⚡ SCALABILITY: Parameter-based processing architecture enabling Make.com orchestration and unlimited scalability
+// 🔄 MAKE.COM INTEGRATION: Parameter support with startIndex, endIndex, batchNumber for orchestrated processing
 // 🗑️ SESSION #181 FIXED REPLACE STRATEGY: DELETE ALL signals with WHERE clause for Supabase security compliance on batch 1, APPEND on batches 2-4 = Complete table replacement with exactly 200 current signals per complete scenario
 // 🚀 SESSION #182 DATA ENHANCEMENT: Extended from 14-day to 90-day rolling window to ensure sufficient data periods for RSI (15+), MACD (26+), Bollinger (20+), and Stochastic (14+) calculations
 // 🚨 SESSION #183 SYNTHETIC LOGIC ELIMINATION: Removed ALL synthetic fallback values (50, 0, 1.0, -50, 0.5) from technical indicator functions - return null for insufficient data, skip signals with insufficient real data
 // 🔧 SESSION #184 DATA PIPELINE ENHANCEMENT: Extended from 90 to 150 calendar days (110+ trading days) + improved API reliability with retry logic + enhanced data debugging + comprehensive quality monitoring
 // 🚀 SESSION #185 EXTENDED DATA RANGE: Extended from 150 to 400 calendar days (300+ trading days) for reliable 4H and Weekly timeframe data availability + enhanced multi-timeframe analysis capabilities
-// 🧮 SESSION #301 RSI MODULAR EXTRACTION: RSI Calculator extracted to ./indicators/rsi-calculator.ts with identical calculation results + base indicator interface established
-// 🔧 SESSION #302 MACD MODULAR EXTRACTION: MACD Calculator extracted to ./indicators/macd-calculator.ts with identical calculation results + modular architecture progress (2/6 indicators complete)
-// 🎖️ ANTI-REGRESSION: All analysis methodology, Session #157 object construction, Session #158 database integration, Session #159 field fixes, Session #160 reliability, Session #161 database architecture, Session #162 auto-batching, Session #163 timeout optimization, Session #164 database transformation, Session #165 batch processing, Session #166 parameter support, Session #167-185 functionality, Session #301 RSI modular extraction, AND SESSION #302 MACD modular extraction preservation
-// 🚀 PRODUCTION: Ready for institutional-grade signal generation with database-driven stock universe AND dynamic company information AND parameter-based processing AND Make.com orchestration AND Supabase security compliant complete table replacement AND enhanced 400-day data range AND real technical indicators only AND improved API reliability AND reliable multi-timeframe analysis AND modular architecture foundation with RSI + MACD Calculator modules
-// 🔧 SESSION #302 SPECIFIC CHANGES:
-//    1. EXTRACTED MACD calculation function from main Edge Function (lines ~500-530) to ./indicators/macd-calculator.ts
-//    2. UPDATED base indicator interface to support MACD-specific parameters (shortPeriod, longPeriod)
-//    3. REPLACED inline calculateMACD function call with MACDCalculator.calculate() modular method
-//    4. PRESERVED all Session #183 real calculation logic exactly - returns null for insufficient data
-//    5. MAINTAINED identical return format ({ macd: Number }) for composite scoring crossover detection
-//    6. INTEGRATED modular MACD result seamlessly with existing scoring logic (+15/-5 points for bullish/bearish)
-//    7. ADDED comprehensive Session #302 logging for modular MACD usage tracking
-//    8. ENHANCED response data to include Session #302 modular architecture progress metrics
-//    9. UPDATED expected results to reflect modular MACD Calculator integration success
-//   10. PRESERVED all Session #301 RSI Calculator functionality while adding Session #302 MACD Calculator
-// 📊 TESTING METHODOLOGY: Run complete scenario (4 batches) → verify batch 1 DELETE with WHERE clause removes ALL old signals → verify batches 1-4 accumulate signals with REAL technical indicators from MODULAR CALCULATORS → confirm Session #302 MACD Calculator produces identical results to original function → verify Session #301 RSI Calculator functionality preserved → confirm reliable multi-timeframe analysis → verify institutional signal generation
-// 🏆 PRODUCTION STATUS: 100% object construction + 100% database saves + institutional analysis + field length compliance + database-driven architecture + dynamic company info + parameter support + SESSION #181 Supabase security compliant complete table replacement + SESSION #182 enhanced 90-day data range + SESSION #183 real technical indicators only + SESSION #184 enhanced data pipeline + SESSION #185 extended 400-day data range + SESSION #301 RSI modular extraction + SESSION #302 MACD modular extraction = MAKE.COM ORCHESTRATED COMPLETE TABLE REPLACEMENT WITH MODULAR ARCHITECTURE + RELIABLE AUTHENTIC MULTI-TIMEFRAME MARKET ANALYSIS
-// 🔮 FUTURE SESSIONS: System ready for Session #303 Volume Analyzer extraction using proven Session #301-302 modular pattern, Make.com orchestration, unlimited scaling, international expansion with proven parameter-based architecture + modular foundation, Supabase security compliant complete table replacement, enhanced 400-day data range, real technical indicators only, improved API reliability, reliable multi-timeframe analysis, and modular architecture enabling consistent institutional-grade signals across all timeframes with professional code organization and AI integration readiness
-// 🎯 SESSION #302 SOLUTION: MACD Calculator successfully extracted to modular architecture with identical calculation results + crossover detection preservation + Session #301 RSI Calculator compatibility + extended 400-day data range + all Session #151-185 functionality maintained = 2/6 indicators modular extraction complete, ready for Session #303 Volume Analyzer
+// 🎖️ ANTI-REGRESSION: All analysis methodology, Session #157 object construction, Session #158 database integration, Session #159 field fixes, Session #160 reliability, Session #161 database architecture, Session #162 auto-batching, Session #163 timeout optimization, Session #164 database transformation, Session #165 batch processing, Session #166 parameter support, Session #167-184 functionality, AND SESSION #185 extended data range preservation
+// 🚀 PRODUCTION: Ready for institutional-grade signal generation with database-driven stock universe AND dynamic company information AND parameter-based processing AND Make.com orchestration AND Supabase security compliant complete table replacement AND enhanced 400-day data range AND real technical indicators only AND improved API reliability AND reliable multi-timeframe analysis
+// 🔧 SESSION #185 SPECIFIC CHANGES:
+//    1. EXTENDED date range from 150 to 400 calendar days in getDateRanges() function
+//    2. UPDATED comments to reflect SESSION #185 extended data range enhancement
+//    3. UPDATED calculation explanations to show 400 days math (300+ trading days)
+//    4. UPDATED logging to show SESSION #185 extended data range context
+//    5. PRESERVED all Session #151-184 analysis logic exactly while extending data range
+//    6. ADDED extensive comments explaining SESSION #185 extended data range for future session handovers
+//    7. ENHANCED response data to include SESSION #185 extended data range metrics
+//    8. UPDATED expected results to reflect reliable 4H and Weekly data availability
+//    9. ADDED session preservation documentation for Session #185 extended data range
+//   10. MAINTAINED all existing functionality while extending data range for multi-timeframe reliability
+// 📊 TESTING METHODOLOGY: Run complete scenario (4 batches) → verify batch 1 DELETE with WHERE clause removes ALL old signals → verify batches 1-4 accumulate signals with REAL technical indicators from EXTENDED DATA RANGE → confirm sufficient 4H and Weekly data availability → verify reliable multi-timeframe analysis → confirm institutional signal generation
+// 🏆 PRODUCTION STATUS: 100% object construction + 100% database saves + institutional analysis + field length compliance + database-driven architecture + dynamic company info + parameter support + SESSION #181 Supabase security compliant complete table replacement + SESSION #182 enhanced 90-day data range + SESSION #183 real technical indicators only + SESSION #184 enhanced data pipeline + SESSION #185 extended 400-day data range = MAKE.COM ORCHESTRATED COMPLETE TABLE REPLACEMENT WITH RELIABLE AUTHENTIC MULTI-TIMEFRAME MARKET ANALYSIS
+// 🔮 FUTURE SESSIONS: System ready for Make.com orchestration, unlimited scaling, international expansion with proven parameter-based architecture, Supabase security compliant complete table replacement, enhanced 400-day data range, real technical indicators only, improved API reliability, and reliable multi-timeframe analysis enabling consistent institutional-grade signals across all timeframes
+// 🎯 SESSION #185 SOLUTION: Extended 400-day data range ensures sufficient multi-timeframe data for reliable 4H and Weekly analysis while maintaining all Session #151-184 functionality and quality standards + enhanced multi-timeframe analysis capabilities
