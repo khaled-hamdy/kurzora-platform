@@ -1,3 +1,4 @@
+import { TimeframeDataCoordinator } from "./analysis/timeframe-processor.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // ==================================================================================
@@ -23,7 +24,7 @@ import { calculateVolumeAnalysis } from "./indicators/volume-analyzer.ts";
 
 // 🔧 SESSION #304 MODULAR IMPORTS: Add Support/Resistance import following Session #301-303 interface pattern
 import { calculateSupportResistance } from "./indicators/support-resistance.ts";
-
+import { calculate7IndicatorScore } from "./analysis/signal-composer.ts";
 // ==================================================================================
 // 🚨 SESSION #185 CRITICAL PRODUCTION FIX: EXTENDED DATA RANGE FOR 4H + WEEKLY RELIABILITY
 // ==================================================================================
@@ -328,13 +329,7 @@ const GATEKEEPER_THRESHOLDS = {
  * SESSION #185 ENHANCEMENT: Extended date range from 150 to 400 calendar days for 4H and Weekly data reliability
  * ANTI-REGRESSION: Preserves all Session #151-184 functionality while fixing data availability issues
  * PRODUCTION READY: No synthetic fallbacks - returns null when no real data available + comprehensive data debugging
- */ async function fetchMultiTimeframeData(ticker) {
-  try {
-    const POLYGON_API_KEY = Deno.env.get("POLYGON_API_KEY");
-    if (!POLYGON_API_KEY) {
-      console.log(`❌ Missing Polygon API key for ${ticker}`);
-      return null;
-    }
+ */ 
     const dateRanges = getDateRanges();
     const modeLabel = USE_BACKTEST ? "BACKTEST" : "LIVE";
     console.log(
@@ -774,279 +769,9 @@ const GATEKEEPER_THRESHOLDS = {
  * 🎯 PURPOSE: Handle null indicator values gracefully and skip signals with insufficient real data + integrate Support/Resistance proximity scoring
  * 🔧 ANTI-REGRESSION: Preserved all scoring logic exactly - only added null validation + integrated modular MACD + modular Volume + modular S/R
  * ✅ RESULT: Composite scores only calculated with real indicator values - no synthetic data influence + enhanced S/R proximity analysis
- */ function calculate7IndicatorScore(rsi, macd, bb, volume, stoch, williams, supportResistance) {
-  console.log(
-    `🧮 [COMPOSITE_SCORE] SESSION #183 + #302 + #303 + #304 ENHANCED: Calculating composite score with real indicators + modular MACD + modular Volume + modular S/R...`
-  );
-  // 🚨 SESSION #183 PRODUCTION FIX: Count real indicators (non-null values)
-  let realIndicatorCount = 0;
-  let score = 60; // Base neutral score
+ 
+
   
-  // RSI scoring (oversold = bullish) - SESSION #183 FIX: Only process if real value exists
-  if (rsi !== null && typeof rsi === "number") {
-    realIndicatorCount++;
-    if (rsi < 30) {
-      score += 20; // Strong oversold condition
-    } else if (rsi > 70) {
-      score -= 10; // Overbought condition
-    } else {
-      const neutralDistance = Math.abs(rsi - 50);
-      score += (20 - neutralDistance) / 4;
-    }
-    console.log(`✅ [COMPOSITE_SCORE] Real RSI processed: ${rsi}`);
-  } else {
-    console.log(
-      `⚠️ [COMPOSITE_SCORE] RSI null - skipping indicator (no synthetic fallback)`
-    );
-  }
-
-  // 🔧 SESSION #302 INTEGRATION: MACD scoring with modular calculator result
-  // MACD scoring (positive = bullish) - SESSION #183 + #302 FIX: Only process if real value exists from modular calculator
-  if (macd !== null && macd && typeof macd.macd === "number") {
-    realIndicatorCount++;
-    if (macd.macd > 0) {
-      score += 15;
-    } else if (macd.macd < 0) {
-      score -= 5;
-    }
-    console.log(
-      `✅ [COMPOSITE_SCORE] Real MACD processed: ${macd.macd} (SESSION #302 modular calculator)`
-    );
-  } else {
-    console.log(
-      `⚠️ [COMPOSITE_SCORE] MACD null - skipping indicator (no synthetic fallback, SESSION #302 modular)`
-    );
-  }
-
-  // Bollinger Bands scoring (near lower band = oversold) - SESSION #183 FIX: Only process if real value exists
-  if (bb !== null && bb && typeof bb.percentB === "number") {
-    realIndicatorCount++;
-    if (bb.percentB < 0.2) {
-      score += 15; // Near lower band
-    } else if (bb.percentB > 0.8) {
-      score -= 10; // Near upper band
-    } else if (bb.percentB >= 0.4 && bb.percentB <= 0.6) {
-      score += 5; // Middle range
-    }
-    console.log(
-      `✅ [COMPOSITE_SCORE] Real Bollinger processed: ${bb.percentB}`
-    );
-  } else {
-    console.log(
-      `⚠️ [COMPOSITE_SCORE] Bollinger null - skipping indicator (no synthetic fallback)`
-    );
-  }
-
-  // 🔧 SESSION #303 INTEGRATION: Volume scoring with modular analyzer result
-  // Volume scoring (high volume = confirmation) - SESSION #183 + #303 FIX: Only process if real value exists from modular analyzer
-  if (volume !== null && volume && typeof volume.ratio === "number") {
-    realIndicatorCount++;
-    if (volume.ratio > 1.5) {
-      score += 10; // High volume
-    } else if (volume.ratio < 0.8) {
-      score -= 5; // Low volume
-    }
-    console.log(
-      `✅ [COMPOSITE_SCORE] Real Volume processed: ${volume.ratio} (SESSION #303 modular analyzer)`
-    );
-  } else {
-    console.log(
-      `⚠️ [COMPOSITE_SCORE] Volume null - skipping indicator (no synthetic fallback, SESSION #303 modular)`
-    );
-  }
-
-  // Stochastic scoring (oversold = bullish) - SESSION #183 FIX: Only process if real value exists
-  if (stoch !== null && stoch && typeof stoch.percentK === "number") {
-    realIndicatorCount++;
-    if (stoch.percentK < 20) {
-      score += 8;
-    } else if (stoch.percentK > 80) {
-      score -= 5;
-    }
-    console.log(
-      `✅ [COMPOSITE_SCORE] Real Stochastic processed: ${stoch.percentK}`
-    );
-  } else {
-    console.log(
-      `⚠️ [COMPOSITE_SCORE] Stochastic null - skipping indicator (no synthetic fallback)`
-    );
-  }
-  
-  // Williams %R scoring (oversold = bullish) - SESSION #183 FIX: Only process if real value exists
-  if (williams !== null && williams && typeof williams.value === "number") {
-    realIndicatorCount++;
-    if (williams.value <= -80) {
-      score += 7;
-    } else if (williams.value >= -20) {
-      score -= 5;
-    }
-    console.log(
-      `✅ [COMPOSITE_SCORE] Real Williams %R processed: ${williams.value}`
-    );
-  } else {
-    console.log(
-      `⚠️ [COMPOSITE_SCORE] Williams %R null - skipping indicator (no synthetic fallback)`
-    );
-  }
-
-  // 🔧 SESSION #304 INTEGRATION: Support/Resistance scoring with modular analyzer result
-  // Support/Resistance scoring (proximity to levels = smart entry) - SESSION #183 + #304 FIX: Only process if real value exists from modular analyzer
-  if (supportResistance !== null && supportResistance && typeof supportResistance.proximity === "number") {
-    realIndicatorCount++;
-    if (supportResistance.proximity >= 80) {
-      score += 12; // Very close to support (bullish)
-    } else if (supportResistance.proximity <= 20) {
-      score -= 8; // Very close to resistance (bearish)
-    } else if (supportResistance.proximity >= 60 && supportResistance.proximity < 80) {
-      score += 6; // Moderately close to support
-    } else if (supportResistance.proximity > 20 && supportResistance.proximity <= 40) {
-      score -= 4; // Moderately close to resistance
-    }
-    console.log(
-      `✅ [COMPOSITE_SCORE] Real S/R processed: ${supportResistance.proximity}% proximity, type: ${supportResistance.type} (SESSION #304 modular analyzer)`
-    );
-  } else {
-    console.log(
-      `⚠️ [COMPOSITE_SCORE] Support/Resistance null - skipping indicator (no synthetic fallback, SESSION #304 modular)`
-    );
-  }
-  
-  // 🚨 SESSION #183 + #304 PRODUCTION FIX: Require minimum real indicators for valid signal (updated for 7 indicators)
-  if (realIndicatorCount < 4) {
-    console.log(
-      `❌ [COMPOSITE_SCORE] Insufficient real indicators (${realIndicatorCount}/7) - signal quality too low`
-    );
-    return null; // 🔧 SESSION #183 FIX: Return null instead of synthetic score
-  }
-  
-  const finalScore = Math.min(100, Math.max(0, Math.round(score)));
-  console.log(
-    `✅ [COMPOSITE_SCORE] SESSION #183 + #302 + #303 + #304 SUCCESS: Real composite score ${finalScore}% based on ${realIndicatorCount}/7 authentic indicators (modular MACD + modular Volume + modular S/R integrated)`
-  );
-  return finalScore;
-}
-
-  // 🚨 SESSION #183 PRODUCTION FIX: Count real indicators (non-null values)
-  let realIndicatorCount = 0;
-  let score = 60; // Base neutral score
-  // RSI scoring (oversold = bullish) - SESSION #183 FIX: Only process if real value exists
-  if (rsi !== null && typeof rsi === "number") {
-    realIndicatorCount++;
-    if (rsi < 30) {
-      score += 20; // Strong oversold condition
-    } else if (rsi > 70) {
-      score -= 10; // Overbought condition
-    } else {
-      const neutralDistance = Math.abs(rsi - 50);
-      score += (20 - neutralDistance) / 4;
-    }
-    console.log(`✅ [COMPOSITE_SCORE] Real RSI processed: ${rsi}`);
-  } else {
-    console.log(
-      `⚠️ [COMPOSITE_SCORE] RSI null - skipping indicator (no synthetic fallback)`
-    );
-  }
-
-  // 🔧 SESSION #302 INTEGRATION: MACD scoring with modular calculator result
-  // MACD scoring (positive = bullish) - SESSION #183 + #302 FIX: Only process if real value exists from modular calculator
-  if (macd !== null && macd && typeof macd.macd === "number") {
-    realIndicatorCount++;
-    if (macd.macd > 0) {
-      score += 15;
-    } else if (macd.macd < 0) {
-      score -= 5;
-    }
-    console.log(
-      `✅ [COMPOSITE_SCORE] Real MACD processed: ${macd.macd} (SESSION #302 modular calculator)`
-    );
-  } else {
-    console.log(
-      `⚠️ [COMPOSITE_SCORE] MACD null - skipping indicator (no synthetic fallback, SESSION #302 modular)`
-    );
-  }
-
-  // Bollinger Bands scoring (near lower band = oversold) - SESSION #183 FIX: Only process if real value exists
-  if (bb !== null && bb && typeof bb.percentB === "number") {
-    realIndicatorCount++;
-    if (bb.percentB < 0.2) {
-      score += 15; // Near lower band
-    } else if (bb.percentB > 0.8) {
-      score -= 10; // Near upper band
-    } else if (bb.percentB >= 0.4 && bb.percentB <= 0.6) {
-      score += 5; // Middle range
-    }
-    console.log(
-      `✅ [COMPOSITE_SCORE] Real Bollinger processed: ${bb.percentB}`
-    );
-  } else {
-    console.log(
-      `⚠️ [COMPOSITE_SCORE] Bollinger null - skipping indicator (no synthetic fallback)`
-    );
-  }
-
-  // 🔧 SESSION #303 INTEGRATION: Volume scoring with modular analyzer result
-  // Volume scoring (high volume = confirmation) - SESSION #183 + #303 FIX: Only process if real value exists from modular analyzer
-  if (volume !== null && volume && typeof volume.ratio === "number") {
-    realIndicatorCount++;
-    if (volume.ratio > 1.5) {
-      score += 10; // High volume
-    } else if (volume.ratio < 0.8) {
-      score -= 5; // Low volume
-    }
-    console.log(
-      `✅ [COMPOSITE_SCORE] Real Volume processed: ${volume.ratio} (SESSION #303 modular analyzer)`
-    );
-  } else {
-    console.log(
-      `⚠️ [COMPOSITE_SCORE] Volume null - skipping indicator (no synthetic fallback, SESSION #303 modular)`
-    );
-  }
-
-  // Stochastic scoring (oversold = bullish) - SESSION #183 FIX: Only process if real value exists
-  if (stoch !== null && stoch && typeof stoch.percentK === "number") {
-    realIndicatorCount++;
-    if (stoch.percentK < 20) {
-      score += 8;
-    } else if (stoch.percentK > 80) {
-      score -= 5;
-    }
-    console.log(
-      `✅ [COMPOSITE_SCORE] Real Stochastic processed: ${stoch.percentK}`
-    );
-  } else {
-    console.log(
-      `⚠️ [COMPOSITE_SCORE] Stochastic null - skipping indicator (no synthetic fallback)`
-    );
-  }
-  // Williams %R scoring (oversold = bullish) - SESSION #183 FIX: Only process if real value exists
-  if (williams !== null && williams && typeof williams.value === "number") {
-    realIndicatorCount++;
-    if (williams.value <= -80) {
-      score += 7;
-    } else if (williams.value >= -20) {
-      score -= 5;
-    }
-    console.log(
-      `✅ [COMPOSITE_SCORE] Real Williams %R processed: ${williams.value}`
-    );
-  } else {
-    console.log(
-      `⚠️ [COMPOSITE_SCORE] Williams %R null - skipping indicator (no synthetic fallback)`
-    );
-  }
-  // 🚨 SESSION #183 PRODUCTION FIX: Require minimum real indicators for valid signal
-  if (realIndicatorCount < 3) {
-    console.log(
-      `❌ [COMPOSITE_SCORE] Insufficient real indicators (${realIndicatorCount}/6) - signal quality too low`
-    );
-    return null; // 🔧 SESSION #183 FIX: Return null instead of synthetic score
-  }
-  const finalScore = Math.min(100, Math.max(0, Math.round(score)));
-  console.log(
-    `✅ [COMPOSITE_SCORE] SESSION #183 + #302 + #303 SUCCESS: Real composite score ${finalScore}% based on ${realIndicatorCount}/6 authentic indicators (modular MACD + modular Volume integrated)`
-  );
-  return finalScore;
-}
 /**
  * 🛡️ INSTITUTIONAL GATEKEEPER RULES VALIDATION (PRESERVED EXACTLY FROM SESSION #151-185)
  */ function passesGatekeeperRules(oneHour, fourHour, daily, weekly) {
@@ -1719,7 +1444,9 @@ function getStockInfo(stockObject) {
         console.log(
           `📡 [${ticker}] Fetching real market data with SESSION #185 enhanced 400-day range for reliable multi-timeframe analysis...`
         );
-        const timeframeData = await fetchMultiTimeframeData(ticker);
+        // SESSION #305C: Use extracted TimeframeDataCoordinator
+const coordinator = new TimeframeDataCoordinator(USE_BACKTEST);
+const timeframeData = await coordinator.fetchMultiTimeframeData(ticker, dateRanges);
         totalApiCallCount += 4;
         if (!timeframeData) {
           console.log(
