@@ -336,6 +336,13 @@
         align-items: center;
       }
 
+      .financial-projections-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+        margin-top: 2rem;
+      }
+
       .financial-projection {
         background: rgba(30, 41, 59, 0.6);
         border-radius: 15px;
@@ -669,12 +676,29 @@
           width: 90%;
           margin: 1rem auto;
         }
+
+        /* Slide 11 specific fixes for tablet */
+        .revenue-chart {
+          padding: 1.5rem;
+          height: 350px;
+        }
+
+        .financial-projections-container {
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+
+        .financial-projection {
+          margin: 1rem 0;
+          padding: 1.5rem;
+        }
       }
 
       @media (max-width: 768px) {
         .slide {
           padding: 1rem;
           min-height: 100vh;
+          overflow-wrap: break-word;
         }
 
         .slide-1 {
@@ -714,10 +738,19 @@
         h2 {
           font-size: 1.8rem;
           line-height: 1.2;
+          margin-bottom: 1.5rem;
         }
 
         h3 {
           font-size: 1.5rem;
+          line-height: 1.3;
+          margin-bottom: 1rem;
+        }
+
+        h4 {
+          font-size: 1.2rem;
+          line-height: 1.3;
+          margin-bottom: 0.5rem;
         }
 
         .subtitle {
@@ -733,10 +766,18 @@
 
         .metric-card {
           padding: 1.5rem;
+          margin-bottom: 1rem;
         }
 
         .metric-number {
           font-size: 2rem;
+          line-height: 1.2;
+          margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+          font-size: 1rem;
+          line-height: 1.3;
         }
 
         .phase-header {
@@ -775,6 +816,7 @@
 
         .feature-item {
           padding: 1rem;
+          margin-bottom: 1rem;
         }
 
         .feature-icon {
@@ -809,25 +851,87 @@
           gap: 1rem;
         }
 
+        /* SLIDE 11 SPECIFIC MOBILE FIXES */
         .revenue-chart {
           padding: 1rem;
-          height: 250px;
+          height: 300px;
+          margin: 1.5rem 0;
+          width: 100%;
+          overflow-x: auto;
+        }
+
+        .revenue-chart > div {
+          justify-content: center;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+          min-width: 400px;
+        }
+
+        .chart-bar {
+          width: 50px;
+          margin: 0 0.5rem;
+          min-height: 20px;
+        }
+
+        .year-label {
+          font-size: 0.8rem;
+          line-height: 1.2;
+          margin-top: 0.5rem;
+          text-align: center;
+        }
+
+        /* Financial projections grid for Slide 11 */
+        .financial-projections-container {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+          margin-top: 2rem;
+        }
+
+        .financial-projection {
+          width: 100%;
+          margin: 0.5rem 0;
+          padding: 1rem;
+        }
+
+        /* General financial projection grid fix */
+        div[style*="grid-template-columns: repeat(3, 1fr)"] {
+          grid-template-columns: 1fr !important;
+          gap: 1rem;
+        }
+
+        .financial-projection {
+          margin: 1rem 0;
+          padding: 1rem;
+        }
+
+        .year-header {
+          font-size: 1.2rem;
+          margin-bottom: 0.5rem;
+        }
+
+        .financial-projection p {
+          margin: 0.3rem 0;
+          font-size: 0.9rem;
+          line-height: 1.3;
         }
       }
 
       @media (max-width: 480px) {
         .slide {
           min-height: 100vh;
-          padding: 0.75rem;
+          padding: 1rem;
+          overflow-wrap: break-word;
         }
 
         .slide-1 {
-          padding: 1.5rem 0.75rem;
+          padding: 1.5rem 1rem;
         }
 
         h1 {
           font-size: 2rem;
           line-height: 1.1;
+          margin-bottom: 1rem;
         }
 
         .slide-1 h1 {
@@ -843,10 +947,20 @@
         h2 {
           font-size: 1.5rem;
           line-height: 1.2;
+          margin-bottom: 1rem;
+          text-align: center;
         }
 
         h3 {
           font-size: 1.3rem;
+          line-height: 1.3;
+          margin-bottom: 1rem;
+        }
+
+        h4 {
+          font-size: 1.1rem;
+          line-height: 1.3;
+          margin-bottom: 0.5rem;
         }
 
         .subtitle {
@@ -867,24 +981,85 @@
 
         .metric-card {
           padding: 1rem;
+          margin-bottom: 1rem;
         }
 
         .metric-number {
           font-size: 1.8rem;
+          line-height: 1.2;
+          margin-bottom: 0.5rem;
         }
 
         .metric-label {
           font-size: 1rem;
+          line-height: 1.3;
         }
 
+        /* SLIDE 11 SPECIFIC MOBILE FIXES */
         .revenue-chart {
-          padding: 0.5rem;
-          height: 200px;
+          padding: 1rem;
+          height: 250px;
+          margin: 1rem 0;
+          width: 100%;
+          overflow-x: auto;
+        }
+
+        .revenue-chart > div {
+          justify-content: space-around;
+          flex-wrap: nowrap;
+          min-width: 350px;
+          padding: 0 0.5rem;
         }
 
         .chart-bar {
           width: 40px;
           margin: 0 0.25rem;
+          min-height: 15px;
+        }
+
+        .year-label {
+          font-size: 0.7rem;
+          line-height: 1.1;
+          margin-top: 0.5rem;
+          white-space: nowrap;
+        }
+
+        /* Fix for how we reach users section */
+        .revenue-chart div[style*="background: rgba(59, 130, 246, 0.1)"] {
+          padding: 0.75rem;
+          margin-top: 1rem;
+          font-size: 0.8rem;
+        }
+
+        .revenue-chart div[style*="background: rgba(59, 130, 246, 0.1)"] h4 {
+          font-size: 1rem;
+          margin-bottom: 0.5rem;
+        }
+
+        /* Financial projections for mobile */
+        .financial-projections-container {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+          margin-top: 2rem;
+        }
+
+        .financial-projection {
+          margin: 1rem 0;
+          padding: 1rem;
+          width: 100%;
+        }
+
+        .year-header {
+          font-size: 1.1rem;
+          margin-bottom: 0.5rem;
+          color: #60a5fa;
+        }
+
+        .financial-projection p {
+          margin: 0.3rem 0;
+          font-size: 0.9rem;
+          line-height: 1.3;
         }
 
         .investment-box,
@@ -893,8 +1068,8 @@
         .funding-round,
         .wide-content-box {
           padding: 1rem;
-          margin: 0.5rem auto;
-          width: 98%;
+          margin: 1rem auto;
+          width: 100%;
         }
 
         .slide-number {
@@ -905,9 +1080,10 @@
         }
 
         .feature-item {
-          padding: 0.75rem;
+          padding: 1rem;
           flex-direction: column;
           text-align: center;
+          margin-bottom: 1rem;
         }
 
         .feature-icon {
@@ -927,7 +1103,9 @@
         }
 
         .timeline-item {
-          width: 95%;
+          width: 100%;
+          margin-bottom: 1rem;
+          padding: 1rem;
         }
 
         .logo {
@@ -936,21 +1114,33 @@
 
         .problem-stat,
         .solution-stat {
-          font-size: 2rem;
+          font-size: 1.8rem;
+          line-height: 1.2;
+          margin: 1rem 0;
+        }
+
+        /* Text overflow fixes */
+        p,
+        div,
+        span {
+          word-wrap: break-word;
+          overflow-wrap: break-word;
         }
       }
 
       @media (max-width: 360px) {
         .slide {
-          padding: 0.5rem;
+          padding: 1rem;
         }
 
         .slide-1 {
-          padding: 1rem 0.5rem;
+          padding: 1rem;
         }
 
         h1 {
           font-size: 1.8rem;
+          line-height: 1.1;
+          margin-bottom: 1rem;
         }
 
         .slide-1 h1 {
@@ -963,18 +1153,79 @@
 
         h2 {
           font-size: 1.3rem;
+          line-height: 1.2;
+          margin-bottom: 1rem;
+          text-align: center;
+        }
+
+        h3 {
+          font-size: 1.1rem;
+          line-height: 1.3;
+          margin-bottom: 0.8rem;
         }
 
         .subtitle {
           font-size: 0.9rem;
+          line-height: 1.4;
         }
 
         .slide-1 .subtitle {
           font-size: 1.1rem;
+          line-height: 1.4;
         }
 
         .metric-number {
           font-size: 1.5rem;
+          line-height: 1.2;
+        }
+
+        .metric-label {
+          font-size: 0.9rem;
+          line-height: 1.3;
+        }
+
+        /* SLIDE 11 ULTRA-SMALL SCREEN FIXES */
+        .revenue-chart {
+          padding: 0.75rem;
+          height: 200px;
+          margin: 1rem 0;
+        }
+
+        .revenue-chart > div {
+          min-width: 320px;
+          padding: 0;
+        }
+
+        .chart-bar {
+          width: 35px;
+          margin: 0 0.1rem;
+        }
+
+        .year-label {
+          font-size: 0.6rem;
+          line-height: 1.1;
+        }
+
+        .financial-projections-container {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+          margin-top: 1.5rem;
+        }
+
+        .financial-projection {
+          padding: 0.75rem;
+          margin: 0.75rem 0;
+        }
+
+        .year-header {
+          font-size: 1rem;
+        }
+
+        .financial-projection p {
+          font-size: 0.8rem;
+          line-height: 1.2;
+          margin: 0.2rem 0;
         }
 
         .investment-box,
@@ -984,11 +1235,25 @@
         .wide-content-box {
           padding: 0.75rem;
           width: 100%;
+          margin: 0.75rem auto;
         }
 
         .nav-btn {
           padding: 0.6rem;
           font-size: 0.9rem;
+        }
+
+        .problem-stat,
+        .solution-stat {
+          font-size: 1.5rem;
+          line-height: 1.2;
+        }
+
+        /* Ultimate text overflow protection */
+        * {
+          word-wrap: break-word;
+          overflow-wrap: break-word;
+          hyphens: auto;
         }
       }
     </style>
@@ -1816,31 +2081,33 @@
               justify-content: space-between;
               align-items: end;
               height: 300px;
+              flex-wrap: wrap;
+              gap: 0.5rem;
             "
           >
-            <div style="text-align: center">
+            <div style="text-align: center; flex: 1; min-width: 60px">
               <div class="chart-bar" style="--height: 30px; height: 30px"></div>
               <div class="year-label">Year 1<br />$8M<br />8K users</div>
             </div>
-            <div style="text-align: center">
+            <div style="text-align: center; flex: 1; min-width: 60px">
               <div class="chart-bar" style="--height: 80px; height: 80px"></div>
               <div class="year-label">Year 2<br />$35M<br />60K users</div>
             </div>
-            <div style="text-align: center">
+            <div style="text-align: center; flex: 1; min-width: 60px">
               <div
                 class="chart-bar"
                 style="--height: 150px; height: 150px"
               ></div>
               <div class="year-label">Year 3<br />$125M<br />600K users</div>
             </div>
-            <div style="text-align: center">
+            <div style="text-align: center; flex: 1; min-width: 60px">
               <div
                 class="chart-bar"
                 style="--height: 220px; height: 220px"
               ></div>
               <div class="year-label">Year 4<br />$350M<br />2.5M users</div>
             </div>
-            <div style="text-align: center">
+            <div style="text-align: center; flex: 1; min-width: 60px">
               <div
                 class="chart-bar"
                 style="--height: 300px; height: 300px"
@@ -1872,14 +2139,7 @@
             </div>
           </div>
         </div>
-        <div
-          style="
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2rem;
-            margin-top: 2rem;
-          "
-        >
+        <div class="financial-projections-container">
           <div class="financial-projection">
             <div class="year-header">Conservative Exit</div>
             <p>Year 5 Revenue: $350M</p>
