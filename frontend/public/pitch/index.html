@@ -475,7 +475,7 @@
         font-weight: bold;
       }
 
-      .phase-cost {
+      .phase-timeline {
         color: #34d399;
         font-size: 1.1rem;
         font-weight: bold;
@@ -512,7 +512,7 @@
         font-size: 14px;
       }
 
-      .audi-analogy {
+      .black-box-analogy {
         background: rgba(52, 211, 153, 0.1);
         border: 2px solid #34d399;
         border-radius: 15px;
@@ -521,8 +521,8 @@
         position: relative;
       }
 
-      .audi-analogy::before {
-        content: "🚗";
+      .black-box-analogy::before {
+        content: "🔐";
         position: absolute;
         top: -15px;
         left: 20px;
@@ -555,6 +555,20 @@
         text-align: center;
         margin-top: 1rem;
         color: #cbd5e1;
+      }
+
+      .center-image {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 2rem 0;
+      }
+
+      .center-image img {
+        max-width: 80%;
+        height: auto;
+        border-radius: 15px;
+        box-shadow: 0 20px 40px rgba(59, 130, 246, 0.3);
       }
 
       /* Mobile Responsiveness */
@@ -737,7 +751,7 @@
           Series A Round - Pre-Money Valuation: $10 Million
         </p>
         <p style="color: #34d399; margin-top: 0.5rem">
-          Target Exit: $1.4 Billion in 5 Years
+          Target Exit: $1 Billion in 5 Years
         </p>
       </div>
     </div>
@@ -753,21 +767,39 @@
             <div class="metric-number">$1.5T</div>
             <div class="metric-label">Lost Annually by Retail Traders</div>
             <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem">
-              Source: SEC.gov Analysis 2025
+              Source:
+              <a
+                href="https://www.sec.gov"
+                class="reference-link"
+                target="_blank"
+                >SEC.gov Analysis 2025</a
+              >
             </div>
           </div>
           <div class="metric-card interactive">
             <div class="metric-number">125M</div>
             <div class="metric-label">Global Retail Traders</div>
             <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem">
-              Source: Industry Research 2025
+              Source:
+              <a
+                href="https://www.grandviewresearch.com"
+                class="reference-link"
+                target="_blank"
+                >Industry Research 2025</a
+              >
             </div>
           </div>
           <div class="metric-card interactive">
             <div class="metric-number">$15,000</div>
             <div class="metric-label">Average Loss Per Trader</div>
             <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem">
-              Source: FINRA Analysis 2025
+              Source:
+              <a
+                href="https://www.finra.org"
+                class="reference-link"
+                target="_blank"
+                >FINRA Analysis 2025</a
+              >
             </div>
           </div>
         </div>
@@ -787,13 +819,179 @@
       </div>
     </div>
 
-    <!-- Slide 3: Platform Status: LIVE & OPERATIONAL -->
+    <!-- Slide 3: Market Opportunity -->
     <div class="slide">
       <div class="slide-number">3/22</div>
+      <h2>Massive Untapped Market Opportunity</h2>
+      <div class="slide-content">
+        <div class="center-image">
+          <img
+            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 400'%3E%3Cpath d='M50 300 Q200 100 400 200 T800 150 Q1000 100 1150 200' stroke='%2360a5fa' stroke-width='4' fill='none'/%3E%3Ctext x='600' y='50' text-anchor='middle' fill='%2334d399' font-size='24' font-weight='bold'%3EJoin the AI Trading Intelligence Revolution%3C/text%3E%3C/svg%3E"
+            alt="AI Trading Revolution"
+          />
+        </div>
+        <div class="metric-grid">
+          <div class="metric-card interactive">
+            <div class="metric-number">$8.2T</div>
+            <div class="metric-label">Global Retail Trading Volume (TAM)</div>
+            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem">
+              <a
+                href="https://www.sec.gov"
+                class="reference-link"
+                target="_blank"
+                >Source: SEC Market Structure Data 2025</a
+              >
+            </div>
+          </div>
+          <div class="metric-card interactive">
+            <div class="metric-number">$89B</div>
+            <div class="metric-label">Trading Platforms Market (SAM)</div>
+            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem">
+              <a
+                href="https://www.grandviewresearch.com"
+                class="reference-link"
+                target="_blank"
+                >Source: Market Research Reports 2025</a
+              >
+            </div>
+          </div>
+          <div class="metric-card interactive">
+            <div class="metric-number">$890M</div>
+            <div class="metric-label">AI Intelligence Market (SOM)</div>
+            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem">
+              Addressable with our AI solution
+            </div>
+          </div>
+          <div class="metric-card interactive">
+            <div class="metric-number">$3.5T</div>
+            <div class="metric-label">Islamic Finance Market (Untapped)</div>
+            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem">
+              <a
+                href="https://www.ifsb.org"
+                class="reference-link"
+                target="_blank"
+                >Source: Islamic Financial Services Board</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="cta-section">
+          <h2 style="margin-bottom: 1rem">
+            Join the AI Trading Intelligence Revolution
+          </h2>
+          <p style="font-size: 1.3rem; margin: 1.5rem 0; color: #cbd5e1">
+            Help us build the world's first complete AI-powered trading
+            intelligence platform<br />
+            and capture a $1B+ market opportunity
+          </p>
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              gap: 2rem;
+              margin-top: 2rem;
+            "
+          >
+            <div>
+              <div style="color: #fbbf24; font-size: 1.8rem; font-weight: bold">
+                Today
+              </div>
+              <div style="color: #cbd5e1">
+                95% of traders lose money to institutional AI
+              </div>
+            </div>
+            <div>
+              <div style="color: #60a5fa; font-size: 1.8rem; font-weight: bold">
+                Tomorrow
+              </div>
+              <div style="color: #cbd5e1">
+                Kurzora's AI levels the playing field
+              </div>
+            </div>
+            <div>
+              <div style="color: #34d399; font-size: 1.8rem; font-weight: bold">
+                5 Years
+              </div>
+              <div style="color: #cbd5e1">$1B+ exit opportunity realized</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 4: Islamic Finance Market -->
+    <div class="slide">
+      <div class="slide-number">4/22</div>
+      <h2>Islamic Finance: $3.5T Underserved Market</h2>
+      <div class="slide-content">
+        <div class="solution-stat">
+          🕌 First AI-Powered Shariah-Compliant Trading Platform
+        </div>
+
+        <div class="metric-grid">
+          <div class="metric-card interactive">
+            <div class="metric-number">$3.5T</div>
+            <div class="metric-label">Islamic Finance Market Size</div>
+            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem">
+              <a
+                href="https://www.ifsb.org"
+                class="reference-link"
+                target="_blank"
+                >Source: Islamic Financial Services Board</a
+              >
+            </div>
+          </div>
+          <div class="metric-card interactive">
+            <div class="metric-number">1.9B</div>
+            <div class="metric-label">Muslim Population Worldwide</div>
+            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem">
+              25% of global population
+            </div>
+          </div>
+          <div class="metric-card interactive">
+            <div class="metric-number">$0</div>
+            <div class="metric-label">Current AI Trading Solutions</div>
+            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem">
+              Zero AI-powered Shariah platforms exist
+            </div>
+          </div>
+          <div class="metric-card interactive">
+            <div class="metric-number">$175B</div>
+            <div class="metric-label">Addressable Trading Market</div>
+            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem">
+              5% of Islamic finance seeking trading tools
+            </div>
+          </div>
+        </div>
+
+        <div class="cta-section">
+          <h3>Capture the World's Largest Underserved Financial Market</h3>
+          <p style="font-size: 1.2rem; margin: 1rem 0; color: #cbd5e1">
+            While competitors fight over saturated Western markets, we're
+            building the only AI-powered solution for 1.9 billion underserved
+            Muslims seeking Shariah-compliant trading intelligence.
+          </p>
+          <div style="color: #34d399; font-size: 1.3rem; font-weight: bold">
+            Market Size: 5x larger than all current competitors combined
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 5: Platform Status: LIVE & OPERATIONAL -->
+    <div class="slide">
+      <div class="slide-number">5/22</div>
       <h2>
         Platform Status: <span class="highlight">LIVE & OPERATIONAL</span>
       </h2>
       <div class="slide-content">
+        <div class="center-image">
+          <img
+            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1400 600'%3E%3Ctext x='700' y='100' text-anchor='middle' fill='%2334d399' font-size='48' font-weight='bold'%3EComplete eToro-Level Platform + Revolutionary AI Intelligence%3C/text%3E%3Ctext x='700' y='180' text-anchor='middle' fill='%23cbd5e1' font-size='24'%3ENot just better signals - a complete trading ecosystem with AI-powered intelligence accessible to retail traders%3C/text%3E%3Ctext x='700' y='300' text-anchor='middle' fill='%2334d399' font-size='36' font-weight='bold'%3ETarget: $1B+ Revenue%3C/text%3E%3C/svg%3E"
+            alt="Complete Platform Vision"
+          />
+        </div>
         <div class="solution-stat">
           🚀 Production Platform at
           <a
@@ -808,9 +1006,9 @@
           <div class="feature-item">
             <div class="feature-icon">✅</div>
             <div>
-              <strong>Proprietary AI Engine:</strong> Like Audi's engine -
-              powerful performance you can see, but the secret formula stays
-              protected
+              <strong>Proprietary AI Engine:</strong> Advanced black box
+              intelligence - powerful performance you can see, while our
+              competitive advantage stays protected
             </div>
           </div>
           <div class="feature-item">
@@ -823,8 +1021,8 @@
           <div class="feature-item">
             <div class="feature-icon">✅</div>
             <div>
-              <strong>Revenue Generation:</strong> Starter ($29) + Professional
-              ($99) with Stripe payment processing
+              <strong>Revenue Generation:</strong> Starter ($19) + Professional
+              ($49) with Stripe payment processing
             </div>
           </div>
           <div class="feature-item">
@@ -844,36 +1042,29 @@
           <div class="feature-item">
             <div class="feature-icon">✅</div>
             <div>
-              <strong>Global Ready:</strong> English, German, Arabic with full
+              <strong>Global Ready:</strong> Multilingual interface with full
               international compliance
             </div>
           </div>
         </div>
-        <div class="audi-analogy">
+        <div class="black-box-analogy">
           <h3 style="color: #34d399; margin-bottom: 1rem">
-            The Audi Approach to AI
+            The Black Box Intelligence Engine
           </h3>
           <p style="color: #cbd5e1; line-height: 1.6">
-            Just like Audi doesn't reveal their engine secrets but delivers
-            superior performance, Kurzora's AI delivers
-            <span class="market-data-live">71% accuracy</span> through
-            proprietary algorithms. Users see the power, not the complexity.
-          </p>
-        </div>
-        <div style="text-align: center; margin-top: 2rem">
-          <p style="font-size: 1.2rem; color: #34d399">
-            313+ Development Sessions Completed
-          </p>
-          <p style="color: #cbd5e1">
-            18 months: Concept → Production → Revenue Generation
+            Kurzora is a financial black box — the internal algorithms stay
+            hidden, but the signal outcomes are precise, consistent, and
+            trusted. Just like top hedge funds don't disclose their alpha
+            engines, we protect our edge while letting results speak for
+            themselves.
           </p>
         </div>
       </div>
     </div>
 
-    <!-- Slide 4: Market Domination Opportunity -->
+    <!-- Slide 6: Market Domination Opportunity -->
     <div class="slide">
-      <div class="slide-number">4/22</div>
+      <div class="slide-number">6/22</div>
       <h2>Market Domination Opportunity</h2>
       <div class="slide-content">
         <table class="competitive-table">
@@ -889,32 +1080,96 @@
           </thead>
           <tbody>
             <tr>
-              <td><strong>Interactive Brokers</strong></td>
-              <td><span class="reference-link">$6.2B</span></td>
+              <td>
+                <strong
+                  ><a
+                    href="https://www.interactivebrokers.com"
+                    class="reference-link"
+                    target="_blank"
+                    >Interactive Brokers</a
+                  ></strong
+                >
+              </td>
+              <td>
+                <a
+                  href="https://investors.interactivebrokers.com"
+                  class="reference-link"
+                  target="_blank"
+                  >$6.2B</a
+                >
+              </td>
               <td>3.8M accounts</td>
               <td class="x-mark">✗</td>
               <td class="x-mark">✗</td>
               <td class="x-mark">✗</td>
             </tr>
             <tr>
-              <td><strong>Robinhood</strong></td>
-              <td><span class="reference-link">$3.2B</span></td>
+              <td>
+                <strong
+                  ><a
+                    href="https://robinhood.com"
+                    class="reference-link"
+                    target="_blank"
+                    >Robinhood</a
+                  ></strong
+                >
+              </td>
+              <td>
+                <a
+                  href="https://investors.robinhood.com"
+                  class="reference-link"
+                  target="_blank"
+                  >$3.2B</a
+                >
+              </td>
               <td>24.8M accounts</td>
               <td class="x-mark">✗</td>
               <td class="x-mark">✗</td>
               <td class="x-mark">✗</td>
             </tr>
             <tr>
-              <td><strong>eToro</strong></td>
-              <td><span class="reference-link">$1.1B</span></td>
+              <td>
+                <strong
+                  ><a
+                    href="https://www.etoro.com"
+                    class="reference-link"
+                    target="_blank"
+                    >eToro</a
+                  ></strong
+                >
+              </td>
+              <td>
+                <a
+                  href="https://investors.etoro.com"
+                  class="reference-link"
+                  target="_blank"
+                  >$1.1B</a
+                >
+              </td>
               <td>42M registered</td>
               <td class="x-mark">✗</td>
               <td class="x-mark">✗</td>
               <td class="x-mark">✗</td>
             </tr>
             <tr>
-              <td><strong>TradingView</strong></td>
-              <td><span class="reference-link">~$400M</span></td>
+              <td>
+                <strong
+                  ><a
+                    href="https://www.tradingview.com"
+                    class="reference-link"
+                    target="_blank"
+                    >TradingView</a
+                  ></strong
+                >
+              </td>
+              <td>
+                <a
+                  href="https://www.tradingview.com/about/"
+                  class="reference-link"
+                  target="_blank"
+                  >~$400M</a
+                >
+              </td>
               <td>60M+ users</td>
               <td class="x-mark">✗</td>
               <td class="x-mark">✗</td>
@@ -922,8 +1177,8 @@
             </tr>
             <tr style="background: rgba(52, 211, 153, 0.1)">
               <td><strong>Kurzora 🚀</strong></td>
-              <td style="color: #34d399"><strong>$0 → $1B Target</strong></td>
-              <td style="color: #34d399"><strong>0 → 10M Target</strong></td>
+              <td style="color: #34d399"><strong>$1B Target</strong></td>
+              <td style="color: #34d399"><strong>10M Target</strong></td>
               <td class="check-mark"><strong>✓ UNIQUE</strong></td>
               <td class="check-mark"><strong>✓ UNIQUE</strong></td>
               <td class="check-mark"><strong>✓ UNIQUE</strong></td>
@@ -937,16 +1192,13 @@
           <p style="color: #cbd5e1">
             First-mover advantage in AI-powered trading intelligence
           </p>
-          <p style="color: #94a3b8; font-size: 0.8rem; margin-top: 1rem">
-            *Revenue data based on public company filings and industry reports
-          </p>
         </div>
       </div>
     </div>
 
-    <!-- Slide 5: Complete Platform Vision -->
+    <!-- Slide 7: Complete Platform Vision -->
     <div class="slide">
-      <div class="slide-number">5/22</div>
+      <div class="slide-number">7/22</div>
       <h2>The Complete Platform Vision</h2>
       <div class="slide-content">
         <p
@@ -989,16 +1241,14 @@
             Not just better signals - a complete trading ecosystem with
             AI-powered intelligence accessible to retail traders
           </p>
-          <div class="solution-stat">
-            Target: eToro's $1.1B Revenue + Superior AI
-          </div>
+          <div class="solution-stat">Target: $1B+ Revenue</div>
         </div>
       </div>
     </div>
 
-    <!-- Slide 6: AI-Powered Development Roadmap -->
+    <!-- Slide 8: AI-Powered Development Roadmap -->
     <div class="slide">
-      <div class="slide-number">6/22</div>
+      <div class="slide-number">8/22</div>
       <h2>AI-Powered Development Roadmap</h2>
       <div class="slide-content">
         <div class="phase-card">
@@ -1007,7 +1257,7 @@
               ><span class="phase-checkbox in-progress"></span>Phase 1: Advanced
               AI Pattern Recognition</span
             >
-            <span class="phase-cost">$300K | 6 months</span>
+            <span class="phase-timeline">6 months</span>
           </div>
           <div style="font-size: 0.9rem; color: #cbd5e1">
             • Multi-timeframe AI analysis with proprietary algorithms<br />
@@ -1023,7 +1273,7 @@
               font-style: italic;
             "
           >
-            ◐ In Progress: 71% accuracy achieved with current AI system
+            ◐ In Progress: 41% ROI from backtest results (April–July 2024)
           </div>
         </div>
 
@@ -1033,7 +1283,9 @@
               ><span class="phase-checkbox in-progress"></span>Phase 2:
               Fundamental Intelligence Engine</span
             >
-            <span class="phase-cost">$400K | 8 months</span>
+            <span class="phase-timeline"
+              >5 months (parallel with Phase 1, Month 3)</span
+            >
           </div>
           <div style="font-size: 0.9rem; color: #cbd5e1">
             • Real-time financial data AI processing<br />
@@ -1056,7 +1308,7 @@
         <div class="phase-card">
           <div class="phase-header">
             <span class="phase-title">Phase 3: Sentiment AI Intelligence</span>
-            <span class="phase-cost">$350K | 6 months</span>
+            <span class="phase-timeline">6 months (after Phases 1 & 2)</span>
           </div>
           <div style="font-size: 0.9rem; color: #cbd5e1">
             • AI-powered social media sentiment tracking<br />
@@ -1069,7 +1321,7 @@
         <div class="phase-card">
           <div class="phase-header">
             <span class="phase-title">Phase 4: Options Flow AI Analysis</span>
-            <span class="phase-cost">$500K | 8 months</span>
+            <span class="phase-timeline">8 months (Month 2 of Phase 3)</span>
           </div>
           <div style="font-size: 0.9rem; color: #cbd5e1">
             • Real-time options flow AI tracking<br />
@@ -1082,7 +1334,7 @@
         <div class="phase-card">
           <div class="phase-header">
             <span class="phase-title">Phase 5: Self-Learning AI System</span>
-            <span class="phase-cost">$450K | 10 months</span>
+            <span class="phase-timeline">3 months (after Phase 4)</span>
           </div>
           <div style="font-size: 0.9rem; color: #cbd5e1">
             • Machine learning model training with continuous optimization<br />
@@ -1092,24 +1344,10 @@
           </div>
         </div>
 
-        <div class="phase-card" style="border: 2px solid #34d399">
-          <div class="phase-header">
-            <span class="phase-title">Phase 6: AI Panel Coordination</span>
-            <span class="phase-cost">$600K | 12 months</span>
-          </div>
-          <div style="font-size: 0.9rem; color: #cbd5e1">
-            • Multiple AI specialist panels (Technical, Fundamental, Sentiment,
-            Options)<br />
-            • AI consensus mechanism for conflicting signals<br />
-            • Dynamic AI weighting based on market conditions<br />
-            • Meta-learning AI to optimize panel combinations
-          </div>
-        </div>
-
         <div class="phase-card" style="border: 2px solid #fbbf24">
           <div class="phase-header">
-            <span class="phase-title">Phase 7: Complete Trading Platform</span>
-            <span class="phase-cost">$800K | 18 months</span>
+            <span class="phase-title">Complete Trading Platform</span>
+            <span class="phase-timeline">18 months total</span>
           </div>
           <div style="font-size: 0.9rem; color: #cbd5e1">
             • Full broker integration with AI-powered execution<br />
@@ -1121,302 +1359,85 @@
       </div>
     </div>
 
-    <!-- Slide 7: Market Opportunity -->
-    <div class="slide">
-      <div class="slide-number">7/22</div>
-      <h2>Massive Untapped Market Opportunity</h2>
-      <div class="slide-content">
-        <div class="metric-grid">
-          <div class="metric-card interactive">
-            <div class="metric-number">$8.2T</div>
-            <div class="metric-label">Global Retail Trading Volume (TAM)</div>
-            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem">
-              <span class="reference-link"
-                >Source: SEC Market Structure Data 2025</span
-              >
-            </div>
-          </div>
-          <div class="metric-card interactive">
-            <div class="metric-number">$89B</div>
-            <div class="metric-label">Trading Platforms Market (SAM)</div>
-            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem">
-              <span class="reference-link"
-                >Source: Market Research Reports 2025</span
-              >
-            </div>
-          </div>
-          <div class="metric-card interactive">
-            <div class="metric-number">$890M</div>
-            <div class="metric-label">AI Intelligence Market (SOM)</div>
-            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem">
-              Addressable with our AI solution
-            </div>
-          </div>
-          <div class="metric-card interactive">
-            <div class="metric-number">$3.5T</div>
-            <div class="metric-label">Islamic Finance Market (Untapped)</div>
-            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem">
-              <span class="reference-link"
-                >Source: Islamic Financial Services Board</span
-              >
-            </div>
-          </div>
-        </div>
-        <div style="text-align: center; margin: 2rem 0">
-          <h3>Market Growth Drivers</h3>
-          <div class="feature-list">
-            <div class="feature-item">
-              <div class="feature-icon">🚀</div>
-              <div>
-                <strong>De-Risked AI Investment:</strong> Platform operational
-                with proven AI, not concept - skip development risk entirely
-              </div>
-            </div>
-            <div class="feature-item">
-              <div class="feature-icon">📊</div>
-              <div>
-                <strong>Validated Market:</strong> $10.9B competitor revenue
-                validates massive demand for AI intelligence
-              </div>
-            </div>
-            <div class="feature-item">
-              <div class="feature-icon">🏆</div>
-              <div>
-                <strong>AI Category Creation:</strong> First-mover in AI-powered
-                trading intelligence = market leadership
-              </div>
-            </div>
-            <div class="feature-item">
-              <div class="feature-icon">🌍</div>
-              <div>
-                <strong>Global AI Opportunity:</strong> 3.5 billion+ underserved
-                users worldwide need AI trading tools
-              </div>
-            </div>
-            <div class="feature-item">
-              <div class="feature-icon">💎</div>
-              <div>
-                <strong>Multiple Exit Paths:</strong> Strategic AI buyers from
-                $15B-$150B market cap range
-              </div>
-            </div>
-            <div class="feature-item">
-              <div class="feature-icon">⚡</div>
-              <div>
-                <strong>Perfect AI Timing:</strong> AI revolution meets retail
-                trading boom
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="cta-section">
-          <h2 style="margin-bottom: 1rem">
-            Join the AI Trading Intelligence Revolution
-          </h2>
-          <p style="font-size: 1.3rem; margin: 1.5rem 0; color: #cbd5e1">
-            Help us build the world's first complete AI-powered trading
-            intelligence platform<br />
-            and capture a $1.4B+ market opportunity
-          </p>
-          <div
-            style="
-              display: grid;
-              grid-template-columns: repeat(3, 1fr);
-              gap: 2rem;
-              margin-top: 2rem;
-            "
-          >
-            <div>
-              <div style="color: #fbbf24; font-size: 1.8rem; font-weight: bold">
-                Today
-              </div>
-              <div style="color: #cbd5e1">
-                95% of traders lose money to institutional AI
-              </div>
-            </div>
-            <div>
-              <div style="color: #60a5fa; font-size: 1.8rem; font-weight: bold">
-                Tomorrow
-              </div>
-              <div style="color: #cbd5e1">
-                Kurzora's AI levels the playing field
-              </div>
-            </div>
-            <div>
-              <div style="color: #34d399; font-size: 1.8rem; font-weight: bold">
-                5 Years
-              </div>
-              <div style="color: #cbd5e1">$1.4B+ exit opportunity realized</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Slide 8: Islamic Finance Market -->
-    <div class="slide">
-      <div class="slide-number">8/22</div>
-      <h2>Islamic Finance: $3.5T Underserved Market</h2>
-      <div class="slide-content">
-        <div class="solution-stat">
-          🕌 First AI-Powered Shariah-Compliant Trading Platform
-        </div>
-
-        <div class="metric-grid">
-          <div class="metric-card interactive">
-            <div class="metric-number">$3.5T</div>
-            <div class="metric-label">Islamic Finance Market Size</div>
-            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem">
-              <span class="reference-link"
-                >Source: Islamic Financial Services Board</span
-              >
-            </div>
-          </div>
-          <div class="metric-card interactive">
-            <div class="metric-number">1.9B</div>
-            <div class="metric-label">Muslim Population Worldwide</div>
-            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem">
-              25% of global population
-            </div>
-          </div>
-          <div class="metric-card interactive">
-            <div class="metric-number">$0</div>
-            <div class="metric-label">Current AI Trading Solutions</div>
-            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem">
-              Zero AI-powered Shariah platforms exist
-            </div>
-          </div>
-          <div class="metric-card interactive">
-            <div class="metric-number">$175B</div>
-            <div class="metric-label">Addressable Trading Market</div>
-            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem">
-              5% of Islamic finance seeking trading tools
-            </div>
-          </div>
-        </div>
-
-        <div class="two-column">
-          <div>
-            <h3>🎯 Our Shariah Compliance Approach</h3>
-            <div class="feature-list" style="grid-template-columns: 1fr">
-              <div class="feature-item">
-                <div class="feature-icon">📋</div>
-                <div>
-                  <strong>MSCI Islamic Index Integration:</strong> Real-time
-                  access to 1,600+ pre-screened Shariah-compliant stocks
-                </div>
-              </div>
-              <div class="feature-item">
-                <div class="feature-icon">🤖</div>
-                <div>
-                  <strong>AI-Powered Verification:</strong> Automated screening
-                  for debt ratios, prohibited activities, and financial health
-                </div>
-              </div>
-              <div class="feature-item">
-                <div class="feature-icon">👨‍⚖️</div>
-                <div>
-                  <strong>Scholar Advisory Board:</strong> Quarterly reviews
-                  with certified Islamic finance scholars for accuracy
-                </div>
-              </div>
-              <div class="feature-item">
-                <div class="feature-icon">🔄</div>
-                <div>
-                  <strong>Dynamic Updates:</strong> Real-time monitoring ensures
-                  stocks remain compliant as financials change
-                </div>
-              </div>
-            </div>
-          </div>
-          <div>
-            <h3>💰 Revenue Opportunity</h3>
-            <div class="metric-grid" style="grid-template-columns: 1fr">
-              <div
-                class="metric-card"
-                style="background: rgba(52, 211, 153, 0.1)"
-              >
-                <div class="metric-label">Conservative (1% penetration)</div>
-                <div class="metric-number" style="font-size: 2rem">$52M</div>
-                <div style="color: #cbd5e1; margin-top: 0.5rem">
-                  350K users × $150 premium ARPU
-                </div>
-              </div>
-              <div
-                class="metric-card"
-                style="background: rgba(59, 130, 246, 0.1)"
-              >
-                <div class="metric-label">Moderate (3% penetration)</div>
-                <div class="metric-number" style="font-size: 2rem">$157M</div>
-                <div style="color: #cbd5e1; margin-top: 0.5rem">
-                  1M users × $150 premium ARPU
-                </div>
-              </div>
-              <div
-                class="metric-card"
-                style="background: rgba(251, 191, 36, 0.1)"
-              >
-                <div class="metric-label">Aggressive (5% penetration)</div>
-                <div class="metric-number" style="font-size: 2rem">$262M</div>
-                <div style="color: #cbd5e1; margin-top: 0.5rem">
-                  1.75M users × $150 premium ARPU
-                </div>
-              </div>
-            </div>
-
-            <div
-              style="
-                background: rgba(52, 211, 153, 0.1);
-                border-radius: 10px;
-                padding: 1.5rem;
-                margin-top: 1rem;
-              "
-            >
-              <h4 style="color: #34d399; margin-bottom: 1rem">
-                First-Mover Advantage
-              </h4>
-              <p style="font-size: 0.9rem; line-height: 1.5; color: #cbd5e1">
-                • Zero AI-powered Shariah-compliant platforms exist today<br />
-                • 18-month development lead over potential competitors<br />
-                • Built-in Arabic language and RTL support<br />
-                • Established compliance methodology and scholar network
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="cta-section">
-          <h3>Capture the World's Largest Underserved Financial Market</h3>
-          <p style="font-size: 1.2rem; margin: 1rem 0; color: #cbd5e1">
-            While competitors fight over saturated Western markets, we're
-            building the only AI-powered solution for 1.9 billion underserved
-            Muslims seeking Shariah-compliant trading intelligence.
-          </p>
-          <div style="color: #34d399; font-size: 1.3rem; font-weight: bold">
-            Market Size: 5x larger than all current competitors combined
-          </div>
-          <p style="color: #94a3b8; font-size: 0.8rem; margin-top: 1rem">
-            *Data compiled from Islamic Financial Services Board, World Bank,
-            and industry research
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Slide 9: AI Moat & Competitive Advantages -->
+    <!-- Slide 9: Our Solution (Kurzora) -->
     <div class="slide">
       <div class="slide-number">9/22</div>
+      <h2>Our Solution (Kurzora)</h2>
+      <div class="slide-content">
+        <div class="solution-stat">
+          🚀 Production Platform with Proven AI Intelligence
+        </div>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-icon">✅</div>
+            <div>
+              <strong>41% ROI Performance:</strong> Backtest results from
+              April–July 2024 demonstrate consistent profitability
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">✅</div>
+            <div>
+              <strong>Automated Intelligence:</strong> Email + Telegram
+              notifications with institutional-grade filtering
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">✅</div>
+            <div>
+              <strong>Revenue Generation:</strong> Starter ($19) + Professional
+              ($49) with Stripe payment processing
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">✅</div>
+            <div>
+              <strong>AI Quality Control:</strong> Proprietary filtering
+              delivers only premium opportunities to users
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">✅</div>
+            <div>
+              <strong>Professional Integration:</strong> TradingView charting
+              with seamless user experience
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">✅</div>
+            <div>
+              <strong>Multilingual Interface Supported:</strong> Global
+              scalability with international compliance
+            </div>
+          </div>
+        </div>
+        <div class="black-box-analogy">
+          <h3 style="color: #34d399; margin-bottom: 1rem">
+            The Black Box Intelligence Advantage
+          </h3>
+          <p style="color: #cbd5e1; line-height: 1.6">
+            Just like top hedge funds protect their alpha engines, Kurzora's AI
+            delivers
+            <span class="market-data-live">41% ROI performance</span> through
+            proprietary algorithms. Users see the power, not the complexity.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 10: AI Moat & Competitive Advantages -->
+    <div class="slide">
+      <div class="slide-number">10/22</div>
       <h2>🔐 Our AI Moat: What's Impossible to Replicate</h2>
       <div class="slide-content">
-        <div class="audi-analogy">
+        <div class="black-box-analogy">
           <h3 style="color: #34d399; margin-bottom: 1rem">
-            🛡️ Like Audi's Manufacturing Secrets
+            🛡️ Like Top Hedge Fund Strategies
           </h3>
           <p style="color: #cbd5e1; line-height: 1.6">
             Competitors can see our results but can't replicate our process. Our
-            18-month development lead created proprietary systems that would
-            take competitors years to rebuild.
+            development lead created proprietary systems that would take
+            competitors years to rebuild.
           </p>
         </div>
 
@@ -1435,8 +1456,8 @@
             <div class="feature-icon">🔗</div>
             <div>
               <strong>Proprietary Data Pipeline:</strong>
-              18 months of custom integrations with Polygon.io, TradingView,
-              Make.com, and proprietary filtering systems that competitors can't
+              Custom integrations with Polygon.io, TradingView, Make.com, and
+              proprietary filtering systems that competitors can't
               reverse-engineer
             </div>
           </div>
@@ -1455,7 +1476,7 @@
             <div>
               <strong>Advanced Filtering Logic:</strong>
               Proprietary AI gatekeeper rules processing 300+ data points per
-              signal with institutional-grade quality thresholds (71% accuracy
+              signal with institutional-grade quality thresholds (41% ROI
               proven)
             </div>
           </div>
@@ -1472,116 +1493,10 @@
           >
             <div class="feature-icon">⚡</div>
             <div>
-              <strong>18-Month Development Head Start:</strong>
-              313+ development sessions created modular architecture, automated
+              <strong>Development Head Start:</strong>
+              Extensive development created modular architecture, automated
               workflows, and production-tested systems impossible to replicate
               quickly
-            </div>
-          </div>
-        </div>
-
-        <div class="two-column">
-          <div>
-            <h3>🏗️ Technical Barriers to Entry</h3>
-            <div
-              style="
-                background: rgba(15, 23, 42, 0.8);
-                border-radius: 10px;
-                padding: 1.5rem;
-                margin: 1rem 0;
-              "
-            >
-              <div style="color: #ef4444; margin-bottom: 1rem">
-                <h4>What Competitors Would Need to Build:</h4>
-              </div>
-              <div style="color: #cbd5e1; font-size: 0.9rem; line-height: 1.6">
-                ❌ Real-time data processing infrastructure<br />
-                ❌ Multi-source integration (6+ services)<br />
-                ❌ Proprietary AI filtering algorithms<br />
-                ❌ Automated alert distribution system<br />
-                ❌ Islamic finance compliance framework<br />
-                ❌ Multi-language platform (EN/DE/AR)<br />
-                ❌ Production-tested user management<br />
-                ❌ Payment processing and tier systems<br />
-              </div>
-            </div>
-
-            <div
-              style="
-                background: rgba(52, 211, 153, 0.1);
-                border-radius: 10px;
-                padding: 1rem;
-                margin-top: 1rem;
-              "
-            >
-              <div
-                style="color: #34d399; font-weight: bold; margin-bottom: 0.5rem"
-              >
-                Estimated Competitor Time to Market:
-              </div>
-              <div style="color: #cbd5e1; font-size: 0.9rem">
-                24-36 months minimum + $5M+ development cost
-              </div>
-            </div>
-          </div>
-          <div>
-            <h3>📊 Our Proven Performance Moats</h3>
-            <div class="metric-grid" style="grid-template-columns: 1fr">
-              <div class="metric-card">
-                <div class="metric-number">313+</div>
-                <div class="metric-label">Development Sessions</div>
-                <div
-                  style="color: #cbd5e1; margin-top: 0.5rem; font-size: 0.8rem"
-                >
-                  Iterative perfection impossible to shortcut
-                </div>
-              </div>
-              <div class="metric-card">
-                <div class="metric-number">71%</div>
-                <div class="metric-label">Proven AI Accuracy</div>
-                <div
-                  style="color: #cbd5e1; margin-top: 0.5rem; font-size: 0.8rem"
-                >
-                  Real trading data validation
-                </div>
-              </div>
-              <div class="metric-card">
-                <div class="metric-number">6+</div>
-                <div class="metric-label">Integrated Services</div>
-                <div
-                  style="color: #cbd5e1; margin-top: 0.5rem; font-size: 0.8rem"
-                >
-                  Complex orchestration mastered
-                </div>
-              </div>
-              <div class="metric-card">
-                <div class="metric-number">3</div>
-                <div class="metric-label">Languages + RTL</div>
-                <div
-                  style="color: #cbd5e1; margin-top: 0.5rem; font-size: 0.8rem"
-                >
-                  Islamic market compliance built-in
-                </div>
-              </div>
-            </div>
-
-            <div
-              style="
-                background: rgba(59, 130, 246, 0.1);
-                border-radius: 10px;
-                padding: 1.5rem;
-                margin-top: 1rem;
-              "
-            >
-              <h4 style="color: #60a5fa; margin-bottom: 1rem">
-                Network Effect Moats
-              </h4>
-              <div style="color: #cbd5e1; font-size: 0.9rem; line-height: 1.5">
-                • More users = better AI training data<br />
-                • Signal accuracy improves with volume<br />
-                • Platform stickiness through proven results<br />
-                • Scholar network for Islamic compliance
-              </div>
             </div>
           </div>
         </div>
@@ -1590,7 +1505,7 @@
           <h3>Unassailable Competitive Position</h3>
           <p style="font-size: 1.2rem; margin: 1rem 0; color: #cbd5e1">
             By the time competitors realize the market opportunity and begin
-            development, we'll have 3+ years of additional refinement and market
+            development, we'll have years of additional refinement and market
             leadership.
           </p>
           <div style="color: #34d399; font-size: 1.3rem; font-weight: bold">
@@ -1600,9 +1515,9 @@
       </div>
     </div>
 
-    <!-- Slide 10: Path to $1B in 5 Years -->
+    <!-- Slide 11: Path to $1B in 5 Years -->
     <div class="slide">
-      <div class="slide-number">10/22</div>
+      <div class="slide-number">11/22</div>
       <h2>Path to $1 Billion in 5 Years</h2>
       <div class="slide-content">
         <div class="revenue-chart">
@@ -1641,7 +1556,7 @@
                 class="chart-bar"
                 style="--height: 300px; height: 300px"
               ></div>
-              <div class="year-label">Year 5<br />$700M<br />6M users</div>
+              <div class="year-label">Year 5<br />$500M<br />6M users</div>
             </div>
           </div>
           <div
@@ -1661,8 +1576,8 @@
               <strong>Target CAC:</strong> $10-$20<br />
               • <strong>Built-in Virality:</strong> Telegram sharing of
               successful signals = exponential network effect<br />
-              • <strong>AI Alert Performance:</strong> 71%+ accuracy drives
-              organic word-of-mouth growth<br />
+              • <strong>AI Alert Performance:</strong> 41%+ ROI drives organic
+              word-of-mouth growth<br />
               • <strong>Islamic Market:</strong> First-mover advantage in 1.9B
               underserved Muslim population
             </div>
@@ -1678,6 +1593,14 @@
         >
           <div class="financial-projection">
             <div class="year-header">Conservative Exit</div>
+            <p>Year 5 Revenue: $350M</p>
+            <p>Exit Valuation: $700M</p>
+            <p style="color: #34d399; font-weight: bold">
+              35x Return for Investors
+            </p>
+          </div>
+          <div class="financial-projection">
+            <div class="year-header">Base Case</div>
             <p>Year 5 Revenue: $500M</p>
             <p>Exit Valuation: $1B</p>
             <p style="color: #34d399; font-weight: bold">
@@ -1685,28 +1608,20 @@
             </p>
           </div>
           <div class="financial-projection">
-            <div class="year-header">Base Case</div>
-            <p>Year 5 Revenue: $700M</p>
-            <p>Exit Valuation: $1.4B</p>
-            <p style="color: #34d399; font-weight: bold">
-              70x Return for Investors
-            </p>
-          </div>
-          <div class="financial-projection">
             <div class="year-header">Optimistic</div>
-            <p>Year 5 Revenue: $1.2B</p>
-            <p>Exit Valuation: $2.4B</p>
+            <p>Year 5 Revenue: $800M</p>
+            <p>Exit Valuation: $1.6B</p>
             <p style="color: #34d399; font-weight: bold">
-              120x Return for Investors
+              80x Return for Investors
             </p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Slide 11: Strategic Fundraising Timeline -->
+    <!-- Slide 12: Strategic Fundraising Timeline -->
     <div class="slide">
-      <div class="slide-number">11/22</div>
+      <div class="slide-number">12/22</div>
       <h2>Strategic Fundraising Timeline</h2>
       <div class="slide-content">
         <div class="funding-round">
@@ -1801,7 +1716,7 @@
           >
             <div>
               <p><strong>Options:</strong> IPO or Strategic Acquisition</p>
-              <p><strong>Valuation Target:</strong> $1.4B+</p>
+              <p><strong>Valuation Target:</strong> $1B+</p>
               <p>
                 <strong>Potential Acquirers:</strong> Bloomberg, Charles Schwab,
                 Microsoft
@@ -1810,7 +1725,7 @@
             <div>
               <p><strong>Timeline:</strong> 2029-2030</p>
               <p><strong>Users:</strong> 6M+</p>
-              <p><strong>Revenue:</strong> $700M+ ARR</p>
+              <p><strong>Revenue:</strong> $500M+ ARR</p>
               <p>
                 <strong>Market Position:</strong> #1 AI Trading Intelligence
                 Platform
@@ -1821,22 +1736,20 @@
       </div>
     </div>
 
-    <!-- Continue with remaining slides... -->
-    <!-- I'll add the remaining 11 slides to complete the full 22-slide deck -->
-
-    <!-- Slide 12: AI & Machine Learning Strategy -->
+    <!-- Slide 13: AI & Machine Learning Strategy -->
     <div class="slide">
-      <div class="slide-number">12/22</div>
-      <h2>Revolutionary AI Intelligence - The Audi Approach</h2>
+      <div class="slide-number">13/22</div>
+      <h2>Revolutionary AI Intelligence - The Black Box Approach</h2>
       <div class="slide-content">
-        <div class="audi-analogy">
+        <div class="black-box-analogy">
           <h3 style="color: #34d399; margin-bottom: 1rem">
-            🚗 Like Audi's Engine Philosophy
+            🔐 Like Elite Hedge Fund Technology
           </h3>
           <p style="color: #cbd5e1; line-height: 1.6; margin-bottom: 1rem">
-            Audi doesn't reveal their engine's proprietary technology - they
-            showcase superior performance. Similarly, Kurzora's AI delivers
-            exceptional results while protecting our competitive advantage.
+            Top financial institutions don't reveal their proprietary algorithms
+            - they showcase superior performance. Similarly, Kurzora's AI
+            delivers exceptional results while protecting our competitive
+            advantage.
           </p>
           <div
             style="
@@ -1874,7 +1787,9 @@
               <p>• Adaptive risk management optimization</p>
             </div>
 
-            <h3 style="margin-top: 2rem">⚡ Advanced AI Features (Phase 6)</h3>
+            <h3 style="margin-top: 2rem">
+              ⚡ Advanced AI Features (Future Phases)
+            </h3>
             <div style="margin: 1rem 0">
               <p>• AI Panel coordination systems</p>
               <p>• Deep learning market intelligence</p>
@@ -1887,8 +1802,8 @@
             <h3>📊 AI Performance Metrics</h3>
             <div class="metric-grid" style="grid-template-columns: 1fr">
               <div class="metric-card">
-                <div class="metric-number">71%</div>
-                <div class="metric-label">Current Signal Accuracy</div>
+                <div class="metric-number">41%</div>
+                <div class="metric-label">Current ROI Performance</div>
               </div>
               <div class="metric-card">
                 <div class="metric-number">95%</div>
@@ -1917,7 +1832,7 @@
               </h4>
               <p style="font-size: 0.9rem; line-height: 1.5">
                 • Proprietary multi-dimensional AI scoring<br />
-                • 18 months of real trading data for AI training<br />
+                • Real trading data for AI training<br />
                 • Continuous AI learning from user feedback<br />
                 • Integration of institutional AI behavior patterns
               </p>
@@ -1927,17 +1842,17 @@
       </div>
     </div>
 
-    <!-- Slide 13: Market Validation & Traction -->
+    <!-- Slide 14: Market Validation & Traction -->
     <div class="slide">
-      <div class="slide-number">13/22</div>
+      <div class="slide-number">14/22</div>
       <h2>Strong Market Validation & Early Traction</h2>
       <div class="slide-content">
         <div class="metric-grid">
           <div class="metric-card">
-            <div class="metric-number">313+</div>
-            <div class="metric-label">Development Sessions</div>
+            <div class="metric-number">41%</div>
+            <div class="metric-label">Proven ROI Performance</div>
             <div style="color: #cbd5e1; margin-top: 0.5rem; font-size: 0.9rem">
-              18 months from concept to production platform
+              Backtest results from April–July 2024
             </div>
           </div>
           <div class="metric-card">
@@ -2017,15 +1932,15 @@
           <h3>This Isn't a Prototype - It's an Operating Business</h3>
           <p style="font-size: 1.1rem; margin: 1rem 0; color: #cbd5e1">
             Your investment accelerates the growth of a proven,
-            revenue-generating platform with 18 months of validation.
+            revenue-generating platform with validated performance.
           </p>
         </div>
       </div>
     </div>
 
-    <!-- Slide 14: Team & Execution -->
+    <!-- Slide 15: Team & Execution -->
     <div class="slide">
-      <div class="slide-number">14/22</div>
+      <div class="slide-number">15/22</div>
       <h2>Proven Execution Team</h2>
       <div class="slide-content">
         <div class="two-column">
@@ -2033,7 +1948,7 @@
             <h3>🚀 Current Team Achievements</h3>
             <div style="margin: 1rem 0">
               <p><strong>Technical Leadership:</strong></p>
-              <p>• 313+ development sessions completed</p>
+              <p>• Comprehensive development program completed</p>
               <p>• Zero-downtime production platform</p>
               <p>• Modular architecture implementation</p>
               <p>• Multi-service integration mastery</p>
@@ -2041,7 +1956,7 @@
               <p><strong>Business Execution:</strong></p>
               <p>• Complete product-market fit validation</p>
               <p>• Revenue model implementation</p>
-              <p>• International compliance (EN/DE/AR)</p>
+              <p>• International compliance framework</p>
               <p>• Investor-ready business model</p>
             </div>
           </div>
@@ -2086,9 +2001,9 @@
       </div>
     </div>
 
-    <!-- Slide 15: Risk Mitigation -->
+    <!-- Slide 16: Risk Mitigation -->
     <div class="slide">
-      <div class="slide-number">15/22</div>
+      <div class="slide-number">16/22</div>
       <h2>Risk Mitigation & Competitive Moats</h2>
       <div class="slide-content">
         <div class="two-column">
@@ -2112,8 +2027,7 @@
               <div class="feature-item">
                 <div class="feature-icon">✅</div>
                 <div>
-                  <strong>Execution Risk:</strong> 313+ sessions prove delivery
-                  capability
+                  <strong>Execution Risk:</strong> Proven delivery capability
                 </div>
               </div>
               <div class="feature-item">
@@ -2155,7 +2069,7 @@
                 <div
                   style="color: #cbd5e1; margin-top: 0.5rem; font-size: 0.9rem"
                 >
-                  18 months of proprietary AI development
+                  Proprietary AI development
                 </div>
               </div>
               <div class="metric-card">
@@ -2210,10 +2124,10 @@
       </div>
     </div>
 
-    <!-- Slide 16: Exit Strategy -->
+    <!-- Slide 17: Exit Strategy -->
     <div class="slide">
-      <div class="slide-number">16/22</div>
-      <h2>Clear Path to $1.4B+ Exit</h2>
+      <div class="slide-number">17/22</div>
+      <h2>Clear Path to $1B+ Exit</h2>
       <div class="slide-content">
         <div style="margin-bottom: 3rem">
           <h3 style="text-align: center; margin-bottom: 2rem">
@@ -2223,49 +2137,149 @@
             <div class="metric-card">
               <div class="metric-label">Financial Data Giants</div>
               <div style="color: #cbd5e1; margin-top: 1rem; font-size: 0.9rem">
-                • <span class="reference-link">Bloomberg</span> ($60B+
-                valuation)<br />
-                • <span class="reference-link">S&P Global</span> ($140B market
-                cap)<br />
-                • <span class="reference-link">Refinitiv</span> (sold for
-                $27B)<br />
-                • <span class="reference-link">FactSet</span> ($18B market cap)
+                •
+                <a
+                  href="https://www.bloomberg.com"
+                  class="reference-link"
+                  target="_blank"
+                  >Bloomberg</a
+                >
+                ($60B+ valuation)<br />
+                •
+                <a
+                  href="https://www.spglobal.com"
+                  class="reference-link"
+                  target="_blank"
+                  >S&P Global</a
+                >
+                ($140B market cap)<br />
+                •
+                <a
+                  href="https://www.refinitiv.com"
+                  class="reference-link"
+                  target="_blank"
+                  >Refinitiv</a
+                >
+                (sold for $27B)<br />
+                •
+                <a
+                  href="https://www.factset.com"
+                  class="reference-link"
+                  target="_blank"
+                  >FactSet</a
+                >
+                ($18B market cap)
               </div>
             </div>
             <div class="metric-card">
               <div class="metric-label">Trading Platforms</div>
               <div style="color: #cbd5e1; margin-top: 1rem; font-size: 0.9rem">
-                • <span class="reference-link">Robinhood</span> ($15B market
-                cap)<br />
-                • <span class="reference-link">eToro</span> ($3.5B valuation)<br />
-                • <span class="reference-link">Interactive Brokers</span> ($40B+
-                cap)<br />
-                • <span class="reference-link">Charles Schwab</span> ($125B cap)
+                •
+                <a
+                  href="https://robinhood.com"
+                  class="reference-link"
+                  target="_blank"
+                  >Robinhood</a
+                >
+                ($15B market cap)<br />
+                •
+                <a
+                  href="https://www.etoro.com"
+                  class="reference-link"
+                  target="_blank"
+                  >eToro</a
+                >
+                ($3.5B valuation)<br />
+                •
+                <a
+                  href="https://www.interactivebrokers.com"
+                  class="reference-link"
+                  target="_blank"
+                  >Interactive Brokers</a
+                >
+                ($40B+ cap)<br />
+                •
+                <a
+                  href="https://www.schwab.com"
+                  class="reference-link"
+                  target="_blank"
+                  >Charles Schwab</a
+                >
+                ($125B cap)
               </div>
             </div>
             <div class="metric-card">
               <div class="metric-label">Technology Giants</div>
               <div style="color: #cbd5e1; margin-top: 1rem; font-size: 0.9rem">
-                • <span class="reference-link">Microsoft</span> (AI + Cloud
-                focus)<br />
-                • <span class="reference-link">Google</span> (Financial services
-                expansion)<br />
-                • <span class="reference-link">Amazon</span> (AWS financial
-                services)<br />
-                • <span class="reference-link">Salesforce</span> (Financial
-                Cloud)
+                •
+                <a
+                  href="https://www.microsoft.com"
+                  class="reference-link"
+                  target="_blank"
+                  >Microsoft</a
+                >
+                (AI + Cloud focus)<br />
+                •
+                <a
+                  href="https://www.google.com"
+                  class="reference-link"
+                  target="_blank"
+                  >Google</a
+                >
+                (Financial services expansion)<br />
+                •
+                <a
+                  href="https://aws.amazon.com"
+                  class="reference-link"
+                  target="_blank"
+                  >Amazon</a
+                >
+                (AWS financial services)<br />
+                •
+                <a
+                  href="https://www.salesforce.com"
+                  class="reference-link"
+                  target="_blank"
+                  >Salesforce</a
+                >
+                (Financial Cloud)
               </div>
             </div>
             <div class="metric-card">
               <div class="metric-label">Private Equity</div>
               <div style="color: #cbd5e1; margin-top: 1rem; font-size: 0.9rem">
-                • <span class="reference-link">KKR</span> (Fintech focus)<br />
-                • <span class="reference-link">Blackstone</span> (Tech
-                investments)<br />
-                • <span class="reference-link">Vista Equity</span> (Software
-                focus)<br />
-                • <span class="reference-link">Thoma Bravo</span> (Enterprise
-                software)
+                •
+                <a
+                  href="https://www.kkr.com"
+                  class="reference-link"
+                  target="_blank"
+                  >KKR</a
+                >
+                (Fintech focus)<br />
+                •
+                <a
+                  href="https://www.blackstone.com"
+                  class="reference-link"
+                  target="_blank"
+                  >Blackstone</a
+                >
+                (Tech investments)<br />
+                •
+                <a
+                  href="https://www.vistaequitypartners.com"
+                  class="reference-link"
+                  target="_blank"
+                  >Vista Equity</a
+                >
+                (Software focus)<br />
+                •
+                <a
+                  href="https://www.thomabravo.com"
+                  class="reference-link"
+                  target="_blank"
+                  >Thoma Bravo</a
+                >
+                (Enterprise software)
               </div>
             </div>
           </div>
@@ -2278,7 +2292,7 @@
             <p style="font-size: 0.9rem; margin-top: 0.5rem">
               $35M ARR<br />
               600K users<br />
-              $350M valuation
+              $200M valuation
             </p>
           </div>
           <div class="timeline-item">
@@ -2289,7 +2303,7 @@
             <p style="font-size: 0.9rem; margin-top: 0.5rem">
               $125M ARR<br />
               2.5M users<br />
-              $600M valuation
+              $400M valuation
             </p>
           </div>
           <div class="timeline-item">
@@ -2300,22 +2314,22 @@
             <p style="font-size: 0.9rem; margin-top: 0.5rem">
               $350M ARR<br />
               6M users<br />
-              $900M valuation
+              $700M valuation
             </p>
           </div>
           <div class="timeline-item">
             <h4 style="color: #60a5fa; margin-bottom: 0.5rem">Year 5</h4>
             <div style="color: #34d399; font-weight: bold">Exit Event</div>
             <p style="font-size: 0.9rem; margin-top: 0.5rem">
-              $700M ARR<br />
+              $500M ARR<br />
               10M+ users<br />
-              $1.4B valuation
+              $1B valuation
             </p>
           </div>
         </div>
 
         <div class="investment-box" style="margin-top: 2rem">
-          <h3>Investor Returns at $1.4B Exit</h3>
+          <h3>Investor Returns at $1B Exit</h3>
           <div
             style="
               display: grid;
@@ -2326,7 +2340,16 @@
           >
             <div>
               <div style="color: #cbd5e1; font-size: 0.9rem">
-                Conservative ($1B)
+                Conservative ($700M)
+              </div>
+              <div style="color: #34d399; font-size: 1.5rem; font-weight: bold">
+                35x Return
+              </div>
+              <div style="color: #cbd5e1; font-size: 0.8rem">$2M → $70M</div>
+            </div>
+            <div>
+              <div style="color: #cbd5e1; font-size: 0.9rem">
+                Base Case ($1B)
               </div>
               <div style="color: #34d399; font-size: 1.5rem; font-weight: bold">
                 50x Return
@@ -2335,30 +2358,21 @@
             </div>
             <div>
               <div style="color: #cbd5e1; font-size: 0.9rem">
-                Base Case ($1.4B)
+                Optimistic ($1.6B)
               </div>
               <div style="color: #34d399; font-size: 1.5rem; font-weight: bold">
-                70x Return
+                80x Return
               </div>
-              <div style="color: #cbd5e1; font-size: 0.8rem">$2M → $140M</div>
-            </div>
-            <div>
-              <div style="color: #cbd5e1; font-size: 0.9rem">
-                Optimistic ($2.4B)
-              </div>
-              <div style="color: #34d399; font-size: 1.5rem; font-weight: bold">
-                120x Return
-              </div>
-              <div style="color: #cbd5e1; font-size: 0.8rem">$2M → $240M</div>
+              <div style="color: #cbd5e1; font-size: 0.8rem">$2M → $160M</div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Slide 17: Global Expansion Strategy -->
+    <!-- Slide 18: Global Expansion Strategy -->
     <div class="slide">
-      <div class="slide-number">17/22</div>
+      <div class="slide-number">18/22</div>
       <h2>Global Expansion & Market Leadership</h2>
       <div class="slide-content">
         <div class="timeline">
@@ -2377,7 +2391,7 @@
               European Expansion
             </div>
             <p style="font-size: 0.9rem; margin-top: 0.5rem">
-              German language<br />
+              Multilingual interface<br />
               EU regulations<br />
               1.5M users
             </p>
@@ -2386,8 +2400,8 @@
             <h4 style="color: #60a5fa; margin-bottom: 0.5rem">Phase 3</h4>
             <div style="color: #34d399; font-weight: bold">Islamic Finance</div>
             <p style="font-size: 0.9rem; margin-top: 0.5rem">
-              Arabic language<br />
               Shariah compliance<br />
+              MENA markets<br />
               4M users
             </p>
           </div>
@@ -2461,24 +2475,22 @@
               Aggressive 30% market penetration = $321M ARR
             </p>
             <div style="color: #34d399; font-size: 1.2rem; font-weight: bold">
-              Clear path to $1.4B+ valuation through global expansion
+              Clear path to $1B+ valuation through global expansion
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Slide 18: Technology Roadmap -->
+    <!-- Slide 19: Advanced Technology Roadmap -->
     <div class="slide">
-      <div class="slide-number">18/22</div>
+      <div class="slide-number">19/22</div>
       <h2>Advanced Technology Roadmap</h2>
       <div class="slide-content">
         <div class="phase-card">
           <div class="phase-header">
-            <span class="phase-title"
-              >Phase 8: Quantitative Analysis Engine</span
-            >
-            <span class="phase-cost">$600K | 12 months</span>
+            <span class="phase-title">Quantitative Analysis Engine</span>
+            <span class="phase-timeline">12 months</span>
           </div>
           <div style="font-size: 0.9rem; color: #cbd5e1">
             • Monte Carlo simulations for risk assessment<br />
@@ -2491,10 +2503,8 @@
 
         <div class="phase-card">
           <div class="phase-header">
-            <span class="phase-title"
-              >Phase 9: Alternative Data Integration</span
-            >
-            <span class="phase-cost">$700K | 10 months</span>
+            <span class="phase-title">Alternative Data Integration</span>
+            <span class="phase-timeline">10 months</span>
           </div>
           <div style="font-size: 0.9rem; color: #cbd5e1">
             • Satellite imagery analysis for commodity/retail companies<br />
@@ -2507,8 +2517,8 @@
 
         <div class="phase-card">
           <div class="phase-header">
-            <span class="phase-title">Phase 10: Mobile & API Platform</span>
-            <span class="phase-cost">$400K | 8 months</span>
+            <span class="phase-title">Mobile & API Platform</span>
+            <span class="phase-timeline">8 months</span>
           </div>
           <div style="font-size: 0.9rem; color: #cbd5e1">
             • Native iOS and Android applications<br />
@@ -2521,22 +2531,22 @@
 
         <div style="text-align: center; margin-top: 2rem">
           <div class="investment-box">
-            <h3>Total Development Investment: $4.95M over 7 Years</h3>
+            <h3>Complete AI Trading Intelligence Platform</h3>
             <p style="font-size: 1.1rem; margin: 1rem 0">
               Creating the world's most advanced AI trading intelligence
               platform
             </p>
             <div style="color: #34d399; font-size: 1.2rem; font-weight: bold">
-              ROI: $1.4B+ valuation on $4.95M total development = 280x+ return
+              Target: $1B+ valuation through technological leadership
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Slide 19: Competitive Analysis Deep Dive -->
+    <!-- Slide 20: Competitive Analysis Deep Dive -->
     <div class="slide">
-      <div class="slide-number">19/22</div>
+      <div class="slide-number">20/22</div>
       <h2>Why We Will Win: Deep Competitive Analysis</h2>
       <div class="slide-content">
         <div class="two-column">
@@ -2577,19 +2587,6 @@
                 >
               </p>
             </div>
-            <div
-              style="
-                background: rgba(30, 41, 59, 0.4);
-                border-radius: 8px;
-                padding: 1rem;
-                margin-top: 1rem;
-              "
-            >
-              <p style="font-size: 0.8rem; color: #94a3b8">
-                *Revenue data sourced from public company investor relations and
-                SEC filings
-              </p>
-            </div>
           </div>
           <div>
             <h3>🚀 Kurzora's Unique Advantages</h3>
@@ -2619,8 +2616,8 @@
               <div class="feature-item">
                 <div class="feature-icon">⚡</div>
                 <div>
-                  <strong>Speed to Market:</strong> 18 months ahead of any
-                  competitor attempting similar AI platform
+                  <strong>Speed to Market:</strong> Development head start ahead
+                  of any competitor attempting similar AI platform
                 </div>
               </div>
               <div class="feature-item">
@@ -2648,8 +2645,8 @@
             institutional-grade AI tools<br />
             • <strong>Market Gap:</strong> $10.9B in competitor revenue with
             zero complete AI intelligence platforms<br />
-            • <strong>First-Mover:</strong> 18-month AI development head start
-            before anyone can build comparable system
+            • <strong>First-Mover:</strong> AI development head start before
+            anyone can build comparable system
           </p>
           <div style="color: #34d399; font-size: 1.2rem; font-weight: bold">
             We're not competing - we're creating the AI trading category
@@ -2658,15 +2655,15 @@
       </div>
     </div>
 
-    <!-- Slide 20: Revenue Model & Unit Economics -->
+    <!-- Slide 21: Revenue Model & Unit Economics -->
     <div class="slide">
-      <div class="slide-number">20/22</div>
+      <div class="slide-number">21/22</div>
       <h2>Proven Revenue Model & Unit Economics</h2>
       <div class="slide-content">
         <div class="metric-grid">
           <div class="metric-card">
             <div class="metric-label">Starter Plan</div>
-            <div class="metric-number">$29</div>
+            <div class="metric-number">$19</div>
             <div style="color: #cbd5e1; margin-top: 0.5rem">
               • 3 premium AI signals daily<br />
               • Email alerts<br />
@@ -2676,7 +2673,7 @@
           </div>
           <div class="metric-card">
             <div class="metric-label">Professional Plan</div>
-            <div class="metric-number">$99</div>
+            <div class="metric-number">$49</div>
             <div style="color: #cbd5e1; margin-top: 0.5rem">
               • Unlimited AI signals<br />
               • Email + Telegram alerts<br />
@@ -2685,8 +2682,8 @@
             </div>
           </div>
           <div class="metric-card">
-            <div class="metric-label">Enterprise Plan</div>
-            <div class="metric-number">$299</div>
+            <div class="metric-label">Elite Plan (Coming Soon)</div>
+            <div class="metric-number">$98</div>
             <div style="color: #cbd5e1; margin-top: 0.5rem">
               • AI API access<br />
               • Custom AI alerts<br />
@@ -2757,186 +2754,21 @@
         </div>
 
         <div class="cta-section">
-          <h3>Projected 5-Year Revenue Mix</h3>
-          <div
-            style="
-              display: grid;
-              grid-template-columns: repeat(4, 1fr);
-              gap: 1rem;
-              margin-top: 1.5rem;
-            "
-          >
-            <div>
-              <strong style="color: #60a5fa">Starter (60%):</strong><br />
-              3.6M users × $29<br />
-              = $1.25B ARR
-            </div>
-            <div>
-              <strong style="color: #34d399">Professional (30%):</strong><br />
-              1.8M users × $99<br />
-              = $2.14B ARR
-            </div>
-            <div>
-              <strong style="color: #fbbf24">Enterprise (8%):</strong><br />
-              480K users × $299<br />
-              = $1.72B ARR
-            </div>
-            <div>
-              <strong style="color: #ef4444">Institutional (2%):</strong><br />
-              120K users × $999<br />
-              = $1.44B ARR
-            </div>
-          </div>
-          <div
-            style="
-              color: #34d399;
-              font-size: 1.3rem;
-              font-weight: bold;
-              margin-top: 1rem;
-            "
-          >
-            Total Potential: $6.55B ARR (Conservative 60% market penetration)
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Slide 21: Technology Innovation -->
-    <div class="slide">
-      <div class="slide-number">21/22</div>
-      <h2>AI Technology Innovation Leadership</h2>
-      <div class="slide-content">
-        <div class="audi-analogy">
-          <h3 style="color: #34d399; margin-bottom: 1rem">
-            🚗 The Audi Philosophy Applied to AI
-          </h3>
-          <p style="color: #cbd5e1; line-height: 1.6">
-            Like Audi's "Vorsprung durch Technik" (Progress through Technology),
-            Kurzora achieves superior performance through hidden AI innovation.
-            Investors see the results, competitors can't replicate the
-            technology.
-          </p>
-        </div>
-
-        <div class="two-column">
-          <div>
-            <h3>🔬 Our AI Innovation Stack</h3>
-            <div class="feature-list" style="grid-template-columns: 1fr">
-              <div class="feature-item">
-                <div class="feature-icon">🧠</div>
-                <div>
-                  <strong>Proprietary AI Algorithms:</strong> 18 months of
-                  development creating unique signal processing methods
-                </div>
-              </div>
-              <div class="feature-item">
-                <div class="feature-icon">⚡</div>
-                <div>
-                  <strong>Real-time AI Processing:</strong> Sub-second analysis
-                  of 300+ data points per signal
-                </div>
-              </div>
-              <div class="feature-item">
-                <div class="feature-icon">🔗</div>
-                <div>
-                  <strong>Multi-source AI Fusion:</strong> Combining technical,
-                  fundamental, sentiment, and options data with AI
-                </div>
-              </div>
-              <div class="feature-item">
-                <div class="feature-icon">🎯</div>
-                <div>
-                  <strong>Adaptive AI Learning:</strong> Algorithms improve with
-                  every signal and user interaction
-                </div>
-              </div>
-              <div class="feature-item">
-                <div class="feature-icon">🌍</div>
-                <div>
-                  <strong>Global AI Models:</strong> Different AI models
-                  optimized for different markets and regulations
-                </div>
-              </div>
-              <div class="feature-item">
-                <div class="feature-icon">🔐</div>
-                <div>
-                  <strong>AI Security:</strong> Proprietary methods protected
-                  from reverse engineering
-                </div>
-              </div>
-            </div>
-          </div>
-          <div>
-            <h3>📊 Innovation Metrics</h3>
-            <div class="metric-grid" style="grid-template-columns: 1fr">
-              <div class="metric-card">
-                <div class="metric-number">71%</div>
-                <div class="metric-label">Current AI Accuracy</div>
-                <div
-                  style="color: #cbd5e1; margin-top: 0.5rem; font-size: 0.8rem"
-                >
-                  Industry leading performance
-                </div>
-              </div>
-              <div class="metric-card">
-                <div class="metric-number">95%</div>
-                <div class="metric-label">Target AI Panel Accuracy</div>
-                <div
-                  style="color: #cbd5e1; margin-top: 0.5rem; font-size: 0.8rem"
-                >
-                  With Phase 6 AI Panel coordination
-                </div>
-              </div>
-              <div class="metric-card">
-                <div class="metric-number">300+</div>
-                <div class="metric-label">AI Data Points per Signal</div>
-                <div
-                  style="color: #cbd5e1; margin-top: 0.5rem; font-size: 0.8rem"
-                >
-                  Comprehensive AI analysis
-                </div>
-              </div>
-              <div class="metric-card">
-                <div class="metric-number">0.3s</div>
-                <div class="metric-label">AI Processing Time</div>
-                <div
-                  style="color: #cbd5e1; margin-top: 0.5rem; font-size: 0.8rem"
-                >
-                  Real-time AI signal generation
-                </div>
-              </div>
-            </div>
-
-            <div
-              style="
-                background: rgba(59, 130, 246, 0.1);
-                border-radius: 10px;
-                padding: 1.5rem;
-                margin-top: 1rem;
-              "
+          <h3>Pricing Strategy & Resources</h3>
+          <p style="font-size: 1.1rem; margin: 1rem 0; color: #cbd5e1">
+            After reaching 1,000 paid users, all pricing tiers increase by
+            20%<br />
+            View our
+            <a
+              href="https://stripe.com/pricing"
+              class="reference-link"
+              target="_blank"
+              >Stripe Integration</a
             >
-              <h4 style="color: #60a5fa; margin-bottom: 1rem">
-                AI Patent Portfolio Strategy
-              </h4>
-              <p style="font-size: 0.9rem; line-height: 1.5; color: #cbd5e1">
-                • Filing provisional patents on core AI algorithms<br />
-                • Trade secret protection for implementation details<br />
-                • Open-source compatible interfaces<br />
-                • Defensive patent strategy against competitors
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="cta-section">
-          <h3>AI Technology Leadership = Market Leadership</h3>
-          <p style="font-size: 1.2rem; margin: 1rem 0; color: #cbd5e1">
-            Our 18-month AI development lead creates an unassailable technology
-            moat. Like Audi's engine technology, performance speaks louder than
-            specifications.
+            for payment processing
           </p>
-          <div style="color: #34d399; font-size: 1.3rem; font-weight: bold">
-            Superior AI = Superior Returns = $1.4B+ Valuation
+          <div style="color: #34d399; font-size: 1.2rem; font-weight: bold">
+            Scalable pricing model optimized for AI value delivery
           </div>
         </div>
       </div>
@@ -2967,7 +2799,7 @@
               <div style="color: #94a3b8; margin-top: 1rem">
                 Series A - Pre-money valuation: $10M<br />
                 Post-money valuation: $12M<br />
-                Target exit: $1.4B in 5 years
+                Target exit: $1B in 5 years
               </div>
             </div>
             <div>
@@ -2976,9 +2808,9 @@
                 ✅ 20% of the world's first AI-powered trading intelligence
                 platform<br />
                 ✅ Operational platform with proven revenue model<br />
-                ✅ 18-month AI development head start over competitors<br />
-                ✅ Clear path to $1.4B+ exit with multiple acquirers<br />
-                ✅ Experienced team with 313+ sessions of execution<br />
+                ✅ AI development head start over competitors<br />
+                ✅ Clear path to $1B+ exit with multiple acquirers<br />
+                ✅ Proven team with demonstrated execution<br />
                 ✅ Defensive AI moats in $10.9B+ market with zero competition
               </div>
             </div>
@@ -3051,10 +2883,9 @@
             | Live Demo Available
           </p>
           <div style="margin-top: 1rem; font-size: 0.9rem; color: #94a3b8">
-            Platform currently operational with 313+ development sessions
-            completed<br />
-            Ready for immediate scaling with proven AI technology and revenue
-            model
+            Platform currently operational with proven AI technology and revenue
+            model<br />
+            Ready for immediate scaling with validated market demand
           </div>
         </div>
       </div>
