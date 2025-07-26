@@ -418,17 +418,24 @@
         color: #60a5fa;
         text-decoration: none;
         font-size: 0.9rem;
-        transition: color 0.3s ease;
-        cursor: default;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border-bottom: 1px solid transparent;
       }
 
       .reference-link:hover {
         color: #34d399;
+        text-decoration: underline;
+        border-bottom: 1px solid #34d399;
+      }
+
+      .reference-link[href] {
+        cursor: pointer;
       }
 
       .reference-link[href]:hover {
         text-decoration: underline;
-        cursor: pointer;
+        transform: translateY(-1px);
       }
 
       .funding-round {
@@ -571,7 +578,33 @@
         box-shadow: 0 20px 40px rgba(59, 130, 246, 0.3);
       }
 
-      /* Mobile Responsiveness */
+      .wide-content-box {
+        width: 90%;
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: rgba(30, 41, 59, 0.6);
+        border-radius: 15px;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        text-align: center;
+      }
+
+      /* Enhanced Mobile Responsiveness */
+      @media (max-width: 1200px) {
+        .metric-grid {
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 1.5rem;
+        }
+
+        .feature-list {
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+
+        .slide-content {
+          max-width: 95%;
+        }
+      }
+
       @media (max-width: 1024px) {
         .metric-grid {
           grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -589,21 +622,33 @@
 
         h1 {
           font-size: 3rem;
+          line-height: 1.1;
         }
 
         h2 {
           font-size: 2rem;
+          line-height: 1.2;
+        }
+
+        .phase-card,
+        .funding-round,
+        .cta-section,
+        .investment-box {
+          width: 90%;
+          margin: 1rem auto;
         }
       }
 
       @media (max-width: 768px) {
         .slide {
           padding: 1rem;
+          min-height: 100vh;
         }
 
         .timeline {
           flex-direction: column;
           align-items: center;
+          gap: 1rem;
         }
 
         .timeline::before {
@@ -611,20 +656,27 @@
         }
 
         .timeline-item {
-          width: 100%;
+          width: 90%;
           max-width: 350px;
         }
 
         h1 {
           font-size: 2.5rem;
+          line-height: 1.1;
         }
 
         h2 {
           font-size: 1.8rem;
+          line-height: 1.2;
+        }
+
+        h3 {
+          font-size: 1.5rem;
         }
 
         .subtitle {
           font-size: 1.2rem;
+          line-height: 1.4;
         }
 
         .metric-card {
@@ -643,11 +695,16 @@
 
         .competitive-table {
           font-size: 0.8rem;
+          width: 100%;
+          overflow-x: auto;
+          display: block;
+          white-space: nowrap;
         }
 
         .competitive-table th,
         .competitive-table td {
           padding: 0.5rem;
+          min-width: 120px;
         }
 
         .slide-indicator {
@@ -663,12 +720,72 @@
           padding: 0.8rem;
           font-size: 1rem;
         }
+
+        .feature-item {
+          padding: 1rem;
+        }
+
+        .feature-icon {
+          width: 35px;
+          height: 35px;
+          font-size: 1rem;
+        }
+
+        .phase-card,
+        .funding-round,
+        .cta-section,
+        .investment-box,
+        .wide-content-box {
+          width: 95%;
+          margin: 1rem auto;
+          padding: 1rem;
+        }
+
+        .wide-content-box h2,
+        .wide-content-box h3 {
+          font-size: 1.2rem;
+          line-height: 1.3;
+        }
+
+        .wide-content-box p {
+          font-size: 0.9rem;
+          line-height: 1.4;
+        }
+
+        .wide-content-box .grid {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
+
+        .revenue-chart {
+          padding: 1rem;
+          height: 250px;
+        }
       }
 
       @media (max-width: 480px) {
         .slide {
           min-height: 100vh;
-          padding: 0.5rem;
+          padding: 0.75rem;
+        }
+
+        h1 {
+          font-size: 2rem;
+          line-height: 1.1;
+        }
+
+        h2 {
+          font-size: 1.5rem;
+          line-height: 1.2;
+        }
+
+        h3 {
+          font-size: 1.3rem;
+        }
+
+        .subtitle {
+          font-size: 1rem;
+          line-height: 1.4;
         }
 
         .metric-grid {
@@ -676,26 +793,114 @@
           gap: 1rem;
         }
 
-        .revenue-chart {
+        .metric-card {
           padding: 1rem;
-          height: 300px;
+        }
+
+        .metric-number {
+          font-size: 1.8rem;
+        }
+
+        .metric-label {
+          font-size: 1rem;
+        }
+
+        .revenue-chart {
+          padding: 0.5rem;
+          height: 200px;
         }
 
         .chart-bar {
-          width: 60px;
-          margin: 0 0.5rem;
+          width: 40px;
+          margin: 0 0.25rem;
         }
 
         .investment-box,
-        .cta-section {
-          padding: 1.5rem;
+        .cta-section,
+        .phase-card,
+        .funding-round,
+        .wide-content-box {
+          padding: 1rem;
+          margin: 0.5rem auto;
+          width: 98%;
         }
 
         .slide-number {
-          top: 1rem;
-          right: 1rem;
-          padding: 0.3rem 0.8rem;
-          font-size: 0.8rem;
+          top: 0.5rem;
+          right: 0.5rem;
+          padding: 0.25rem 0.5rem;
+          font-size: 0.7rem;
+        }
+
+        .feature-item {
+          padding: 0.75rem;
+          flex-direction: column;
+          text-align: center;
+        }
+
+        .feature-icon {
+          width: 30px;
+          height: 30px;
+          margin: 0 0 0.5rem 0;
+        }
+
+        .competitive-table {
+          font-size: 0.7rem;
+        }
+
+        .competitive-table th,
+        .competitive-table td {
+          padding: 0.25rem;
+          min-width: 80px;
+        }
+
+        .timeline-item {
+          width: 95%;
+        }
+
+        .logo {
+          font-size: 2rem;
+        }
+
+        .problem-stat,
+        .solution-stat {
+          font-size: 2rem;
+        }
+      }
+
+      @media (max-width: 360px) {
+        .slide {
+          padding: 0.5rem;
+        }
+
+        h1 {
+          font-size: 1.8rem;
+        }
+
+        h2 {
+          font-size: 1.3rem;
+        }
+
+        .subtitle {
+          font-size: 0.9rem;
+        }
+
+        .metric-number {
+          font-size: 1.5rem;
+        }
+
+        .investment-box,
+        .cta-section,
+        .phase-card,
+        .funding-round,
+        .wide-content-box {
+          padding: 0.75rem;
+          width: 100%;
+        }
+
+        .nav-btn {
+          padding: 0.6rem;
+          font-size: 0.9rem;
         }
       }
     </style>
@@ -876,7 +1081,7 @@
           </div>
         </div>
 
-        <div class="cta-section">
+        <div class="wide-content-box">
           <h2 style="margin-bottom: 1rem">
             Join the AI Trading Intelligence Revolution
           </h2>
@@ -888,7 +1093,7 @@
           <div
             style="
               display: grid;
-              grid-template-columns: repeat(3, 1fr);
+              grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
               gap: 2rem;
               margin-top: 2rem;
             "
@@ -965,7 +1170,7 @@
           </div>
         </div>
 
-        <div class="cta-section">
+        <div class="wide-content-box">
           <h3>Capture the World's Largest Underserved Financial Market</h3>
           <p style="font-size: 1.2rem; margin: 1rem 0; color: #cbd5e1">
             While competitors fight over saturated Western markets, we're
@@ -1086,6 +1291,7 @@
                     href="https://www.interactivebrokers.com"
                     class="reference-link"
                     target="_blank"
+                    rel="noopener"
                     >Interactive Brokers</a
                   ></strong
                 >
@@ -1095,6 +1301,7 @@
                   href="https://investors.interactivebrokers.com"
                   class="reference-link"
                   target="_blank"
+                  rel="noopener"
                   >$6.2B</a
                 >
               </td>
@@ -1110,6 +1317,7 @@
                     href="https://robinhood.com"
                     class="reference-link"
                     target="_blank"
+                    rel="noopener"
                     >Robinhood</a
                   ></strong
                 >
@@ -1119,6 +1327,7 @@
                   href="https://investors.robinhood.com"
                   class="reference-link"
                   target="_blank"
+                  rel="noopener"
                   >$3.2B</a
                 >
               </td>
@@ -1134,6 +1343,7 @@
                     href="https://www.etoro.com"
                     class="reference-link"
                     target="_blank"
+                    rel="noopener"
                     >eToro</a
                   ></strong
                 >
@@ -1143,6 +1353,7 @@
                   href="https://investors.etoro.com"
                   class="reference-link"
                   target="_blank"
+                  rel="noopener"
                   >$1.1B</a
                 >
               </td>
@@ -1158,6 +1369,7 @@
                     href="https://www.tradingview.com"
                     class="reference-link"
                     target="_blank"
+                    rel="noopener"
                     >TradingView</a
                   ></strong
                 >
@@ -1167,6 +1379,7 @@
                   href="https://www.tradingview.com/about/"
                   class="reference-link"
                   target="_blank"
+                  rel="noopener"
                   >~$400M</a
                 >
               </td>
@@ -2468,7 +2681,7 @@
             </div>
           </div>
 
-          <div class="cta-section" style="margin-top: 2rem">
+          <div class="wide-content-box" style="margin-top: 2rem">
             <h3>Total Addressable Revenue: $1.07B Annually</h3>
             <p style="font-size: 1.1rem; margin: 1rem 0; color: #cbd5e1">
               Conservative 10% market penetration = $107M ARR<br />
@@ -2530,7 +2743,7 @@
         </div>
 
         <div style="text-align: center; margin-top: 2rem">
-          <div class="investment-box">
+          <div class="wide-content-box">
             <h3>Complete AI Trading Intelligence Platform</h3>
             <p style="font-size: 1.1rem; margin: 1rem 0">
               Creating the world's most advanced AI trading intelligence
@@ -2870,17 +3083,6 @@
         <div style="text-align: center; margin-top: 3rem">
           <p style="font-size: 1.5rem; color: #60a5fa; font-weight: bold">
             Let's Build the Future of AI Trading Intelligence Together
-          </p>
-          <p style="color: #cbd5e1; margin-top: 1rem">
-            Contact: Khaled.ali@kurzora.com |
-            <a
-              href="https://kurzora.com"
-              class="reference-link"
-              target="_blank"
-              rel="noopener"
-              >kurzora.com</a
-            >
-            | Live Demo Available
           </p>
           <div style="margin-top: 1rem; font-size: 0.9rem; color: #94a3b8">
             Platform currently operational with proven AI technology and revenue
