@@ -10,6 +10,7 @@
 // 🎖️ LIVE DEPLOYMENT: Production-grade signal generation infrastructure
 // 🎯 SESSION #313C ENHANCEMENT: S/R proximity filter for actionable trading levels
 // 🔧 SESSION #313D FIX: Fixed support/resistance price mapping to database
+// 🚨 SESSION #316 CRITICAL FIX: Removed redundant getDateRanges() call to ensure consistent date ranges across all stocks and timeframes
 // ==================================================================================
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -92,6 +93,7 @@ export class SignalPipeline {
    * ANTI-REGRESSION: Exact same processing logic as original for production deployment
    * PRODUCTION: Live signal generation with professional modular architecture
    * SESSION #313C: Enhanced with S/R proximity filtering for actionable levels
+   * SESSION #316 FIX: Removed redundant getDateRanges() call for consistent date ranges
    */
   async execute(params) {
     const { startIndex, endIndex, batchNumber } = params;
@@ -100,6 +102,11 @@ export class SignalPipeline {
     const USE_BACKTEST = getUseBacktest();
     const TEST_STOCKS = getTestStocks();
     const TIMEFRAME_CONFIG = getTimeframeConfig();
+
+    // 🚨 SESSION #316 CRITICAL FIX: Calculate date ranges ONCE for all stocks to ensure consistency
+    // This prevents different stocks from getting different date ranges due to timing differences
+    const dateRanges = getDateRanges();
+
     const modeLabel = USE_BACKTEST ? "BACKTEST" : "LIVE";
     const modeDescription = USE_BACKTEST
       ? "using verified historical data (2024-05-06 to 2024-06-14)"
@@ -201,11 +208,13 @@ export class SignalPipeline {
         );
 
         // 🔧 SESSION #313: MULTI-TIMEFRAME DATA COLLECTION - PRODUCTION READY
+        // 🚨 SESSION #316 FIX: Use the function-level dateRanges variable for ALL stocks
+        // This ensures consistent date ranges across all stocks and timeframes
         console.log(
           `📡 [${ticker}] Production: Fetching real market data with SESSION #313 modular architecture...`
         );
         const coordinator = new TimeframeDataCoordinator(USE_BACKTEST);
-        const dateRanges = getDateRanges();
+        // SESSION #316 FIX: Removed redundant getDateRanges() call here to prevent date range inconsistencies
         const timeframeData = await coordinator.fetchMultiTimeframeData(
           ticker,
           dateRanges
@@ -1035,6 +1044,7 @@ export class SignalPipeline {
  * ANTI-REGRESSION: Maintains exact interface compatibility with all systems
  * PRODUCTION: Live signal processing with professional modular architecture
  * SESSION #313C: Enhanced with S/R proximity filtering for actionable levels
+ * SESSION #316: Enhanced with consistent date range processing for accurate pricing
  */
 export async function executeSignalPipeline(params) {
   const pipeline = new SignalPipeline();
@@ -1044,13 +1054,15 @@ export async function executeSignalPipeline(params) {
 // ==================================================================================
 // 🎯 SESSION #313 PRODUCTION SIGNAL PIPELINE DEPLOYMENT COMPLETE
 // 🎯 SESSION #313C S/R PROXIMITY FILTER ENHANCEMENT COMPLETE
+// 🚨 SESSION #316 PRICE ACCURACY REGRESSION FIX COMPLETE
 // ==================================================================================
-// 📊 FUNCTIONALITY: Production deployment of complete signal processing pipeline + S/R proximity filtering
-// 🛡️ PRESERVATION: ALL Session #151-311 processing logic preserved exactly + Session #313C enhancement
-// 🔧 PRODUCTION PURPOSE: Live signal generation with professional modular architecture + actionable S/R levels
-// 📈 PRODUCTION READY: Enhanced maintainability with identical behavior to original + proximity filtering
-// 🎖️ ANTI-REGRESSION: Original processing logic completely preserved + non-breaking enhancement
-// 🚀 LIVE SYSTEM: Production-grade modular signal generation infrastructure + actionable trading levels
+// 📊 FUNCTIONALITY: Production deployment of complete signal processing pipeline + S/R proximity filtering + price accuracy fix
+// 🛡️ PRESERVATION: ALL Session #151-311 processing logic preserved exactly + Session #313C enhancement + Session #316 critical fix
+// 🔧 PRODUCTION PURPOSE: Live signal generation with professional modular architecture + actionable S/R levels + consistent pricing
+// 📈 PRODUCTION READY: Enhanced maintainability with identical behavior to original + proximity filtering + price accuracy
+// 🎖️ ANTI-REGRESSION: Original processing logic completely preserved + non-breaking enhancement + critical regression fix
+// 🚀 LIVE SYSTEM: Production-grade modular signal generation infrastructure + actionable trading levels + accurate current pricing
 // 📋 SESSION #313C: S/R proximity filter deployed for actionable level generation
-// 🏆 ACHIEVEMENT: Historic modular architecture transformation + actionable S/R levels successfully deployed
+// 🚨 SESSION #316: Date range consistency fix deployed to resolve ENPH $55.76 → $35.03 price accuracy regression
+// 🏆 ACHIEVEMENT: Historic modular architecture transformation + actionable S/R levels + critical price accuracy fix successfully deployed
 // ==================================================================================
