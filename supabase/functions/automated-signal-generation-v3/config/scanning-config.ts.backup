@@ -70,7 +70,7 @@ export class ScanningConfiguration {
     // 🚨 SESSION #151-185 PRESERVED EXACTLY: Timeframe configuration
     // 🔧 SESSION #310 EXTRACTION: Moved from index.ts TIMEFRAME_CONFIG constant
     this.settings = {
-      useBacktest: false, // 🧪 SESSION #321 TEST: Enable verified historical data
+      useBacktest: true, // 🧪 SESSION #321 TEST: Enable verified historical data
       testStocks: ["AAPL", "MSFT", "GOOGL", "JPM", "JNJ"], // 🧪 SESSION #153 PRESERVED: Debug stocks for testing
       timeframeConfig: {
         "1H": {
@@ -95,9 +95,9 @@ export class ScanningConfiguration {
         },
       },
       dateRangeSettings: {
-        backtestStart: "2024-01-01", // 🧪 SESSION #152 PRESERVED: Verified backtest start date
+        backtestStart: "2024-05-06", // 🧪 SESSION #152 PRESERVED: Verified backtest start date
         backtestEnd: "2024-06-14", // 🧪 SESSION #152 PRESERVED: Verified backtest end date
-        calendarDays: 500, // 🚀 SESSION #185 PRESERVED: Extended 400-day range for reliable multi-timeframe data
+        calendarDays: 400, // 🚀 SESSION #185 PRESERVED: Extended 400-day range for reliable multi-timeframe data
       },
     };
 

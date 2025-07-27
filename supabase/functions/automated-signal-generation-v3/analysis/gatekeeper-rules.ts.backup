@@ -75,7 +75,7 @@ export class GatekeeperRules {
     this.thresholds = {
       oneHour: 70, // 1H score must be ≥70% (preserved exactly)
       fourHour: 70, // 4H score must be ≥70% (preserved exactly)
-      longTerm: 60, // 🧪 SESSION #321 TEST: Temporarily lowered for testing
+      longTerm: 70, // Either Daily ≥70% OR Weekly ≥70% (preserved exactly)
     };
   }
 
