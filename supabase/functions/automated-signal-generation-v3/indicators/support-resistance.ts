@@ -99,6 +99,7 @@ import { DefaultIndicatorLogger } from "./base-indicator.ts";
       const currentPrice = prices[prices.length - 1];
       // 🎯 SESSION #313C: Extract volatility distance from input for proximity filtering
       const volatilityDistance = input.volatilityDistance || null;
+
       const proximityAnalysis = this.analyzeProximity(
         currentPrice,
         allLevels,
@@ -279,6 +280,7 @@ import { DefaultIndicatorLogger } from "./base-indicator.ts";
         nearestLevel: null,
       }; // Neutral when no levels
     }
+
     // 🎯 SESSION #313C: Apply proximity filter for actionable levels
     let filteredLevels = levels;
     if (volatilityDistance && volatilityDistance > 0) {
@@ -287,6 +289,7 @@ import { DefaultIndicatorLogger } from "./base-indicator.ts";
         const distance = Math.abs(currentPrice - level.price);
         return distance <= volatilityDistance;
       });
+
       // If no levels within volatility distance, fall back to original behavior
       if (filteredLevels.length === 0) {
         filteredLevels = levels;
@@ -299,6 +302,7 @@ import { DefaultIndicatorLogger } from "./base-indicator.ts";
         );
       }
     }
+
     // 🔍 FIND NEAREST LEVEL: Calculate distance to filtered levels
     let nearestLevel = null;
     let minDistance = Infinity;
@@ -309,12 +313,14 @@ import { DefaultIndicatorLogger } from "./base-indicator.ts";
         nearestLevel = level;
       }
     }
+
     if (!nearestLevel) {
       return {
         proximityScore: 50,
         nearestLevel: null,
       };
     }
+
     // 🔧 SESSION #313D CLASSIFICATION FIX: Apply correct trading logic classification
     // Trading rules: Support = level BELOW current price, Resistance = level ABOVE current price
     let correctType;
@@ -415,6 +421,7 @@ import { DefaultIndicatorLogger } from "./base-indicator.ts";
   const nearestLevelType = result.metadata?.nearestLevelType || "neutral";
   const nearestLevelStrength = result.metadata?.nearestLevelStrength || 5;
   const nearestLevelPrice = result.metadata?.nearestLevelPrice || null;
+
   return {
     proximity: proximityScore,
     strength: nearestLevelStrength,
@@ -428,12 +435,11 @@ import { DefaultIndicatorLogger } from "./base-indicator.ts";
 // 🔧 SESSION #313D: CLASSIFICATION LOGIC FIX COMPLETE
 // ==================================================================================
 // 📊 FUNCTIONALITY: Complete support/resistance detection with smart entry capability + Session #183 real calculation compliance + Session #301-303 interface compatibility + modular architecture integration + Session #313C proximity filtering + Session #313D price mapping fix + Session #313D classification logic fix
-// 🛡️ PRESERVATION: Session #183 synthetic logic removal + null returns for insufficient data + real pivot detection methodology + configurable parameters + Session #301-303 interface compatibility + ALL existing functionality maintained
+// 🛡️ PRESERVATION: Session #183 synthetic logic removal + null returns for insufficient data + real pivot detection methodology + configurable parameters + Session #301-303 interface compatibility + ALL existing functionality maintained exactly
 // 🔧 DEVELOPMENT SUCCESS: Created S/R detection following Session #301-303 TechnicalIndicatorModule pattern with professional pivot detection algorithms + Session #313C actionable level filtering + Session #313D database price mapping + Session #313D trading logic classification
 // 📈 SMART ENTRY: Maintains exact return format compatibility through calculateSupportResistance helper function for composite scoring proximity logic + volatility-based proximity filtering for actionable levels + correct price values for database + correct trading logic classification
 // 🎖️ ANTI-REGRESSION: All Session #301-303 patterns followed exactly - S/R detection ready for immediate integration + existing calculator compatibility maintained + Session #313C enhancement preserves all existing behavior + Session #313D fixes preserve all functionality + Session #313D classification fix preserves all logic
 // ⚡ MODULAR BENEFITS: Isolated testing + clean interfaces + professional architecture + future AI integration ready + Session #301-303 pattern compliance + actionable level filtering + correct database price mapping + correct trading logic
 // 🚀 PRODUCTION READY: Session #304 Support/Resistance development complete + Session #313C proximity filter enhancement + Session #313D price mapping fix + Session #313D classification logic fix - provides institutional-grade level detection with modular architecture advantages + actionable trading levels + correct database values + correct trading logic
 // 🏆 TESTING VALIDATION: Enhanced S/R module produces actionable pivot detection for smart entry system + maintains Session #301-303 RSI/MACD/Volume Calculator functionality + filters ancient levels + maps correct prices to database + classifies support/resistance correctly
-// 🎯 SESSION #313D FINAL ACHIEVEMENT: Classification logic fixed - CLX will show support BELOW current price and resistance ABOVE current price - complete trading logic compliance achieved
 // ==================================================================================

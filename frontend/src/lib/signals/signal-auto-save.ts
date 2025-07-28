@@ -4,6 +4,7 @@
 // File: src/lib/signals/signal-auto-save.ts
 // Purpose: Automatically save high-quality trading signals to database with real price data
 // Integration: Connects signal generation → database storage → dashboard display
+// 🔧 SESSION #325: Phase 2 Migration - Removed deprecated column writes to support indicators table
 
 import { createClient } from "@supabase/supabase-js";
 import { ProcessedSignal, SignalStrength } from "./signal-processor";
@@ -12,6 +13,8 @@ import { ProcessedSignal, SignalStrength } from "./signal-processor";
 // INTERFACES & TYPES
 // ===================================================================
 
+// 🔧 SESSION #325: Updated interface - removed deprecated columns (rsi_value, macd_signal, etc.)
+// Frontend now reads from Session #321 indicators table instead of these columns
 interface DatabaseSignal {
   ticker: string;
   signal_type: "bullish" | "bearish" | "neutral";
@@ -25,11 +28,6 @@ interface DatabaseSignal {
   signal_strength: string;
   explanation: string;
   timeframe: string;
-  rsi_value?: number;
-  macd_signal?: number;
-  volume_ratio?: number;
-  support_level?: number;
-  resistance_level?: number;
   created_at?: string;
 }
 
@@ -321,6 +319,8 @@ export class SignalAutoSaveService {
         }
       }
 
+      // 🔧 SESSION #325: Removed deprecated column assignments (rsi_value, macd_signal, etc.)
+      // These indicators are now stored in Session #321 indicators table instead
       return {
         ticker: signal.ticker,
         signal_type: signal.signalType,
@@ -340,21 +340,6 @@ export class SignalAutoSaveService {
         explanation:
           signal.explanation || this.generateDefaultExplanation(signal),
         timeframe: signal.primaryTimeframe || "1D",
-        rsi_value: signal.indicators?.rsi
-          ? this.roundToDecimals(signal.indicators.rsi, 2)
-          : null,
-        macd_signal: signal.indicators?.macd
-          ? this.roundToDecimals(signal.indicators.macd, 4)
-          : null,
-        volume_ratio: signal.indicators?.volumeRatio
-          ? this.roundToDecimals(signal.indicators.volumeRatio, 4)
-          : null,
-        support_level: signal.indicators?.supportLevel
-          ? this.roundToDecimals(signal.indicators.supportLevel, 4)
-          : null,
-        resistance_level: signal.indicators?.resistanceLevel
-          ? this.roundToDecimals(signal.indicators.resistanceLevel, 4)
-          : null,
       };
     });
   }

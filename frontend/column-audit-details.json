@@ -1,0 +1,581 @@
+{
+  "summary": {
+    "totalFilesScanned": 191,
+    "filesWithIssues": 1,
+    "totalColumnReferences": 25,
+    "criticalIssues": 0,
+    "warningIssues": 25
+  },
+  "columnUsage": {
+    "rsi_value": {
+      "directReferences": [
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 108,
+          "column": "rsi_value",
+          "code": "const rsi_value = rsiIndicator?.raw_value",
+          "type": "variable",
+          "severity": "warning"
+        },
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 128,
+          "column": "rsi_value",
+          "code": "rsi_value,",
+          "type": "reference",
+          "severity": "warning"
+        },
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 138,
+          "column": "rsi_value",
+          "code": "rsi_value,",
+          "type": "reference",
+          "severity": "warning"
+        },
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 431,
+          "column": "rsi_value",
+          "code": "(s) => (s as any).rsi_value !== null || (s as any).macd_signal !== null",
+          "type": "reference",
+          "severity": "warning"
+        }
+      ],
+      "typeReferences": [
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 79,
+          "column": "rsi_value",
+          "code": "rsi_value: null,",
+          "type": "type",
+          "severity": "warning"
+        },
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 344,
+          "column": "rsi_value",
+          "code": "`🎯 ${record.ticker}: Migrated to indicators table - RSI: ${indicatorData.rsi_value}, MACD: ${indicatorData.macd_signal}, Volume: ${indicatorData.volume_ratio}`",
+          "type": "type",
+          "severity": "warning"
+        }
+      ],
+      "sqlReferences": [],
+      "total": 6
+    },
+    "macd_signal": {
+      "directReferences": [
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 111,
+          "column": "macd_signal",
+          "code": "const macd_signal = macdIndicator?.raw_value",
+          "type": "variable",
+          "severity": "warning"
+        },
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 129,
+          "column": "macd_signal",
+          "code": "macd_signal,",
+          "type": "reference",
+          "severity": "warning"
+        },
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 139,
+          "column": "macd_signal",
+          "code": "macd_signal,",
+          "type": "reference",
+          "severity": "warning"
+        },
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 431,
+          "column": "macd_signal",
+          "code": "(s) => (s as any).rsi_value !== null || (s as any).macd_signal !== null",
+          "type": "reference",
+          "severity": "warning"
+        }
+      ],
+      "typeReferences": [
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 80,
+          "column": "macd_signal",
+          "code": "macd_signal: null,",
+          "type": "type",
+          "severity": "warning"
+        },
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 344,
+          "column": "macd_signal",
+          "code": "`🎯 ${record.ticker}: Migrated to indicators table - RSI: ${indicatorData.rsi_value}, MACD: ${indicatorData.macd_signal}, Volume: ${indicatorData.volume_ratio}`",
+          "type": "type",
+          "severity": "warning"
+        }
+      ],
+      "sqlReferences": [],
+      "total": 6
+    },
+    "volume_ratio": {
+      "directReferences": [
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 114,
+          "column": "volume_ratio",
+          "code": "const volume_ratio = volumeIndicator?.raw_value",
+          "type": "variable",
+          "severity": "warning"
+        },
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 130,
+          "column": "volume_ratio",
+          "code": "volume_ratio,",
+          "type": "reference",
+          "severity": "warning"
+        },
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 140,
+          "column": "volume_ratio",
+          "code": "volume_ratio,",
+          "type": "reference",
+          "severity": "warning"
+        }
+      ],
+      "typeReferences": [
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 81,
+          "column": "volume_ratio",
+          "code": "volume_ratio: null,",
+          "type": "type",
+          "severity": "warning"
+        },
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 344,
+          "column": "volume_ratio",
+          "code": "`🎯 ${record.ticker}: Migrated to indicators table - RSI: ${indicatorData.rsi_value}, MACD: ${indicatorData.macd_signal}, Volume: ${indicatorData.volume_ratio}`",
+          "type": "type",
+          "severity": "warning"
+        }
+      ],
+      "sqlReferences": [],
+      "total": 5
+    },
+    "stochastic_value": {
+      "directReferences": [],
+      "typeReferences": [],
+      "sqlReferences": [],
+      "total": 0
+    },
+    "williams_r_value": {
+      "directReferences": [],
+      "typeReferences": [],
+      "sqlReferences": [],
+      "total": 0
+    },
+    "bollinger_value": {
+      "directReferences": [],
+      "typeReferences": [],
+      "sqlReferences": [],
+      "total": 0
+    },
+    "support_level": {
+      "directReferences": [
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 120,
+          "column": "support_level",
+          "code": "const support_level = supportIndicator?.raw_value",
+          "type": "variable",
+          "severity": "warning"
+        },
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 131,
+          "column": "support_level",
+          "code": "support_level,",
+          "type": "reference",
+          "severity": "warning"
+        },
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 141,
+          "column": "support_level",
+          "code": "support_level,",
+          "type": "reference",
+          "severity": "warning"
+        }
+      ],
+      "typeReferences": [
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 82,
+          "column": "support_level",
+          "code": "support_level: null,",
+          "type": "type",
+          "severity": "warning"
+        }
+      ],
+      "sqlReferences": [],
+      "total": 4
+    },
+    "resistance_level": {
+      "directReferences": [
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 123,
+          "column": "resistance_level",
+          "code": "const resistance_level = supportIndicator?.raw_value",
+          "type": "variable",
+          "severity": "warning"
+        },
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 132,
+          "column": "resistance_level",
+          "code": "resistance_level,",
+          "type": "reference",
+          "severity": "warning"
+        },
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 142,
+          "column": "resistance_level",
+          "code": "resistance_level,",
+          "type": "reference",
+          "severity": "warning"
+        }
+      ],
+      "typeReferences": [
+        {
+          "file": "src/contexts/SignalsContext.tsx",
+          "line": 83,
+          "column": "resistance_level",
+          "code": "resistance_level: null,",
+          "type": "type",
+          "severity": "warning"
+        }
+      ],
+      "sqlReferences": [],
+      "total": 4
+    }
+  },
+  "criticalFindings": [],
+  "warningFindings": [
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 79,
+      "column": "rsi_value",
+      "code": "rsi_value: null,",
+      "type": "type",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 80,
+      "column": "macd_signal",
+      "code": "macd_signal: null,",
+      "type": "type",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 81,
+      "column": "volume_ratio",
+      "code": "volume_ratio: null,",
+      "type": "type",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 82,
+      "column": "support_level",
+      "code": "support_level: null,",
+      "type": "type",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 83,
+      "column": "resistance_level",
+      "code": "resistance_level: null,",
+      "type": "type",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 108,
+      "column": "rsi_value",
+      "code": "const rsi_value = rsiIndicator?.raw_value",
+      "type": "variable",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 111,
+      "column": "macd_signal",
+      "code": "const macd_signal = macdIndicator?.raw_value",
+      "type": "variable",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 114,
+      "column": "volume_ratio",
+      "code": "const volume_ratio = volumeIndicator?.raw_value",
+      "type": "variable",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 120,
+      "column": "support_level",
+      "code": "const support_level = supportIndicator?.raw_value",
+      "type": "variable",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 123,
+      "column": "resistance_level",
+      "code": "const resistance_level = supportIndicator?.raw_value",
+      "type": "variable",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 128,
+      "column": "rsi_value",
+      "code": "rsi_value,",
+      "type": "reference",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 129,
+      "column": "macd_signal",
+      "code": "macd_signal,",
+      "type": "reference",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 130,
+      "column": "volume_ratio",
+      "code": "volume_ratio,",
+      "type": "reference",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 131,
+      "column": "support_level",
+      "code": "support_level,",
+      "type": "reference",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 132,
+      "column": "resistance_level",
+      "code": "resistance_level,",
+      "type": "reference",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 138,
+      "column": "rsi_value",
+      "code": "rsi_value,",
+      "type": "reference",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 139,
+      "column": "macd_signal",
+      "code": "macd_signal,",
+      "type": "reference",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 140,
+      "column": "volume_ratio",
+      "code": "volume_ratio,",
+      "type": "reference",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 141,
+      "column": "support_level",
+      "code": "support_level,",
+      "type": "reference",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 142,
+      "column": "resistance_level",
+      "code": "resistance_level,",
+      "type": "reference",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 344,
+      "column": "rsi_value",
+      "code": "`🎯 ${record.ticker}: Migrated to indicators table - RSI: ${indicatorData.rsi_value}, MACD: ${indicatorData.macd_signal}, Volume: ${indicatorData.volume_ratio}`",
+      "type": "type",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 344,
+      "column": "macd_signal",
+      "code": "`🎯 ${record.ticker}: Migrated to indicators table - RSI: ${indicatorData.rsi_value}, MACD: ${indicatorData.macd_signal}, Volume: ${indicatorData.volume_ratio}`",
+      "type": "type",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 344,
+      "column": "volume_ratio",
+      "code": "`🎯 ${record.ticker}: Migrated to indicators table - RSI: ${indicatorData.rsi_value}, MACD: ${indicatorData.macd_signal}, Volume: ${indicatorData.volume_ratio}`",
+      "type": "type",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 431,
+      "column": "rsi_value",
+      "code": "(s) => (s as any).rsi_value !== null || (s as any).macd_signal !== null",
+      "type": "reference",
+      "severity": "warning"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 431,
+      "column": "macd_signal",
+      "code": "(s) => (s as any).rsi_value !== null || (s as any).macd_signal !== null",
+      "type": "reference",
+      "severity": "warning"
+    }
+  ],
+  "sqlQueries": [],
+  "typeDefinitions": [
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 79,
+      "column": "rsi_value",
+      "code": "rsi_value: null,",
+      "type": "type",
+      "severity": "warning",
+      "risk": "MEDIUM",
+      "reason": "TypeScript interface needs updating"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 80,
+      "column": "macd_signal",
+      "code": "macd_signal: null,",
+      "type": "type",
+      "severity": "warning",
+      "risk": "MEDIUM",
+      "reason": "TypeScript interface needs updating"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 81,
+      "column": "volume_ratio",
+      "code": "volume_ratio: null,",
+      "type": "type",
+      "severity": "warning",
+      "risk": "MEDIUM",
+      "reason": "TypeScript interface needs updating"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 82,
+      "column": "support_level",
+      "code": "support_level: null,",
+      "type": "type",
+      "severity": "warning",
+      "risk": "MEDIUM",
+      "reason": "TypeScript interface needs updating"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 83,
+      "column": "resistance_level",
+      "code": "resistance_level: null,",
+      "type": "type",
+      "severity": "warning",
+      "risk": "MEDIUM",
+      "reason": "TypeScript interface needs updating"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 344,
+      "column": "rsi_value",
+      "code": "`🎯 ${record.ticker}: Migrated to indicators table - RSI: ${indicatorData.rsi_value}, MACD: ${indicatorData.macd_signal}, Volume: ${indicatorData.volume_ratio}`",
+      "type": "type",
+      "severity": "warning",
+      "risk": "MEDIUM",
+      "reason": "TypeScript interface needs updating"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 344,
+      "column": "macd_signal",
+      "code": "`🎯 ${record.ticker}: Migrated to indicators table - RSI: ${indicatorData.rsi_value}, MACD: ${indicatorData.macd_signal}, Volume: ${indicatorData.volume_ratio}`",
+      "type": "type",
+      "severity": "warning",
+      "risk": "MEDIUM",
+      "reason": "TypeScript interface needs updating"
+    },
+    {
+      "file": "src/contexts/SignalsContext.tsx",
+      "line": 344,
+      "column": "volume_ratio",
+      "code": "`🎯 ${record.ticker}: Migrated to indicators table - RSI: ${indicatorData.rsi_value}, MACD: ${indicatorData.macd_signal}, Volume: ${indicatorData.volume_ratio}`",
+      "type": "type",
+      "severity": "warning",
+      "risk": "MEDIUM",
+      "reason": "TypeScript interface needs updating"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "HIGH",
+      "action": "Update SELECT queries",
+      "description": "Replace SELECT * with specific column lists in all database queries",
+      "affectedFiles": 0
+    },
+    {
+      "priority": "HIGH",
+      "action": "Update TypeScript interfaces",
+      "description": "Remove deprecated columns from Signal interface definitions",
+      "affectedFiles": 8
+    },
+    {
+      "priority": "MEDIUM",
+      "action": "Update component props",
+      "description": "Remove deprecated column references from component properties",
+      "affectedFiles": 1
+    },
+    {
+      "priority": "LOW",
+      "action": "Update backend",
+      "description": "Remove deprecated column population from Session #321B signal-pipeline.ts",
+      "affectedFiles": 1
+    }
+  ]
+}

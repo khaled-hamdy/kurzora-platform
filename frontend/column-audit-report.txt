@@ -1,0 +1,165 @@
+
+🔍 KURZORA DATABASE COLUMN AUDIT REPORT
+Generated: 2025-07-28T14:40:46.705Z
+Session: #324 Database Cleanup Safety Audit
+
+📊 EXECUTIVE SUMMARY
+===================
+Total Files Scanned: 191
+Files with Issues: 1
+Total Column References: 25
+Critical Issues: 0
+Warning Issues: 25
+
+🚨 CRITICAL FINDINGS (0)
+==================
+
+
+⚠️ WARNING FINDINGS (25)
+==================
+⚠️  src/contexts/SignalsContext.tsx:79 - rsi_value (type)
+   Code: rsi_value: null,
+⚠️  src/contexts/SignalsContext.tsx:80 - macd_signal (type)
+   Code: macd_signal: null,
+⚠️  src/contexts/SignalsContext.tsx:81 - volume_ratio (type)
+   Code: volume_ratio: null,
+⚠️  src/contexts/SignalsContext.tsx:82 - support_level (type)
+   Code: support_level: null,
+⚠️  src/contexts/SignalsContext.tsx:83 - resistance_level (type)
+   Code: resistance_level: null,
+⚠️  src/contexts/SignalsContext.tsx:108 - rsi_value (variable)
+   Code: const rsi_value = rsiIndicator?.raw_value
+⚠️  src/contexts/SignalsContext.tsx:111 - macd_signal (variable)
+   Code: const macd_signal = macdIndicator?.raw_value
+⚠️  src/contexts/SignalsContext.tsx:114 - volume_ratio (variable)
+   Code: const volume_ratio = volumeIndicator?.raw_value
+⚠️  src/contexts/SignalsContext.tsx:120 - support_level (variable)
+   Code: const support_level = supportIndicator?.raw_value
+⚠️  src/contexts/SignalsContext.tsx:123 - resistance_level (variable)
+   Code: const resistance_level = supportIndicator?.raw_value
+⚠️  src/contexts/SignalsContext.tsx:128 - rsi_value (reference)
+   Code: rsi_value,
+⚠️  src/contexts/SignalsContext.tsx:129 - macd_signal (reference)
+   Code: macd_signal,
+⚠️  src/contexts/SignalsContext.tsx:130 - volume_ratio (reference)
+   Code: volume_ratio,
+⚠️  src/contexts/SignalsContext.tsx:131 - support_level (reference)
+   Code: support_level,
+⚠️  src/contexts/SignalsContext.tsx:132 - resistance_level (reference)
+   Code: resistance_level,
+⚠️  src/contexts/SignalsContext.tsx:138 - rsi_value (reference)
+   Code: rsi_value,
+⚠️  src/contexts/SignalsContext.tsx:139 - macd_signal (reference)
+   Code: macd_signal,
+⚠️  src/contexts/SignalsContext.tsx:140 - volume_ratio (reference)
+   Code: volume_ratio,
+⚠️  src/contexts/SignalsContext.tsx:141 - support_level (reference)
+   Code: support_level,
+⚠️  src/contexts/SignalsContext.tsx:142 - resistance_level (reference)
+   Code: resistance_level,
+⚠️  src/contexts/SignalsContext.tsx:344 - rsi_value (type)
+   Code: `🎯 ${record.ticker}: Migrated to indicators table - RSI: ${indicatorData.rsi_value}, MACD: ${indicatorData.macd_signal}, Volume: ${indicatorData.volume_ratio}`
+⚠️  src/contexts/SignalsContext.tsx:344 - macd_signal (type)
+   Code: `🎯 ${record.ticker}: Migrated to indicators table - RSI: ${indicatorData.rsi_value}, MACD: ${indicatorData.macd_signal}, Volume: ${indicatorData.volume_ratio}`
+⚠️  src/contexts/SignalsContext.tsx:344 - volume_ratio (type)
+   Code: `🎯 ${record.ticker}: Migrated to indicators table - RSI: ${indicatorData.rsi_value}, MACD: ${indicatorData.macd_signal}, Volume: ${indicatorData.volume_ratio}`
+⚠️  src/contexts/SignalsContext.tsx:431 - rsi_value (reference)
+   Code: (s) => (s as any).rsi_value !== null || (s as any).macd_signal !== null
+⚠️  src/contexts/SignalsContext.tsx:431 - macd_signal (reference)
+   Code: (s) => (s as any).rsi_value !== null || (s as any).macd_signal !== null
+
+📊 COLUMN USAGE BREAKDOWN
+========================
+rsi_value: 6 references
+   - Direct: 4
+   - Types: 2  
+   - SQL: 0
+macd_signal: 6 references
+   - Direct: 4
+   - Types: 2  
+   - SQL: 0
+volume_ratio: 5 references
+   - Direct: 3
+   - Types: 2  
+   - SQL: 0
+stochastic_value: 0 references
+   - Direct: 0
+   - Types: 0  
+   - SQL: 0
+williams_r_value: 0 references
+   - Direct: 0
+   - Types: 0  
+   - SQL: 0
+bollinger_value: 0 references
+   - Direct: 0
+   - Types: 0  
+   - SQL: 0
+support_level: 4 references
+   - Direct: 3
+   - Types: 1  
+   - SQL: 0
+resistance_level: 4 references
+   - Direct: 3
+   - Types: 1  
+   - SQL: 0
+
+🛠️ HIGH PRIORITY SQL QUERIES (0)
+============================
+
+
+📝 TYPE DEFINITIONS (8)
+==================
+📝 src/contexts/SignalsContext.tsx:79
+   Risk: MEDIUM - TypeScript interface needs updating
+   Code: rsi_value: null,
+📝 src/contexts/SignalsContext.tsx:80
+   Risk: MEDIUM - TypeScript interface needs updating
+   Code: macd_signal: null,
+📝 src/contexts/SignalsContext.tsx:81
+   Risk: MEDIUM - TypeScript interface needs updating
+   Code: volume_ratio: null,
+📝 src/contexts/SignalsContext.tsx:82
+   Risk: MEDIUM - TypeScript interface needs updating
+   Code: support_level: null,
+📝 src/contexts/SignalsContext.tsx:83
+   Risk: MEDIUM - TypeScript interface needs updating
+   Code: resistance_level: null,
+📝 src/contexts/SignalsContext.tsx:344
+   Risk: MEDIUM - TypeScript interface needs updating
+   Code: `🎯 ${record.ticker}: Migrated to indicators table - RSI: ${indicatorData.rsi_value}, MACD: ${indicatorData.macd_signal}, Volume: ${indicatorData.volume_ratio}`
+📝 src/contexts/SignalsContext.tsx:344
+   Risk: MEDIUM - TypeScript interface needs updating
+   Code: `🎯 ${record.ticker}: Migrated to indicators table - RSI: ${indicatorData.rsi_value}, MACD: ${indicatorData.macd_signal}, Volume: ${indicatorData.volume_ratio}`
+📝 src/contexts/SignalsContext.tsx:344
+   Risk: MEDIUM - TypeScript interface needs updating
+   Code: `🎯 ${record.ticker}: Migrated to indicators table - RSI: ${indicatorData.rsi_value}, MACD: ${indicatorData.macd_signal}, Volume: ${indicatorData.volume_ratio}`
+
+💡 RECOMMENDATIONS
+==================
+1. [HIGH] Update SELECT queries
+   Replace SELECT * with specific column lists in all database queries
+   Affected Files: 0
+2. [HIGH] Update TypeScript interfaces
+   Remove deprecated columns from Signal interface definitions
+   Affected Files: 8
+3. [MEDIUM] Update component props
+   Remove deprecated column references from component properties
+   Affected Files: 1
+4. [LOW] Update backend
+   Remove deprecated column population from Session #321B signal-pipeline.ts
+   Affected Files: 1
+
+🎯 SAFE REMOVAL STEPS
+====================
+1. ✅ BACKUP DATABASE - Full backup before any changes
+2. 🔧 UPDATE SQL QUERIES - Fix all SELECT * queries identified above
+3. 📝 UPDATE INTERFACES - Remove deprecated columns from TypeScript types
+4. 🧪 TEST COMPONENTS - Verify all UI components work without deprecated columns
+5. 👷 UPDATE BACKEND - Remove deprecated column population from signal-pipeline.ts
+6. 🗑️ REMOVE COLUMNS - Execute DROP COLUMN statements
+7. ✅ VERIFY SYSTEM - Full system test to ensure everything works
+
+✅ READY FOR REMOVAL: No critical issues found! Safe to proceed with column removal.
+
+==========================================
+🚨 IMPORTANT: Do not remove database columns until all critical issues are resolved!

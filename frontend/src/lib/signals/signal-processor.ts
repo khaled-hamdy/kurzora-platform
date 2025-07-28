@@ -5,6 +5,7 @@
 // 🔧 CRITICAL FIX: Now saves enhanced entry prices (smart entry with premiums)
 // 🛡️ ANTI-REGRESSION: All existing functionality preserved
 // 🎯 SESSION #134: Completes smart entry system integration
+// 🔧 SESSION #325: Phase 2 Migration - Removed deprecated column writes to support indicators table
 
 import {
   MultiTimeframeData,
@@ -774,6 +775,7 @@ export class SignalProcessor {
   }
 
   // 🔧 SESSION #134 FIX: Save signal with ENHANCED ENTRY PRICES (smart entry with premiums)
+  // 🔧 SESSION #325: Phase 2 Migration - Removed deprecated column writes to support indicators table
   public async saveSignalWithStockInfo(
     signal: ProcessedSignal,
     stockInfo: StockInfo
@@ -800,18 +802,16 @@ export class SignalProcessor {
       };
 
       // Create complete database record with CORRECT sector data AND real prices
+      // 🔧 SESSION #325: Removed deprecated column assignments (rsi_value, macd_signal, etc.)
+      // These indicators are now stored in Session #321 indicators table instead
       const databaseRecord = {
         // Basic signal information
         ticker: signal.ticker,
         signal_type: signal.signalType,
         confidence_score: signal.finalScore,
 
-        // Technical indicators
-        rsi_value: signal.technicalAnalysis.rsi,
-        macd_signal: signal.technicalAnalysis.macd / 100,
-        volume_ratio: signal.technicalAnalysis.volume / 50,
-        support_level: signal.riskManagement.entryPrice * 0.95,
-        resistance_level: signal.riskManagement.entryPrice * 1.05,
+        // 🔧 SESSION #325: Removed deprecated technical indicator columns
+        // Frontend now reads from Session #321 indicators table for all technical data
         timeframe: Object.keys(signal.timeframeScores)
           .join(",")
           .substring(0, 10),
@@ -923,6 +923,9 @@ export class SignalProcessor {
       );
       console.log(
         `🎯 ${signal.ticker}: ENHANCED ENTRY PRICE: $${databaseRecord.entry_price} (smart entry with premium)`
+      );
+      console.log(
+        `🔧 SESSION #325: Deprecated columns removed - indicators now in Session #321 table`
       );
 
       const { data, error } = await supabase

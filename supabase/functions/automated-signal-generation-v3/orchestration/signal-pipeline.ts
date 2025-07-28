@@ -11,6 +11,7 @@
 // 🎯 SESSION #313E PRESERVATION: ALL scoring logic preserved exactly (MACD momentum, Volume quality)
 // 🔧 SESSION #318 PRESERVATION: Multi-fallback getCurrentPrice() system protected
 // 🚨 SESSION #321B FINAL: Removed null checks to create all 28 indicators for complete transparency
+// 🗄️ SESSION #325 MIGRATION: Removed deprecated columns - data now in indicators table
 // ==================================================================================
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -67,6 +68,7 @@ import { CacheManager } from "../data/cache-manager.ts";
  * ANTI-REGRESSION: Identical processing flow with Session #313E scoring logic preserved exactly
  * PRODUCTION: Live signal generation with complete transparency into scoring logic
  * SESSION #313E PRESERVATION: ALL MACD momentum penalties, Volume quality validation preserved
+ * SESSION #325 MIGRATION: Database migration complete - deprecated columns removed
  */
 export class SignalPipeline {
   globalCacheManager = null;
@@ -99,6 +101,7 @@ export class SignalPipeline {
    * PRODUCTION: Live signal generation with complete transparency into scoring logic
    * SESSION #321B: Final transparency fix - creates all 28 indicators for complete user understanding
    * SESSION #313E PRESERVATION: ALL scoring algorithms preserved exactly
+   * SESSION #325 MIGRATION: Database migration complete - deprecated columns removed
    */
   async execute(params) {
     const { startIndex, endIndex, batchNumber } = params;
@@ -119,11 +122,11 @@ export class SignalPipeline {
 
     // 🚨 SESSION #321B: PROCESSING ENGINE - FINAL TRANSPARENCY FIX
     console.log(
-      `🚀 Starting Kurzora 4-Timeframe Signal Engine - SESSION #321B FINAL 28-RECORD TRANSPARENCY`
+      `🚀 Starting Kurzora 4-Timeframe Signal Engine - SESSION #325 Database Migration Complete`
     );
     console.log(`🔄 Mode: ${modeLabel} MODE - ${modeDescription}`);
     console.log(
-      `🚨 SESSION #321B FINAL: Complete transparency fix deployed - ALL 28 indicators will be created`
+      `🗄️ SESSION #325: Database migration complete - deprecated columns removed, indicators table active`
     );
     console.log(
       `🛡️ SESSION #313E PRESERVATION: All MACD momentum penalties & Volume quality validation preserved exactly`
@@ -151,30 +154,30 @@ export class SignalPipeline {
     }
     const supabase = createClient(supabaseUrl, supabaseKey);
     console.log(
-      "✅ Production database initialized successfully with SESSION #321B final transparency"
+      "✅ Production database initialized successfully with SESSION #325 migration complete"
     );
 
     // 🚨 SESSION #313: DELETE STRATEGY - PRODUCTION READY
     console.log(
-      `\n🗑️ ========== SESSION #321B PRODUCTION DELETE STRATEGY: SUPABASE SECURITY COMPLIANT ==========`
+      `\n🗑️ ========== SESSION #325 PRODUCTION DELETE STRATEGY: SUPABASE SECURITY COMPLIANT ==========`
     );
     console.log(
-      `🔧 [PRODUCTION_STRATEGY] SESSION #321B: Using modular SignalRepository.deleteAllSignals() for production deployment`
+      `🔧 [PRODUCTION_STRATEGY] SESSION #325: Using modular SignalRepository.deleteAllSignals() for production deployment`
     );
     const deleteResult = await deleteAllSignals(batchNumber);
     const deletedCount = deleteResult.count;
     const deleteSuccess = deleteResult.success;
     console.log(
-      `📊 [PRODUCTION_STRATEGY] SESSION #321B PRODUCTION DELETE Results Summary:`
+      `📊 [PRODUCTION_STRATEGY] SESSION #325 PRODUCTION DELETE Results Summary:`
     );
     console.log(`   Delete Success: ${deleteSuccess ? "✅ YES" : "❌ NO"}`);
     console.log(
-      `   Signals Deleted: ${deletedCount} (SESSION #321B FINAL TRANSPARENCY)`
+      `   Signals Deleted: ${deletedCount} (SESSION #325 MIGRATION COMPLETE)`
     );
 
     // 🗄️ SESSION #313: DATABASE-DRIVEN STOCK SELECTION - PRODUCTION READY
     console.log(
-      `\n🗄️ ========== SESSION #321B PRODUCTION DATABASE-DRIVEN STOCK SELECTION ==========`
+      `\n🗄️ ========== SESSION #325 PRODUCTION DATABASE-DRIVEN STOCK SELECTION ==========`
     );
     const ACTIVE_STOCKS = await getActiveStocksWithParameters(
       startIndex,
@@ -182,7 +185,7 @@ export class SignalPipeline {
       batchNumber
     );
     console.log(
-      `✅ SESSION #321B PRODUCTION DATABASE-DRIVEN STOCK SELECTION COMPLETE:`
+      `✅ SESSION #325 PRODUCTION DATABASE-DRIVEN STOCK SELECTION COMPLETE:`
     );
     console.log(`   Parameter Range: ${startIndex}-${endIndex}`);
     console.log(`   Stocks Retrieved: ${ACTIVE_STOCKS.length}`);
@@ -201,7 +204,7 @@ export class SignalPipeline {
     const allAnalysisResults = [];
 
     console.log(
-      `🎯 Beginning SESSION #321B FINAL processing of ${ACTIVE_STOCKS.length} stocks with complete 28-record indicator transparency...`
+      `🎯 Beginning SESSION #325 processing of ${ACTIVE_STOCKS.length} stocks with complete 28-record indicator transparency...`
     );
 
     // 🚨 SESSION #313: MAIN STOCK PROCESSING LOOP - ENHANCED WITH INDICATORS
@@ -209,7 +212,7 @@ export class SignalPipeline {
       try {
         const ticker = stockObject.ticker;
         console.log(
-          `\n🎯 ========== SESSION #321B FINAL ANALYSIS: ${ticker} (${
+          `\n🎯 ========== SESSION #325 ANALYSIS: ${ticker} (${
             stockObject.company_name
           }) (Batch ${batchNumber}, Stock ${totalProcessed + 1}/${
             ACTIVE_STOCKS.length
@@ -220,7 +223,7 @@ export class SignalPipeline {
         // 🚨 SESSION #316 FIX: Use the function-level dateRanges variable for ALL stocks
         // This ensures consistent date ranges across all stocks and timeframes
         console.log(
-          `📡 [${ticker}] Production: Fetching real market data with SESSION #321B final transparency...`
+          `📡 [${ticker}] Production: Fetching real market data with SESSION #325 migration complete...`
         );
         const coordinator = new TimeframeDataCoordinator(USE_BACKTEST);
         // SESSION #316 FIX: Removed redundant getDateRanges() call here to prevent date range inconsistencies
@@ -252,7 +255,7 @@ export class SignalPipeline {
               endIndex,
               batchNumber,
             },
-            session_321b_final:
+            session_325_migration:
               "28-record indicator processing - skipped due to no data",
           });
           totalProcessed++;
@@ -262,7 +265,7 @@ export class SignalPipeline {
         }
 
         console.log(
-          `✅ [${ticker}] Production: Real market data available - proceeding with final transparency analysis`
+          `✅ [${ticker}] Production: Real market data available - proceeding with transparency analysis`
         );
 
         // 🔧 SESSION #321B: INDIVIDUAL TIMEFRAME ANALYSIS - FINAL TRANSPARENCY
@@ -306,7 +309,7 @@ export class SignalPipeline {
           }
 
           console.log(
-            `📊 [${ticker}] ${timeframe}: Calculating indicators with SESSION #321B final transparency (${
+            `📊 [${ticker}] ${timeframe}: Calculating indicators with SESSION #325 migration complete (${
               data.prices?.length || 0
             } data points)...`
           );
@@ -343,7 +346,7 @@ export class SignalPipeline {
                 endIndex,
                 batchNumber,
               },
-              session_321b_final:
+              session_325_migration:
                 "28-record indicator processing - skipped due to no current price",
             });
             totalProcessed++;
@@ -480,7 +483,7 @@ export class SignalPipeline {
           };
 
           console.log(
-            `✅ [${ticker}] ${timeframe}: Score ${timeframeScore}% with SESSION #321B final transparency`
+            `✅ [${ticker}] ${timeframe}: Score ${timeframeScore}% with SESSION #325 migration complete`
           );
         }
 
@@ -514,7 +517,7 @@ export class SignalPipeline {
               endIndex,
               batchNumber,
             },
-            session_321b_final:
+            session_325_migration:
               "28-record indicator processing - skipped due to insufficient indicators",
           });
           totalProcessed++;
@@ -553,7 +556,7 @@ export class SignalPipeline {
               endIndex,
               batchNumber,
             },
-            session_321b_final:
+            session_325_migration:
               "28-record indicator processing - rejected by gatekeeper",
           });
           totalProcessed++;
@@ -651,9 +654,7 @@ export class SignalPipeline {
           this.mapScoreToSignalStrength(kuzzoraSmartScore);
         const signalType = this.mapScoreToSignalType(kuzzoraSmartScore);
 
-        console.log(
-          `🎯 [${ticker}] SESSION #321B FINAL SIGNAL ANALYSIS COMPLETE:`
-        );
+        console.log(`🎯 [${ticker}] SESSION #325 SIGNAL ANALYSIS COMPLETE:`);
         console.log(`   Final Score: ${kuzzoraSmartScore}%`);
         console.log(`   Signal Type: ${signalType}`);
         console.log(`   Signal Strength: ${signalStrength_enum}`);
@@ -679,7 +680,7 @@ export class SignalPipeline {
         // 🎯 SESSION #321B: PREPARE INDICATORS DATA FOR FINAL 28-RECORD CREATION
         // 🛡️ CRITICAL: Preserve ALL Session #313E scoring logic exactly while creating complete transparency records
         console.log(
-          `🎯 [${ticker}] SESSION #321B: Preparing FINAL complete 28-record indicator creation (7 indicators × 4 timeframes)...`
+          `🎯 [${ticker}] SESSION #325: Preparing complete 28-record indicator creation (7 indicators × 4 timeframes)...`
         );
 
         const indicatorsData = [];
@@ -713,7 +714,7 @@ export class SignalPipeline {
             scoring_version: "session_313e_preserved",
             metadata: {
               calculation_method: "session_301_modular",
-              session_321b_final_transparency: true,
+              session_325_migration_complete: true,
               original_scoring_preserved: true,
               data_available: rsiValue !== null && rsiValue !== undefined,
               insufficient_data: details?.insufficient_data || false,
@@ -740,7 +741,7 @@ export class SignalPipeline {
             metadata: {
               momentum_penalty_applied: macdValue !== null && macdValue < 0,
               session_313e_enhanced: true,
-              session_321b_final_transparency: true,
+              session_325_migration_complete: true,
               original_scoring_preserved: true,
               data_available: macdValue !== null && macdValue !== undefined,
               insufficient_data: details?.insufficient_data || false,
@@ -770,7 +771,7 @@ export class SignalPipeline {
                   ? "exceptional"
                   : "normal",
               session_313e_enhanced: true,
-              session_321b_final_transparency: true,
+              session_325_migration_complete: true,
               original_scoring_preserved: true,
               data_available: volumeValue !== null && volumeValue !== undefined,
               insufficient_data: details?.insufficient_data || false,
@@ -795,7 +796,7 @@ export class SignalPipeline {
             scoring_version: "session_313e_preserved",
             metadata: {
               calculation_method: "session_modular",
-              session_321b_final_transparency: true,
+              session_325_migration_complete: true,
               original_scoring_preserved: true,
               data_available:
                 stochasticValue !== null && stochasticValue !== undefined,
@@ -821,7 +822,7 @@ export class SignalPipeline {
             scoring_version: "session_313e_preserved",
             metadata: {
               calculation_method: "session_modular",
-              session_321b_final_transparency: true,
+              session_325_migration_complete: true,
               original_scoring_preserved: true,
               data_available:
                 williamsValue !== null && williamsValue !== undefined,
@@ -847,7 +848,7 @@ export class SignalPipeline {
             scoring_version: "session_313e_preserved",
             metadata: {
               calculation_method: "session_modular",
-              session_321b_final_transparency: true,
+              session_325_migration_complete: true,
               original_scoring_preserved: true,
               data_available:
                 bollingerValue !== null && bollingerValue !== undefined,
@@ -887,7 +888,7 @@ export class SignalPipeline {
                 ? "resistance_above_price"
                 : null,
               session_313c_proximity: "actionable_range",
-              session_321b_final_transparency: true,
+              session_325_migration_complete: true,
               original_scoring_preserved: true,
               data_available: srLevel !== null && srLevel !== undefined,
               insufficient_data: details?.insufficient_data || false,
@@ -898,12 +899,12 @@ export class SignalPipeline {
         }
 
         console.log(
-          `✅ [${ticker}] SESSION #321B: Prepared ${totalIndicatorsForThisSignal} indicator records for database creation (FINAL COMPLETE TRANSPARENCY)`
+          `✅ [${ticker}] SESSION #325: Prepared ${totalIndicatorsForThisSignal} indicator records for database creation (MIGRATION COMPLETE)`
         );
 
-        // 🔧 SESSION #321B: LEGACY DATABASE FIELD MAPPING - PRESERVED FOR BACKWARD COMPATIBILITY
+        // 🔧 SESSION #325: LEGACY DATABASE FIELD MAPPING - KEPT FOR COMPATIBILITY
         // 🛡️ ANTI-REGRESSION: Keep existing single-timeframe display fields for compatibility
-        // These will be removed in Session #324 after complete validation
+        // These variables are preserved but not used in database insert since columns were removed
         const primaryTimeframe =
           timeframeDetails["1D"] || timeframeDetails["1H"] || {};
 
@@ -944,6 +945,7 @@ export class SignalPipeline {
         };
 
         // 🔧 DATABASE DISPLAY VALUES - PRODUCTION READY (Existing pattern preserved)
+        // SESSION #325: These variables are kept for compatibility but not used in database insert
         const displayRSI =
           safeTimeframeDetails.rsi !== null ? safeTimeframeDetails.rsi : 50;
         const displayMACD =
@@ -954,6 +956,7 @@ export class SignalPipeline {
             : 1.0;
 
         // 🔧 NEW DATABASE DISPLAY VALUES - Following existing patterns for new columns
+        // SESSION #325: These variables are kept for compatibility but not used in database insert
         const displayStochastic =
           safeTimeframeDetails.stochastic !== null
             ? safeTimeframeDetails.stochastic
@@ -968,6 +971,7 @@ export class SignalPipeline {
             : 0.5;
 
         // 🔧 Support/Resistance display values - corrected mapping for calculated levels
+        // SESSION #325: These variables are kept for compatibility but not used in database insert
         const displaySupportLevel =
           safeTimeframeDetails.supportLevel !== null
             ? safeTimeframeDetails.supportLevel
@@ -1000,7 +1004,7 @@ export class SignalPipeline {
           },
           analysis: {
             methodology: "4-timeframe-institutional-analysis",
-            session: "321b-final-complete-transparency",
+            session: "325-migration-complete-transparency",
             gatekeeper_passed: true,
             kurzora_smart_score: kuzzoraSmartScore,
             batch_number: batchNumber,
@@ -1009,13 +1013,14 @@ export class SignalPipeline {
               endIndex,
               batchNumber,
             },
-            session_321b_final: {
+            session_325_migration: {
               version: "automated-signal-generation-v3",
               status: "production",
               indicator_records_created: totalIndicatorsForThisSignal,
               transparency_level: "complete_28_record_breakdown",
               scoring_preservation: "session_313e_exact",
-              final_transparency_achieved: true,
+              database_migration_complete: true,
+              deprecated_columns_removed: true,
             },
             // 🎯 SESSION #313C: Add proximity filter status to analysis metadata
             session_313c_enhancement: {
@@ -1032,6 +1037,8 @@ export class SignalPipeline {
         const safeStopLoss = Number((safeCurrentPrice * 0.92).toFixed(4));
         const safeTakeProfit = Number((safeCurrentPrice * 1.15).toFixed(4));
 
+        // 🎯 SESSION #325: DATABASE MIGRATION COMPLETE - DEPRECATED COLUMNS REMOVED
+        // All indicator data now stored in indicators table via saveSignalWithIndicators()
         const safeEnhancedSignal = {
           ticker: String(ticker).toUpperCase(),
           signal_type: safeValidSignalType,
@@ -1045,29 +1052,12 @@ export class SignalPipeline {
           company_name: String(safeStockInfo.name),
           sector: String(safeStockInfo.sector),
           market: "usa",
-          // 🔧 EXISTING DATABASE COLUMNS - Production ready (preserved exactly)
-          rsi_value: Number(displayRSI.toFixed(2)),
-          macd_signal: Number(displayMACD.toFixed(4)),
-          volume_ratio: Number(displayVolumeRatio.toFixed(2)),
-          // 🔧 NEW DATABASE COLUMNS - Using calculated values for enhanced technical analysis
-          stochastic_value: Number(displayStochastic.toFixed(2)),
-          williams_r_value: Number(displayWilliamsR.toFixed(2)),
-          bollinger_value: Number(displayBollinger.toFixed(4)),
-          // 🔧 Support/Resistance database columns - corrected mapping for actual algorithm structure
-          support_level:
-            displaySupportLevel !== null
-              ? Number(displaySupportLevel.toFixed(4))
-              : null,
-          resistance_level:
-            displayResistanceLevel !== null
-              ? Number(displayResistanceLevel.toFixed(4))
-              : null,
           status: "active",
           timeframe: "4TF",
           signal_strength: signalStrength_enum,
           final_score: safeIntegerSmartScore,
           signals: safeSignalsData,
-          explanation: `Kurzora 4-Timeframe Enhanced Analysis: Smart Score ${safeIntegerSmartScore}% | ${signalStrength_enum} Classification | SESSION #321B Final Complete Transparency | ${
+          explanation: `Kurzora 4-Timeframe Enhanced Analysis: Smart Score ${safeIntegerSmartScore}% | ${signalStrength_enum} Classification | SESSION #325 Database Migration Complete | ${
             batchNumber === 1
               ? `Enhanced signal after ${deletedCount} signals deleted`
               : `Enhanced batch ${batchNumber} signal appended`
@@ -1075,13 +1065,13 @@ export class SignalPipeline {
         };
 
         console.log(
-          `✅ [${ticker}] SESSION #321B FINAL SIGNAL: Company="${safeEnhancedSignal.company_name}", Sector="${safeEnhancedSignal.sector}"`
+          `✅ [${ticker}] SESSION #325 SIGNAL: Company="${safeEnhancedSignal.company_name}", Sector="${safeEnhancedSignal.sector}"`
         );
 
         // 🎯 SESSION #321B: ENHANCED DATABASE SAVE WITH INDICATORS - FINAL TRANSPARENCY
         // 🛡️ CRITICAL: Use transaction-safe function to save signal + indicators together
         console.log(
-          `💾 [${ticker}] SESSION #321B FINAL DATABASE SAVE: Using transaction-safe signal+indicators save...`
+          `💾 [${ticker}] SESSION #325 DATABASE SAVE: Using transaction-safe signal+indicators save...`
         );
         const saveResult = await saveSignalWithIndicators(
           safeEnhancedSignal,
@@ -1089,24 +1079,24 @@ export class SignalPipeline {
         );
         const dbInsertSuccess = saveResult.success;
         const dbInsertResult = dbInsertSuccess
-          ? `Successfully saved signal with ${indicatorsData.length} indicator records - ID: ${saveResult.data?.id} (SESSION #321B FINAL)`
+          ? `Successfully saved signal with ${indicatorsData.length} indicator records - ID: ${saveResult.data?.id} (SESSION #325 MIGRATION COMPLETE)`
           : `Database Error: ${saveResult.error}`;
 
         if (dbInsertSuccess) {
           console.log(
-            `🎉 [${ticker}] SESSION #321B FINAL DATABASE INSERT SUCCESS! Signal ID: ${saveResult.data?.id}, Indicators: ${indicatorsData.length}`
+            `🎉 [${ticker}] SESSION #325 DATABASE INSERT SUCCESS! Signal ID: ${saveResult.data?.id}, Indicators: ${indicatorsData.length}`
           );
           totalSavedCount++;
           totalIndicatorRecordsCreated += indicatorsData.length;
         } else {
           console.log(
-            `❌ [${ticker}] SESSION #321B Final Database insert FAILED: ${saveResult.error}`
+            `❌ [${ticker}] SESSION #325 Database insert FAILED: ${saveResult.error}`
           );
         }
 
-        // 🔧 SESSION #321B: ENHANCED RESULT TRACKING - FINAL TRANSPARENCY
+        // 🔧 SESSION #325: ENHANCED RESULT TRACKING - MIGRATION COMPLETE
         const resultStatus = dbInsertSuccess
-          ? "SAVED_WITH_FINAL_COMPLETE_INDICATORS"
+          ? "SAVED_WITH_COMPLETE_INDICATORS_MIGRATION_COMPLETE"
           : "CONSTRUCTED_BUT_NOT_SAVED";
 
         allAnalysisResults.push({
@@ -1139,16 +1129,17 @@ export class SignalPipeline {
             endIndex,
             batchNumber,
           },
-          session_321b_final: {
+          session_325_migration: {
             version: "automated-signal-generation-v3",
             status: "production",
             transparency_upgrade:
-              "final_complete_28_record_indicator_breakdown",
+              "complete_28_record_indicator_breakdown_migration_complete",
             indicator_records_created: dbInsertSuccess
               ? indicatorsData.length
               : 0,
             scoring_preservation: "session_313e_exact",
-            final_transparency_achieved: true,
+            database_migration_complete: true,
+            deprecated_columns_removed: true,
             old_signals_deleted:
               batchNumber === 1 ? deletedCount : "N/A (append mode)",
             delete_success:
@@ -1173,9 +1164,7 @@ export class SignalPipeline {
         await new Promise((resolve) => setTimeout(resolve, 100));
       } catch (stockError) {
         console.log(
-          `❌ [${
-            stockObject.ticker
-          }] SESSION #321B Final stock processing error: ${
+          `❌ [${stockObject.ticker}] SESSION #325 stock processing error: ${
             stockError.message || "No message available"
           }`
         );
@@ -1191,27 +1180,27 @@ export class SignalPipeline {
             endIndex,
             batchNumber,
           },
-          session_321b_final:
-            "Final complete transparency deployment - error occurred during processing",
+          session_325_migration:
+            "Database migration complete - error occurred during processing",
         });
         totalProcessed++;
         totalDataQualityIssues++;
       }
     }
 
-    // 🔧 SESSION #321B: ENHANCED PROCESSING RESULTS - FINAL TRANSPARENCY
+    // 🔧 SESSION #325: ENHANCED PROCESSING RESULTS - MIGRATION COMPLETE
     const totalProcessingTime = ((Date.now() - totalStartTime) / 1000).toFixed(
       1
     );
     const totalProcessingMinutes = (totalProcessingTime / 60).toFixed(1);
 
     console.log(
-      `\n🎉 ============ SESSION #321B FINAL ANALYSIS COMPLETE ============`
+      `\n🎉 ============ SESSION #325 ANALYSIS COMPLETE ============`
     );
-    console.log(`📊 FINAL SESSION #321B COMPLETE PROCESSING RESULTS SUMMARY:`);
-    console.log(`      Final Version: automated-signal-generation-v3 ✅`);
+    console.log(`📊 SESSION #325 COMPLETE PROCESSING RESULTS SUMMARY:`);
+    console.log(`      Migration Version: automated-signal-generation-v3 ✅`);
     console.log(
-      `      Transparency Final: Complete 28-record indicator breakdown ✅`
+      `      Database Migration: Complete - deprecated columns removed ✅`
     );
     console.log(
       `      Session #313E Preservation: All scoring logic preserved exactly ✅`
@@ -1220,16 +1209,16 @@ export class SignalPipeline {
       `      Indicator Records Created: ${totalIndicatorRecordsCreated} total ✅`
     );
     console.log(
-      `      Final Transparency: All indicators created for complete user understanding ✅`
+      `      Transparency: All indicators created for complete user understanding ✅`
     );
     console.log(
-      `      Processing Pipeline: Final modular system with complete transparency ✅`
+      `      Processing Pipeline: Complete modular system with migration complete ✅`
     );
     console.log(
       `      SESSION #313C Enhancement: S/R proximity filter preserved ✅`
     );
 
-    // 🔧 SESSION #321B: RETURN ENHANCED STRUCTURED RESULT - FINAL TRANSPARENCY
+    // 🔧 SESSION #325: RETURN ENHANCED STRUCTURED RESULT - MIGRATION COMPLETE
     return {
       success: true,
       processed: totalProcessed,
@@ -1252,7 +1241,7 @@ export class SignalPipeline {
       time: totalProcessingTime + "s",
       time_minutes: totalProcessingMinutes,
       results: allAnalysisResults,
-      session_321b_final: {
+      session_325_migration: {
         version: "automated-signal-generation-v3",
         status: "production",
         transparency_upgrade: "complete",
@@ -1263,7 +1252,8 @@ export class SignalPipeline {
             : 0,
         scoring_preservation: "session_313e_exact",
         modular_architecture_enhanced: true,
-        final_transparency_achieved: true,
+        database_migration_complete: true,
+        deprecated_columns_removed: true,
         expected_indicators_per_signal: 28,
       },
       // 🎯 SESSION #313C: Add proximity filter status to final results
@@ -1273,16 +1263,16 @@ export class SignalPipeline {
         volatility_based_filtering: "Using production entry/stop calculations",
       },
       // Additional properties for full compatibility with original response
-      session: `SESSION-321B-FINAL-${
+      session: `SESSION-325-MIGRATION-COMPLETE-${
         USE_BACKTEST ? "BACKTEST" : "LIVE"
       }-4TIMEFRAME-TRANSPARENCY`,
       mode: USE_BACKTEST ? "BACKTEST" : "LIVE",
       mode_description: USE_BACKTEST
         ? "using verified historical data (2024-05-06 to 2024-06-14)"
         : "using SESSION #185 enhanced 400-day rolling window for reliable multi-timeframe data",
-      message: `SESSION #321B FINAL system with ${
+      message: `SESSION #325 MIGRATION COMPLETE system with ${
         totalSavedCount > 0 ? "successful" : "attempted"
-      } database operations using final complete transparency architecture with ${totalIndicatorRecordsCreated} indicator records created for total signal scoring understanding`,
+      } database operations using complete transparency architecture with ${totalIndicatorRecordsCreated} indicator records created for total signal scoring understanding`,
     };
   }
 
@@ -1384,11 +1374,11 @@ export class SignalPipeline {
 }
 
 /**
- * 🎯 SESSION #321B: FINAL PRODUCTION COMPATIBILITY EXPORT
- * PURPOSE: Final production deployment interface for live signal generation with complete transparency
+ * 🎯 SESSION #325: MIGRATION COMPLETE PRODUCTION COMPATIBILITY EXPORT
+ * PURPOSE: Production deployment interface for live signal generation with migration complete
  * ANTI-REGRESSION: Maintains exact interface compatibility with all systems
- * PRODUCTION: Live signal processing with final complete transparency and Session #313E preservation
- * SESSION #321B: Final transparency fix - creates all 28 indicators for complete user understanding
+ * PRODUCTION: Live signal processing with complete transparency and Session #313E preservation
+ * SESSION #325: Database migration complete - deprecated columns removed, indicators table active
  */
 export async function executeSignalPipeline(params) {
   const pipeline = new SignalPipeline();
@@ -1396,16 +1386,16 @@ export async function executeSignalPipeline(params) {
 }
 
 // ==================================================================================
-// 🎯 SESSION #321B FINAL SIGNAL PIPELINE DEPLOYMENT COMPLETE
+// 🎯 SESSION #325 SIGNAL PIPELINE MIGRATION COMPLETE
 // ==================================================================================
-// 📊 FUNCTIONALITY: Final production deployment with complete 28-record indicator transparency
-// 🛡️ PRESERVATION: ALL Session #151-318 processing logic preserved exactly + final indicator transparency
+// 📊 FUNCTIONALITY: Production deployment with complete 28-record indicator transparency
+// 🛡️ PRESERVATION: ALL Session #151-318 processing logic preserved exactly + migration complete
 // 🔧 PRODUCTION PURPOSE: Live signal generation with complete transparency into scoring logic
-// 📈 PRODUCTION READY: Final complete transparency with identical behavior + all 28-record creation
-// 🎖️ ANTI-REGRESSION: Original processing logic completely preserved + final complete enhancement
-// 🚀 LIVE SYSTEM: Final modular signal generation with complete scoring breakdown
-// 📋 SESSION #321B: 28-record indicator transparency FINAL for complete user understanding
+// 📈 PRODUCTION READY: Complete transparency with identical behavior + migration complete
+// 🎖️ ANTI-REGRESSION: Original processing logic completely preserved
+// 🚀 LIVE SYSTEM: Modular signal generation with complete scoring breakdown
+// 📋 SESSION #325: Database migration complete - deprecated columns removed
 // 🛡️ SESSION #313E: All MACD momentum penalties & Volume quality validation preserved exactly
-// 🏆 ACHIEVEMENT: Final complete transparency while preserving all existing functionality
-// 🚨 FINAL FIX: Complete transparency - all 28 indicators created for institutional-grade understanding
+// 🏆 ACHIEVEMENT: Complete transparency with clean database architecture
+// 🗄️ MIGRATION SUCCESS: All indicator data now in indicators table with 28-record transparency
 // ==================================================================================
