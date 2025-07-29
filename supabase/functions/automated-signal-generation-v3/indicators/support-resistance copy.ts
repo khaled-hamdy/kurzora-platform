@@ -17,7 +17,6 @@
 // 📊 SESSION #313C IMPROVEMENT: Uses existing volatility distance from Edge Function for consistent filtering
 // 🔧 SESSION #313D FIX: Fixed proximity score → price mapping bug for database storage
 // 🔧 SESSION #313D CLASSIFICATION FIX: Fixed support/resistance classification logic for correct trading rules
-// 🔧 PRODUCTION DEBUG: Strategic logging added to identify classification inconsistencies
 // ==================================================================================
 import { DefaultIndicatorLogger } from "./base-indicator.ts";
 /**
@@ -33,7 +32,6 @@ import { DefaultIndicatorLogger } from "./base-indicator.ts";
  * 🎯 SESSION #313C ENHANCEMENT: Added proximity filtering for actionable trading levels
  * 🔧 SESSION #313D FIX: Fixed price mapping for database storage
  * 🔧 SESSION #313D CLASSIFICATION FIX: Fixed trading logic classification rules
- * 🔧 PRODUCTION DEBUG: Added strategic logging for classification troubleshooting
  */ export class SupportResistanceAnalyzer {
   DEFAULT_LOOKBACK = 20;
   MIN_TOUCH_STRENGTH = 2;
@@ -269,7 +267,6 @@ import { DefaultIndicatorLogger } from "./base-indicator.ts";
    * 🎯 ANALYZE PROXIMITY - SESSION #304 SMART ENTRY LOGIC
    * 🎯 SESSION #313C ENHANCEMENT: Added proximity filtering for actionable trading levels
    * 🔧 SESSION #313D CLASSIFICATION FIX: Fixed support/resistance classification to follow trading logic rules
-   * 🔧 PRODUCTION DEBUG: Added strategic logging to identify classification inconsistencies
    * PURPOSE: Calculate proximity score for smart entry system with volatility-based filtering
    * METHODOLOGY: Distance analysis to nearest significant levels within actionable range
    *
@@ -324,12 +321,6 @@ import { DefaultIndicatorLogger } from "./base-indicator.ts";
       };
     }
 
-    // 🔧 PRODUCTION DEBUG: Log classification analysis for troubleshooting
-    console.log(
-      `🔍 S/R DEBUG - Current Price: $${currentPrice}, Level Price: $${nearestLevel.price}`
-    );
-    console.log(`🔍 S/R DEBUG - Original Level Type: ${nearestLevel.type}`);
-
     // 🔧 SESSION #313D CLASSIFICATION FIX: Apply correct trading logic classification
     // Trading rules: Support = level BELOW current price, Resistance = level ABOVE current price
     let correctType;
@@ -338,16 +329,6 @@ import { DefaultIndicatorLogger } from "./base-indicator.ts";
     } else {
       correctType = "resistance"; // Level above current price = resistance
     }
-
-    // 🔧 PRODUCTION DEBUG: Log classification decision for troubleshooting
-    console.log(
-      `🔍 S/R DEBUG - Classification: ${nearestLevel.price} ${
-        nearestLevel.price < currentPrice ? "<" : ">"
-      } ${currentPrice} = ${correctType}`
-    );
-    console.log(
-      `🔍 S/R DEBUG - Original: ${nearestLevel.type}, Corrected: ${correctType}`
-    );
 
     // 🎖️ CALCULATE PROXIMITY SCORE: Higher score = closer to significant level
     // 📊 SCORING LOGIC:
@@ -370,9 +351,6 @@ import { DefaultIndicatorLogger } from "./base-indicator.ts";
       ...nearestLevel,
       type: correctType, // Use position-based classification instead of original pivot type
     };
-
-    // 🔧 PRODUCTION DEBUG: Log final classification result
-    console.log(`🔍 S/R DEBUG - Final Type Returned: ${correctedLevel.type}`);
 
     return {
       proximityScore: Math.round(Math.max(0, Math.min(100, proximityScore))),
@@ -455,14 +433,13 @@ import { DefaultIndicatorLogger } from "./base-indicator.ts";
 // 🎯 SESSION #313C: PROXIMITY FILTER ENHANCEMENT COMPLETE
 // 🔧 SESSION #313D: PRICE MAPPING BUG FIX COMPLETE
 // 🔧 SESSION #313D: CLASSIFICATION LOGIC FIX COMPLETE
-// 🔧 PRODUCTION DEBUG: Strategic logging added for classification troubleshooting
 // ==================================================================================
-// 📊 FUNCTIONALITY: Complete support/resistance detection with smart entry capability + Session #183 real calculation compliance + Session #301-303 interface compatibility + modular architecture integration + Session #313C proximity filtering + Session #313D price mapping fix + Session #313D classification logic fix + production debugging
+// 📊 FUNCTIONALITY: Complete support/resistance detection with smart entry capability + Session #183 real calculation compliance + Session #301-303 interface compatibility + modular architecture integration + Session #313C proximity filtering + Session #313D price mapping fix + Session #313D classification logic fix
 // 🛡️ PRESERVATION: Session #183 synthetic logic removal + null returns for insufficient data + real pivot detection methodology + configurable parameters + Session #301-303 interface compatibility + ALL existing functionality maintained exactly
-// 🔧 DEVELOPMENT SUCCESS: Created S/R detection following Session #301-303 TechnicalIndicatorModule pattern with professional pivot detection algorithms + Session #313C actionable level filtering + Session #313D database price mapping + Session #313D trading logic classification + strategic debugging for production troubleshooting
-// 📈 SMART ENTRY: Maintains exact return format compatibility through calculateSupportResistance helper function for composite scoring proximity logic + volatility-based proximity filtering for actionable levels + correct price values for database + correct trading logic classification + debug visibility
-// 🎖️ ANTI-REGRESSION: All Session #301-303 patterns followed exactly - S/R detection ready for immediate integration + existing calculator compatibility maintained + Session #313C enhancement preserves all existing behavior + Session #313D fixes preserve all functionality + Session #313D classification fix preserves all logic + debug logging preserves all production behavior
-// ⚡ MODULAR BENEFITS: Isolated testing + clean interfaces + professional architecture + future AI integration ready + Session #301-303 pattern compliance + actionable level filtering + correct database price mapping + correct trading logic + troubleshooting visibility
-// 🚀 PRODUCTION READY: Session #304 Support/Resistance development complete + Session #313C proximity filter enhancement + Session #313D price mapping fix + Session #313D classification logic fix + production debug logging - provides institutional-grade level detection with modular architecture advantages + actionable trading levels + correct database values + correct trading logic + classification troubleshooting capability
-// 🏆 TESTING VALIDATION: Enhanced S/R module produces actionable pivot detection for smart entry system + maintains Session #301-303 RSI/MACD/Volume Calculator functionality + filters ancient levels + maps correct prices to database + classifies support/resistance correctly + provides debug visibility for production troubleshooting
+// 🔧 DEVELOPMENT SUCCESS: Created S/R detection following Session #301-303 TechnicalIndicatorModule pattern with professional pivot detection algorithms + Session #313C actionable level filtering + Session #313D database price mapping + Session #313D trading logic classification
+// 📈 SMART ENTRY: Maintains exact return format compatibility through calculateSupportResistance helper function for composite scoring proximity logic + volatility-based proximity filtering for actionable levels + correct price values for database + correct trading logic classification
+// 🎖️ ANTI-REGRESSION: All Session #301-303 patterns followed exactly - S/R detection ready for immediate integration + existing calculator compatibility maintained + Session #313C enhancement preserves all existing behavior + Session #313D fixes preserve all functionality + Session #313D classification fix preserves all logic
+// ⚡ MODULAR BENEFITS: Isolated testing + clean interfaces + professional architecture + future AI integration ready + Session #301-303 pattern compliance + actionable level filtering + correct database price mapping + correct trading logic
+// 🚀 PRODUCTION READY: Session #304 Support/Resistance development complete + Session #313C proximity filter enhancement + Session #313D price mapping fix + Session #313D classification logic fix - provides institutional-grade level detection with modular architecture advantages + actionable trading levels + correct database values + correct trading logic
+// 🏆 TESTING VALIDATION: Enhanced S/R module produces actionable pivot detection for smart entry system + maintains Session #301-303 RSI/MACD/Volume Calculator functionality + filters ancient levels + maps correct prices to database + classifies support/resistance correctly
 // ==================================================================================

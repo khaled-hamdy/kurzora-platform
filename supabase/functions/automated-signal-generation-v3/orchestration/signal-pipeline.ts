@@ -12,6 +12,7 @@
 // 🔧 SESSION #318 PRESERVATION: Multi-fallback getCurrentPrice() system protected
 // 🚨 SESSION #321B FINAL: Removed null checks to create all 28 indicators for complete transparency
 // 🗄️ SESSION #325 MIGRATION: Removed deprecated columns - data now in indicators table
+// 🐛 BUG FIX: Fixed hardcoded support/resistance classification with Session #313D position-based validation
 // ==================================================================================
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -69,6 +70,7 @@ import { CacheManager } from "../data/cache-manager.ts";
  * PRODUCTION: Live signal generation with complete transparency into scoring logic
  * SESSION #313E PRESERVATION: ALL MACD momentum penalties, Volume quality validation preserved
  * SESSION #325 MIGRATION: Database migration complete - deprecated columns removed
+ * BUG FIX: Fixed hardcoded support/resistance classification with Session #313D position-based validation
  */
 export class SignalPipeline {
   globalCacheManager = null;
@@ -102,6 +104,7 @@ export class SignalPipeline {
    * SESSION #321B: Final transparency fix - creates all 28 indicators for complete user understanding
    * SESSION #313E PRESERVATION: ALL scoring algorithms preserved exactly
    * SESSION #325 MIGRATION: Database migration complete - deprecated columns removed
+   * BUG FIX: Fixed hardcoded support/resistance classification with Session #313D position-based validation
    */
   async execute(params) {
     const { startIndex, endIndex, batchNumber } = params;
@@ -860,6 +863,7 @@ export class SignalPipeline {
 
           // 🎯 SESSION #321B FINAL: SUPPORT/RESISTANCE INDICATOR RECORD CREATION - Always create for transparency
           // 🛡️ SESSION #313C/D: Preserve proximity filtering and price mapping exactly
+          // 🐛 BUG FIX: Apply Session #313D position-based classification instead of hardcoded type assignment
           const srLevel = details?.supportLevel || details?.resistanceLevel;
           const srContribution = calculateIndicatorScoreContribution(
             "SUPPORT_RESISTANCE",
@@ -867,6 +871,24 @@ export class SignalPipeline {
             timeframe,
             details?.indicators?.support_resistance_object
           );
+
+          // 🐛 BUG FIX: Calculate correct type using Session #313D position-based validation
+          // Replace hardcoded type assignment with proper price comparison
+          let correctType = null;
+          let correctClassification = null;
+          if (srLevel && details?.currentPrice) {
+            if (srLevel < details.currentPrice) {
+              correctType = "support";
+              correctClassification = "support_below_price";
+            } else if (srLevel > details.currentPrice) {
+              correctType = "resistance";
+              correctClassification = "resistance_above_price";
+            } else {
+              correctType = "neutral";
+              correctClassification = "level_equals_price";
+            }
+          }
+
           indicatorsData.push({
             indicator_name: "SUPPORT_RESISTANCE",
             timeframe: timeframe,
@@ -874,25 +896,28 @@ export class SignalPipeline {
             score_contribution: srContribution,
             scoring_version: "session_313e_preserved",
             metadata: {
-              support_level: details?.supportLevel,
-              resistance_level: details?.resistanceLevel,
+              // 🐛 BUG FIX: Correct metadata field assignment based on calculated type
+              support_level: correctType === "support" ? srLevel : null,
+              resistance_level: correctType === "resistance" ? srLevel : null,
               proximity_percent: details?.proximityFilterApplied ? 85 : null,
-              type: details?.supportLevel
-                ? "support"
-                : details?.resistanceLevel
-                ? "resistance"
-                : null,
-              session_313d_classification: details?.supportLevel
-                ? "support_below_price"
-                : details?.resistanceLevel
-                ? "resistance_above_price"
-                : null,
+              // 🐛 BUG FIX: Use Session #313D position-based classification
+              type: correctType,
+              session_313d_classification: correctClassification,
               session_313c_proximity: "actionable_range",
               session_325_migration_complete: true,
               original_scoring_preserved: true,
               data_available: srLevel !== null && srLevel !== undefined,
               insufficient_data: details?.insufficient_data || false,
               insufficient_scoring: details?.insufficient_scoring || false,
+              // 🐛 BUG FIX: Add debugging info for position-based classification
+              current_price: details?.currentPrice,
+              level_vs_price:
+                srLevel && details?.currentPrice
+                  ? srLevel < details.currentPrice
+                    ? "below"
+                    : "above"
+                  : null,
+              classification_method: "session_313d_position_based",
             },
           });
           totalIndicatorsForThisSignal++;
@@ -1379,6 +1404,7 @@ export class SignalPipeline {
  * ANTI-REGRESSION: Maintains exact interface compatibility with all systems
  * PRODUCTION: Live signal processing with complete transparency and Session #313E preservation
  * SESSION #325: Database migration complete - deprecated columns removed, indicators table active
+ * BUG FIX: Fixed hardcoded support/resistance classification with Session #313D position-based validation
  */
 export async function executeSignalPipeline(params) {
   const pipeline = new SignalPipeline();
@@ -1398,4 +1424,5 @@ export async function executeSignalPipeline(params) {
 // 🛡️ SESSION #313E: All MACD momentum penalties & Volume quality validation preserved exactly
 // 🏆 ACHIEVEMENT: Complete transparency with clean database architecture
 // 🗄️ MIGRATION SUCCESS: All indicator data now in indicators table with 28-record transparency
+// 🐛 BUG FIX: Fixed hardcoded support/resistance classification with Session #313D position-based validation
 // ==================================================================================
