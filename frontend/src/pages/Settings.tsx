@@ -125,25 +125,29 @@ const Settings: React.FC = React.memo(() => {
 
   // 🚮 REMOVED: usePeriodicSignalGeneration hook (Signal Generation section removed)
 
-  // 🚀 PRESERVED: Local state for email settings before saving
+  // 🔧 FIELD NAME CONSISTENCY FIX: Use email_alerts_enabled to match Edge Function
+  // Previously used email_enabled but Edge Function expects email_alerts_enabled
+  // This ensures Settings toggle works with existing alert distribution system
   const [localEmailEnabled, setLocalEmailEnabled] = useState(
-    alertSettings?.email_enabled ?? true
+    alertSettings?.email_alerts_enabled ?? true
   );
 
   // 🚮 REMOVED: localAutoGenConfig state (Signal Generation section removed)
 
   // 🚮 REMOVED: scroll-to-section logic (Signal Generation section removed)
 
-  // 🚀 PRESERVED: Track unsaved changes (email only now)
+  // 🔧 FIELD NAME CONSISTENCY FIX: Track changes using email_alerts_enabled field
+  // This matches the field name that Edge Function checks for email preferences
   useEffect(() => {
     const emailChanged =
-      localEmailEnabled !== (alertSettings?.email_enabled ?? true);
+      localEmailEnabled !== (alertSettings?.email_alerts_enabled ?? true);
     setHasUnsavedChanges(emailChanged);
   }, [localEmailEnabled, alertSettings]);
 
-  // 🚀 PRESERVED: Sync local state when external state changes
+  // 🔧 FIELD NAME CONSISTENCY FIX: Sync local state using email_alerts_enabled field
+  // Ensures Settings toggle displays correct state from database
   useEffect(() => {
-    setLocalEmailEnabled(alertSettings?.email_enabled ?? true);
+    setLocalEmailEnabled(alertSettings?.email_alerts_enabled ?? true);
   }, [alertSettings]);
 
   // 🚮 REMOVED: useEffect for localAutoGenConfig (Signal Generation section removed)
@@ -155,13 +159,14 @@ const Settings: React.FC = React.memo(() => {
 
   // 🚮 REMOVED: Auto-generation handlers (Signal Generation section removed)
 
-  // 🚀 PRESERVED: Save settings (email only now)
+  // 🔧 FIELD NAME CONSISTENCY FIX: Save using email_alerts_enabled field
+  // This ensures the setting is saved with the field name Edge Function expects
   const handleSaveSettings = useCallback(async () => {
     setIsSaving(true);
     try {
-      // Save email settings
-      if (localEmailEnabled !== (alertSettings?.email_enabled ?? true)) {
-        await updateSettings({ email_enabled: localEmailEnabled });
+      // Save email settings using consistent field name
+      if (localEmailEnabled !== (alertSettings?.email_alerts_enabled ?? true)) {
+        await updateSettings({ email_alerts_enabled: localEmailEnabled });
       }
 
       // 🚮 REMOVED: Auto-generation settings save logic
@@ -184,9 +189,10 @@ const Settings: React.FC = React.memo(() => {
     }
   }, [localEmailEnabled, alertSettings, updateSettings, toast]);
 
-  // 🚀 PRESERVED: Discard changes (email only now)
+  // 🔧 FIELD NAME CONSISTENCY FIX: Discard changes using email_alerts_enabled field
+  // Resets local state to match database value using consistent field naming
   const handleDiscardChanges = useCallback(() => {
-    setLocalEmailEnabled(alertSettings?.email_enabled ?? true);
+    setLocalEmailEnabled(alertSettings?.email_alerts_enabled ?? true);
     setHasUnsavedChanges(false);
   }, [alertSettings]);
 
@@ -311,7 +317,8 @@ const Settings: React.FC = React.memo(() => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* 🚀 PRESERVED: Email Alerts with Clear Toggle */}
+              {/* 🔧 FIELD NAME CONSISTENCY FIX: Email Alerts using correct field name */}
+              {/* This toggle now works with Edge Function by using email_alerts_enabled field */}
               <ClearToggle
                 id="email-alerts"
                 label="Email Alerts"
