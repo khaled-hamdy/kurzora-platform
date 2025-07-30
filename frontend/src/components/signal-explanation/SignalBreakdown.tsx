@@ -11,12 +11,14 @@ import {
 import { createClient } from "@supabase/supabase-js";
 import TimeframeConfirmation from "./TimeframeConfirmation";
 import TimeframeBreakdown from "./TimeframeBreakdown";
+import PatternRecognition from "./PatternRecognition";
+import HistoricalMatches from "./HistoricalMatches";
 
-// 🎯 PURPOSE: Enhanced signal score breakdown integrating Session #316 multi-timeframe confirmation displays
-// 🔧 SESSION #316: Multi-Timeframe Confirmation Display - Enhanced integration with new components
-// 🛡️ PRESERVATION: Uses Session #315 established patterns, maintains all existing functionality exactly
-// 📝 HANDOVER: Integrates TimeframeConfirmation and TimeframeBreakdown components for comprehensive analysis
-// ✅ PRODUCTION: Real database queries only, no synthetic data, preserves all Session #315 logic exactly
+// 🎯 PURPOSE: Enhanced signal score breakdown integrating Session #317 AI pattern recognition display
+// 🔧 SESSION #317: AI Pattern Recognition Display - Enhanced integration with pattern analysis components
+// 🛡️ PRESERVATION: Uses Session #315-316 established patterns, maintains all existing functionality exactly
+// 📝 HANDOVER: Integrates PatternRecognition and HistoricalMatches components for comprehensive AI analysis
+// ✅ PRODUCTION: Real database queries only, no synthetic data, preserves all Session #315-316 logic exactly
 
 // Initialize Supabase client using established project patterns
 const supabase = createClient(
@@ -24,7 +26,7 @@ const supabase = createClient(
   process.env.VITE_SUPABASE_ANON_KEY || ""
 );
 
-// TypeScript interfaces following established Session #315 patterns
+// TypeScript interfaces following established Session #315-316 patterns
 interface SignalBreakdownProps {
   signalId: string;
   finalScore: number;
@@ -54,7 +56,7 @@ const SignalBreakdown: React.FC<SignalBreakdownProps> = ({
   finalScore,
   signalType,
 }) => {
-  // State management following established Session #315 patterns
+  // State management following established Session #315-316 patterns
   const [indicatorData, setIndicatorData] = useState<IndicatorData[]>([]);
   const [timeframeBreakdown, setTimeframeBreakdown] = useState<
     TimeframeContribution[]
@@ -62,7 +64,7 @@ const SignalBreakdown: React.FC<SignalBreakdownProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<
-    "overview" | "confirmation" | "detailed"
+    "overview" | "confirmation" | "detailed" | "pattern"
   >("overview");
 
   // Fetch 28-indicator data from database on component mount
@@ -70,7 +72,7 @@ const SignalBreakdown: React.FC<SignalBreakdownProps> = ({
     fetchIndicatorData();
   }, [signalId]);
 
-  // Database query function using established Supabase patterns from Session #315
+  // Database query function using established Supabase patterns from Session #315-316
   const fetchIndicatorData = async () => {
     try {
       setLoading(true);
@@ -159,7 +161,7 @@ const SignalBreakdown: React.FC<SignalBreakdownProps> = ({
     setTimeframeBreakdown(breakdown);
   };
 
-  // Get color scheme based on signal type following established Session #315 patterns
+  // Get color scheme based on signal type following established Session #315-316 patterns
   const getScoreColor = (score: number) => {
     if (score >= 90)
       return signalType === "bullish" ? "text-emerald-400" : "text-red-400";
@@ -180,7 +182,7 @@ const SignalBreakdown: React.FC<SignalBreakdownProps> = ({
     return "bg-slate-600/20";
   };
 
-  // Loading state following established Session #315 patterns
+  // Loading state following established Session #315-316 patterns
   if (loading) {
     return (
       <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
@@ -204,7 +206,7 @@ const SignalBreakdown: React.FC<SignalBreakdownProps> = ({
     );
   }
 
-  // Error state following established Session #315 patterns
+  // Error state following established Session #315-316 patterns
   if (error) {
     return (
       <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
@@ -263,7 +265,7 @@ const SignalBreakdown: React.FC<SignalBreakdownProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* View Selection Tabs */}
+          {/* View Selection Tabs - Enhanced with Pattern tab */}
           <div className="flex space-x-1 bg-slate-700/30 p-1 rounded-lg">
             <button
               onClick={() => setActiveView("overview")}
@@ -295,9 +297,19 @@ const SignalBreakdown: React.FC<SignalBreakdownProps> = ({
             >
               Detailed
             </button>
+            <button
+              onClick={() => setActiveView("pattern")}
+              className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                activeView === "pattern"
+                  ? "bg-purple-600 text-white"
+                  : "text-slate-300 hover:text-white hover:bg-slate-700/50"
+              }`}
+            >
+              Pattern
+            </button>
           </div>
 
-          {/* Overview View - Original Session #315 Content */}
+          {/* Overview View - Original Session #315-316 Content */}
           {activeView === "overview" && (
             <>
               {/* Final Score Summary */}
@@ -434,7 +446,7 @@ const SignalBreakdown: React.FC<SignalBreakdownProps> = ({
         </CardContent>
       </Card>
 
-      {/* Session #316 Integrated Components */}
+      {/* Session #316 Integrated Components - Preserved Exactly */}
       {activeView === "confirmation" && (
         <TimeframeConfirmation
           signalId={signalId}
@@ -445,6 +457,18 @@ const SignalBreakdown: React.FC<SignalBreakdownProps> = ({
 
       {activeView === "detailed" && (
         <TimeframeBreakdown signalId={signalId} signalType={signalType} />
+      )}
+
+      {/* Session #317 AI Pattern Recognition Integration */}
+      {activeView === "pattern" && (
+        <div className="space-y-6">
+          <PatternRecognition
+            signalId={signalId}
+            finalScore={finalScore}
+            signalType={signalType}
+          />
+          <HistoricalMatches signalId={signalId} signalType={signalType} />
+        </div>
       )}
     </div>
   );
