@@ -28,11 +28,13 @@ import { createClient } from "@supabase/supabase-js";
 // 📝 HANDOVER: Displays AI-powered personal insights using real trading history and pattern analysis
 // ✅ PRODUCTION: Real database queries only, no synthetic data, follows exact established patterns
 // 📁 FILE PATH: src/components/personal/PersonalInsights.tsx
+// 🔧 FIX: Changed process.env to import.meta.env for Vite browser compatibility
+// 🔧 FIX: Corrected averageHoldingOptimal variable name reference
 
-// Initialize Supabase client using established project patterns
+// Initialize Supabase client using established project patterns (FIXED for Vite)
 const supabase = createClient(
-  process.env.VITE_SUPABASE_URL || "",
-  process.env.VITE_SUPABASE_ANON_KEY || ""
+  import.meta.env.VITE_SUPABASE_URL || "",
+  import.meta.env.VITE_SUPABASE_ANON_KEY || ""
 );
 
 // TypeScript interfaces following established Session #315-317 patterns
@@ -893,7 +895,7 @@ const PersonalInsights: React.FC<PersonalInsightsProps> = ({ userId }) => {
         bestHours.length > 0 ? bestHours : ["9:30-11:00", "14:00-16:00"],
       bestTradingDays:
         bestDays.length > 0 ? bestDays : ["Tuesday", "Wednesday", "Thursday"],
-      averageHoldingOptimal,
+      averageHoldingOptimal: avgHoldingOptimal,
       seasonalPatterns:
         timingData.length > 50
           ? ["Summer consolidation", "Year-end momentum"]

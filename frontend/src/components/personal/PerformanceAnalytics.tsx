@@ -25,11 +25,12 @@ import { createClient } from "@supabase/supabase-js";
 // 🛡️ PRESERVATION: Uses Session #315-317 established patterns, integrates with existing components
 // 📝 HANDOVER: Displays personal trading performance using real paper_trades, signal_outcomes, trading_signals data
 // ✅ PRODUCTION: Real database queries only, no synthetic data, follows exact established patterns
+// 🔧 FIX: Changed process.env to import.meta.env for Vite browser compatibility
 
-// Initialize Supabase client using established project patterns
+// Initialize Supabase client using established project patterns (FIXED for Vite)
 const supabase = createClient(
-  process.env.VITE_SUPABASE_URL || "",
-  process.env.VITE_SUPABASE_ANON_KEY || ""
+  import.meta.env.VITE_SUPABASE_URL || "",
+  import.meta.env.VITE_SUPABASE_ANON_KEY || ""
 );
 
 // TypeScript interfaces following established Session #315-317 patterns

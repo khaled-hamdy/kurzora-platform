@@ -8,6 +8,7 @@
 // 📋 COMPLETE: All imports, providers, and routes maintained exactly as before
 // 🧹 CLEANED: Removed components with fake data as requested by user
 // 🎯 NEW: Added Google Analytics tracking with proper script loading for Vite/React
+// 🧪 SESSION #317-318: Added TestPersonalAnalytics route for AI analytics testing
 
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -38,6 +39,7 @@ import AdminSettings from "./components/admin/AdminSettings";
 // 🧪 TEST COMPONENTS (PRESERVED FROM PREVIOUS SESSIONS)
 // ==================================================================================
 import SubscriptionTierTest from "./components/test/SubscriptionTierTest";
+import TestPersonalAnalytics from "./pages/TestPersonalAnalytics";
 
 // ==================================================================================
 // 📄 CORE PAGE IMPORTS (PRESERVED FROM PREVIOUS SESSIONS)
@@ -161,6 +163,7 @@ function GoogleAnalyticsSetup() {
 // 🔄 PRESERVED: All existing routes maintained exactly as before
 // 🚨 CRITICAL: Never remove or modify existing routes without understanding impact
 // 🎯 NEW: Added Google Analytics tracking throughout the application
+// 🧪 SESSION #317-318: Added TestPersonalAnalytics route for AI analytics testing
 
 function App() {
   return (
@@ -213,6 +216,12 @@ function App() {
                   <Route
                     path="/test-subscription"
                     element={<SubscriptionTierTest />}
+                  />
+
+                  {/* 🧠 SESSION #317-318: Personal Analytics AI Test Page */}
+                  <Route
+                    path="/test-analytics"
+                    element={<TestPersonalAnalytics />}
                   />
 
                   {/* ================================================================== */}
@@ -383,3 +392,4 @@ export default App;
 // 🎯 NEW ADDITION: Google Analytics tracking implemented with proper dynamic script loading for Vite/React
 // 📊 ANALYTICS FEATURES: Real-time user behavior tracking, conversion tracking ready for Kurzora events
 // 🔧 SCRIPT LOADING: Fixed React/Vite compatibility issues with dynamic script injection
+// 🧠 SESSION #317-318 ADDITION: TestPersonalAnalytics route added for AI analytics testing at /test-analytics
