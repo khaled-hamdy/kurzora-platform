@@ -15,6 +15,7 @@ import { createClient } from "@supabase/supabase-js";
 // 🔧 SESSION #315: Signal Explanation System - Component Foundation
 // 🛡️ PRESERVATION: Uses real 28-indicator transparency system, queries actual indicators table
 // 📝 HANDOVER: Displays 7 indicators (RSI, MACD, Volume, etc.) across 4 timeframes each
+// 🚨 SESSION #316 FIX: Updated database column names (raw_value, score_contribution)
 
 // Initialize Supabase client using established project patterns
 const supabase = createClient(
@@ -33,9 +34,8 @@ interface IndicatorData {
   signal_id: string;
   indicator_name: string;
   timeframe: string;
-  value: number;
-  score: number;
-  weight: number;
+  raw_value: number; // 🚨 FIXED: was 'value'
+  score_contribution: number; // 🚨 FIXED: was 'score'
   created_at: string;
 }
 
@@ -45,7 +45,6 @@ interface IndicatorSummary {
     [key: string]: {
       value: number;
       score: number;
-      weight: number;
     };
   };
   averageScore: number;
@@ -79,6 +78,7 @@ const IndicatorContribution: React.FC<IndicatorContributionProps> = ({
       setError(null);
 
       // Query indicators table for all 28 records (7 indicators × 4 timeframes)
+      // 🚨 FIXED: Using correct column names from actual database
       const { data, error: queryError } = await supabase
         .from("indicators")
         .select("*")
@@ -108,7 +108,7 @@ const IndicatorContribution: React.FC<IndicatorContributionProps> = ({
 
   // Process indicator data into summary format for display
   const processIndicatorData = (data: IndicatorData[]) => {
-    // Expected 7 indicators from V4 system
+    // Expected 7 indicators from V4 system (handle name variations)
     const indicatorNames = [
       "RSI",
       "MACD",
@@ -116,20 +116,23 @@ const IndicatorContribution: React.FC<IndicatorContributionProps> = ({
       "Stochastic",
       "Williams_R",
       "Bollinger",
-      "Support_Resistance",
+      "SUPPORT_RESISTANCE", // 🚨 FIXED: Handle actual database name format
     ];
     const timeframes = ["1H", "4H", "1D", "1W"];
 
     const summaries: IndicatorSummary[] = [];
 
     indicatorNames.forEach((indicatorName) => {
+      // Handle both naming conventions from database
       const indicatorRecords = data.filter(
-        (item) => item.indicator_name === indicatorName
+        (item) =>
+          item.indicator_name === indicatorName ||
+          item.indicator_name === indicatorName.replace("_", "/")
       );
 
       if (indicatorRecords.length > 0) {
         const timeframeData: {
-          [key: string]: { value: number; score: number; weight: number };
+          [key: string]: { value: number; score: number };
         } = {};
         let totalScore = 0;
 
@@ -138,16 +141,19 @@ const IndicatorContribution: React.FC<IndicatorContributionProps> = ({
             (item) => item.timeframe === timeframe
           );
           if (record) {
+            // 🚨 FIXED: Using correct column names
             timeframeData[timeframe] = {
-              value: record.value,
-              score: record.score,
-              weight: record.weight,
+              value: record.raw_value || 0, // Handle null values
+              score: record.score_contribution || 0, // Handle null values
             };
-            totalScore += record.score;
+            totalScore += record.score_contribution || 0;
           }
         });
 
-        const averageScore = totalScore / Object.keys(timeframeData).length;
+        const averageScore =
+          Object.keys(timeframeData).length > 0
+            ? totalScore / Object.keys(timeframeData).length
+            : 0;
 
         summaries.push({
           indicatorName,
@@ -176,7 +182,7 @@ const IndicatorContribution: React.FC<IndicatorContributionProps> = ({
         return <BarChart2 className="h-4 w-4" />;
       case "Bollinger":
         return <TrendingDown className="h-4 w-4" />;
-      case "Support_Resistance":
+      case "SUPPORT_RESISTANCE":
         return <Info className="h-4 w-4" />;
       default:
         return <Activity className="h-4 w-4" />;
@@ -190,6 +196,7 @@ const IndicatorContribution: React.FC<IndicatorContributionProps> = ({
     if (score >= 80)
       return signalType === "bullish" ? "text-blue-400" : "text-orange-400";
     if (score >= 70) return "text-amber-400";
+    if (score < 0) return "text-red-400"; // Handle negative scores
     return "text-slate-400";
   };
 
@@ -199,13 +206,14 @@ const IndicatorContribution: React.FC<IndicatorContributionProps> = ({
     if (score >= 80)
       return signalType === "bullish" ? "bg-blue-600/20" : "bg-orange-600/20";
     if (score >= 70) return "bg-amber-600/20";
+    if (score < 0) return "bg-red-600/20"; // Handle negative scores
     return "bg-slate-600/20";
   };
 
   // Format indicator names for display
   const formatIndicatorName = (name: string) => {
     switch (name) {
-      case "Support_Resistance":
+      case "SUPPORT_RESISTANCE":
         return "Support/Resistance";
       case "Williams_R":
         return "Williams %R";
@@ -316,7 +324,8 @@ const IndicatorContribution: React.FC<IndicatorContributionProps> = ({
                   </div>
                   <div className="flex items-center space-x-3">
                     <span className="text-slate-400 text-sm">
-                      Contribution: +{indicator.contribution} pts
+                      Contribution: {indicator.contribution >= 0 ? "+" : ""}
+                      {indicator.contribution} pts
                     </span>
                     <div
                       className={`px-2 py-1 rounded text-sm font-semibold ${getBackgroundColor(
@@ -360,14 +369,17 @@ const IndicatorContribution: React.FC<IndicatorContributionProps> = ({
                                     : "bg-orange-400"
                                   : tfData.score >= 70
                                   ? "bg-amber-400"
+                                  : tfData.score < 0
+                                  ? "bg-red-400"
                                   : "bg-slate-400"
                               }`}
-                              style={{ width: `${tfData.score}%` }}
+                              style={{ width: `${Math.abs(tfData.score)}%` }}
                             ></div>
                           </div>
                           {selectedIndicator === indicator.indicatorName && (
                             <div className="text-xs text-slate-500 mt-1">
-                              Val: {tfData.value.toFixed(2)}
+                              Val:{" "}
+                              {tfData.value ? tfData.value.toFixed(2) : "N/A"}
                             </div>
                           )}
                         </>

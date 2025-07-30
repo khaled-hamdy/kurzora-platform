@@ -16,6 +16,7 @@ import { createClient } from "@supabase/supabase-js";
 // 🔧 SESSION #315: Signal Explanation System - Component Foundation
 // 🛡️ PRESERVATION: Uses real 28-indicator data for confidence calculation, no synthetic logic
 // 📝 HANDOVER: Analyzes indicator consistency and agreement for confidence scoring
+// 🚨 SESSION #316 FIX: Updated database column names (raw_value, score_contribution)
 
 // Initialize Supabase client using established project patterns
 const supabase = createClient(
@@ -35,9 +36,8 @@ interface IndicatorData {
   signal_id: string;
   indicator_name: string;
   timeframe: string;
-  value: number;
-  score: number;
-  weight: number;
+  raw_value: number; // 🚨 FIXED: was 'value'
+  score_contribution: number; // 🚨 FIXED: was 'score'
   created_at: string;
 }
 
@@ -78,6 +78,7 @@ const ConfidenceDisplay: React.FC<ConfidenceDisplayProps> = ({
       setError(null);
 
       // Query indicators table for all 28 records (7 indicators × 4 timeframes)
+      // 🚨 FIXED: Using correct column names from actual database
       const { data, error: queryError } = await supabase
         .from("indicators")
         .select("*")
@@ -110,7 +111,10 @@ const ConfidenceDisplay: React.FC<ConfidenceDisplayProps> = ({
   // Analyze confidence based on real indicator data
   const analyzeConfidence = (data: IndicatorData[]) => {
     // Calculate indicator agreement (how many indicators agree on direction)
-    const strongScores = data.filter((d) => d.score >= 80).length;
+    // 🚨 FIXED: Using score_contribution instead of score
+    const strongScores = data.filter(
+      (d) => (d.score_contribution || 0) >= 80
+    ).length;
     const totalIndicators = data.length;
     const indicatorAgreement = Math.round(
       (strongScores / totalIndicators) * 100
@@ -122,9 +126,13 @@ const ConfidenceDisplay: React.FC<ConfidenceDisplayProps> = ({
 
     timeframes.forEach((tf) => {
       const tfData = data.filter((d) => d.timeframe === tf);
-      const avgScore =
-        tfData.reduce((sum, d) => sum + d.score, 0) / tfData.length;
-      if (avgScore >= 70) consistentTimeframes++;
+      if (tfData.length > 0) {
+        // 🚨 FIXED: Using score_contribution instead of score
+        const avgScore =
+          tfData.reduce((sum, d) => sum + (d.score_contribution || 0), 0) /
+          tfData.length;
+        if (avgScore >= 70) consistentTimeframes++;
+      }
     });
 
     const timeframeConsistency = Math.round(
@@ -132,7 +140,8 @@ const ConfidenceDisplay: React.FC<ConfidenceDisplayProps> = ({
     );
 
     // Calculate strength consistency (how consistent are the scores)
-    const scores = data.map((d) => d.score);
+    // 🚨 FIXED: Using score_contribution instead of score and handle nulls
+    const scores = data.map((d) => d.score_contribution || 0);
     const avgScore =
       scores.reduce((sum, score) => sum + score, 0) / scores.length;
     const variance =
@@ -207,6 +216,16 @@ const ConfidenceDisplay: React.FC<ConfidenceDisplayProps> = ({
       riskFactors.push(`Below premium threshold (${finalScore}/100)`);
     }
 
+    // Check for negative contributions that could indicate conflicting signals
+    const negativeContributions = data.filter(
+      (d) => (d.score_contribution || 0) < 0
+    ).length;
+    if (negativeContributions > 0) {
+      riskFactors.push(
+        `${negativeContributions} indicators showing negative signals`
+      );
+    }
+
     // Generate recommendations based on confidence analysis
     const recommendations: string[] = [];
     if (confidenceLevel === "Very High") {
@@ -225,6 +244,13 @@ const ConfidenceDisplay: React.FC<ConfidenceDisplayProps> = ({
         `Low confidence - consider avoiding or very small position`
       );
       recommendations.push(`Wait for clearer market conditions`);
+    }
+
+    // Add specific recommendations based on negative contributions
+    if (negativeContributions > 0) {
+      recommendations.push(
+        `Consider conflicting signals from ${negativeContributions} indicators`
+      );
     }
 
     setConfidenceAnalysis({
