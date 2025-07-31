@@ -1,15 +1,15 @@
 // ==================================================================================
-// 🎯 SESSION #310: SCANNING CONFIGURATION - MODULAR ARCHITECTURE COMPONENT
+// 🎯 SESSION #400B: SCANNING CONFIGURATION - 1W TIMEFRAME DATA FIX
 // ==================================================================================
-// 🚨 PURPOSE: Extract scanning and timeframe configuration into isolated, configurable module
-// 🛡️ ANTI-REGRESSION MANDATE: ALL Session #151-185 + #301-309B functionality preserved EXACTLY
-// 📝 SESSION #310 EXTRACTION: Moving configuration constants from 1600-line monolith to modular architecture
+// 🚨 PURPOSE: Extract scanning and timeframe configuration with 1W data sufficiency fix
+// 🛡️ ANTI-REGRESSION MANDATE: ALL Session #151-185 + #301-310 functionality preserved EXACTLY
+// 📝 SESSION #400B: Added timeframe-aware date ranges to fix 1W indicator failures
 // 🔧 PRESERVATION: Session #185 400-day range + Session #151-185 timeframe weights + all scanning parameters
-// 🚨 CRITICAL SUCCESS: Maintain identical scanning behavior (100% exact configuration)
+// 🚨 CRITICAL SUCCESS: Maintain identical scanning behavior for 1H, 4H, 1D + fix 1W data insufficiency
 // ⚠️ PROTECTED LOGIC: All timeframe weights, backtest mode, date calculations preserved exactly
 // 🎖️ SCANNING CONFIGURATION: Professional parameter management with institutional settings
-// 📊 MODULAR INTEGRATION: Compatible with all Session #301-309B extracted components
-// 🏆 TESTING REQUIREMENT: Extracted module must produce identical configuration values
+// 📊 MODULAR INTEGRATION: Compatible with all Session #301-310 extracted components
+// 🏆 1W FIX: Extended calendar days for weekly timeframe to ensure 26+ weeks for MACD
 // 🚀 PRODUCTION IMPACT: Enable AI parameter optimization while preserving institutional-grade settings
 // ==================================================================================
 
@@ -40,31 +40,34 @@ export interface ScanningSettings {
     backtestStart: string;
     backtestEnd: string;
     calendarDays: number;
+    weeklyCalendarDays: number; // SESSION #400B: Extended days for 1W timeframe
   };
 }
 
 /**
- * 🔧 SCANNING CONFIGURATION MANAGER - SESSION #310 MODULAR EXTRACTION
+ * 🔧 SCANNING CONFIGURATION MANAGER - SESSION #400B WITH 1W FIX
  * 🚨 CRITICAL EXTRACTION: Moving scanning configuration from 1600-line monolith
- * 🛡️ ANTI-REGRESSION: ALL Session #151-185 + #301-309B configuration preserved EXACTLY
+ * 🛡️ ANTI-REGRESSION: ALL Session #151-185 + #301-310 configuration preserved EXACTLY
  * 🎯 PURPOSE: Centralized scanning and timeframe configuration management
  * 🔧 SESSION #185 PRESERVATION: 400-day extended range configuration maintained
  * 🚀 SESSION #151-185 PRESERVATION: All timeframe weights and periods preserved exactly
  * 📊 PRODUCTION INTEGRATION: Professional configuration management with comprehensive logging
  * 🎖️ AI OPTIMIZATION READY: Structured for future AI parameter optimization
+ * 🏆 SESSION #400B: Added 1W timeframe data sufficiency fix
  */
 export class ScanningConfiguration {
   private settings: ScanningSettings;
 
   /**
-   * 🏗️ SCANNING CONFIGURATION CONSTRUCTOR - SESSION #310 INITIALIZATION
+   * 🏗️ SCANNING CONFIGURATION CONSTRUCTOR - SESSION #400B WITH 1W FIX
    * 🎯 PURPOSE: Initialize scanning configuration with Session #151-185 preserved values
    * 🔧 SESSION #151-185 PRESERVED: Exact configuration values from original system
    * 🛡️ INSTITUTIONAL STANDARDS: Professional scanning configuration maintained exactly
+   * 🏆 SESSION #400B: Added extended calendar days for 1W timeframe data sufficiency
    */
   constructor() {
     console.log(
-      `🔧 [SESSION_310_CONFIG] Initializing scanning configuration with Session #151-185 preserved values`
+      `🔧 [SESSION_400B_CONFIG] Initializing scanning configuration with Session #151-185 preserved values + 1W fix`
     );
 
     // 🚨 SESSION #151-185 PRESERVED EXACTLY: Timeframe configuration
@@ -98,11 +101,12 @@ export class ScanningConfiguration {
         backtestStart: "2024-01-01", // 🧪 SESSION #152 PRESERVED: Verified backtest start date
         backtestEnd: "2024-06-14", // 🧪 SESSION #152 PRESERVED: Verified backtest end date
         calendarDays: 500, // 🚀 SESSION #185 PRESERVED: Extended 400-day range for reliable multi-timeframe data
+        weeklyCalendarDays: 800, // 🏆 SESSION #400B: Extended range for 1W timeframe (ensures 26+ weeks for MACD)
       },
     };
 
     console.log(
-      `✅ [SESSION_310_CONFIG] Scanning configuration initialized with Session #151-185 preserved settings`
+      `✅ [SESSION_400B_CONFIG] Scanning configuration initialized with Session #151-185 preserved settings + 1W data fix`
     );
   }
 
@@ -137,20 +141,24 @@ export class ScanningConfiguration {
   }
 
   /**
-   * 🚀 GET DATE RANGES - SESSION #310 DATE CALCULATION
+   * 🚀 GET DATE RANGES - SESSION #400B WITH 1W TIMEFRAME FIX
    * 🚨 EXTRACTED FROM: index.ts getDateRanges() function
    * 🛡️ PRESERVATION: ALL Session #185 + #152 date calculation logic preserved EXACTLY
    * 🎯 PURPOSE: Calculate appropriate date ranges for market data fetching
    * 🔧 SESSION #185 PRESERVED: 400-day extended range for reliable multi-timeframe data
    * 🧪 SESSION #152 PRESERVED: Backtest mode support maintained exactly
+   * 🏆 SESSION #400B: Added timeframe-aware logic to fix 1W data insufficiency
+   * @param timeframe Optional timeframe to get specific date range for (1W gets extended range)
    */
-  getDateRanges(): { recent: { start: string; end: string } } {
+  getDateRanges(timeframe?: string): {
+    recent: { start: string; end: string };
+  } {
     if (this.settings.useBacktest) {
       console.log(
-        `🔄 [SESSION_310_CONFIG] BACKTEST MODE ACTIVE: Using verified historical data`
+        `🔄 [SESSION_400B_CONFIG] BACKTEST MODE ACTIVE: Using verified historical data`
       );
       console.log(
-        `📅 [SESSION_310_CONFIG] Backtest Date Range: ${this.settings.dateRangeSettings.backtestStart} to ${this.settings.dateRangeSettings.backtestEnd}`
+        `📅 [SESSION_400B_CONFIG] Backtest Date Range: ${this.settings.dateRangeSettings.backtestStart} to ${this.settings.dateRangeSettings.backtestEnd}`
       );
       return {
         recent: {
@@ -162,28 +170,47 @@ export class ScanningConfiguration {
       const now = new Date();
       const today = now.toISOString().split("T")[0];
 
-      // 🚀 SESSION #185 CRITICAL DATA RANGE FIX: Extended from 150 to 400 calendar days for 4H + Weekly reliability
+      // 🏆 SESSION #400B: Determine calendar days based on timeframe
+      // 1W timeframe needs extended range to ensure 26+ weeks for MACD calculation
+      let calendarDaysToUse: number;
+      if (timeframe === "1W") {
+        calendarDaysToUse = this.settings.dateRangeSettings.weeklyCalendarDays;
+        console.log(
+          `📊 [SESSION_400B_CONFIG] 1W TIMEFRAME DETECTED: Using extended ${calendarDaysToUse}-day range for sufficient weekly data`
+        );
+      } else {
+        calendarDaysToUse = this.settings.dateRangeSettings.calendarDays;
+        if (timeframe) {
+          console.log(
+            `📊 [SESSION_400B_CONFIG] ${timeframe} TIMEFRAME: Using standard ${calendarDaysToUse}-day range`
+          );
+        }
+      }
+
+      // Calculate start date using determined calendar days
       const calendarDaysAgo = new Date(
-        now.getTime() -
-          this.settings.dateRangeSettings.calendarDays * 24 * 60 * 60 * 1000
+        now.getTime() - calendarDaysToUse * 24 * 60 * 60 * 1000
       );
       const recentStartDate = calendarDaysAgo.toISOString().split("T")[0];
 
-      console.log(
-        `📈 [SESSION_310_CONFIG] LIVE MODE ACTIVE: Using SESSION #185 enhanced ${this.settings.dateRangeSettings.calendarDays}-day rolling window for reliable multi-timeframe data`
-      );
-      console.log(
-        `📅 [SESSION_310_CONFIG] SESSION #185 Enhanced Date Range: ${recentStartDate} to ${today} (${this.settings.dateRangeSettings.calendarDays} calendar days ensures sufficient data for all timeframes)`
-      );
-      console.log(
-        `🔧 [SESSION_310_CONFIG] SESSION #185 DATA RANGE FIX: Extended window solves 4H and Weekly data availability limitations`
-      );
-      console.log(
-        `📊 [SESSION_310_CONFIG] SESSION #185 CALCULATION: ${this.settings.dateRangeSettings.calendarDays} calendar days - 46 weekend days - 27 holidays = ~327 trading days (abundant for all technical indicators)`
-      );
-      console.log(
-        `🎯 [SESSION_310_CONFIG] SESSION #185 EXPECTED IMPROVEMENT: 4H: 50+ periods (vs 16), Weekly: 30+ periods (vs 11)`
-      );
+      if (timeframe === "1W") {
+        console.log(
+          `📈 [SESSION_400B_CONFIG] 1W LIVE MODE: Using SESSION #400B extended ${calendarDaysToUse}-day range for 26+ weeks data`
+        );
+        console.log(
+          `📅 [SESSION_400B_CONFIG] 1W Extended Date Range: ${recentStartDate} to ${today} (${calendarDaysToUse} calendar days for MACD sufficiency)`
+        );
+        console.log(
+          `🔧 [SESSION_400B_CONFIG] 1W DATA FIX: Extended window ensures sufficient weekly periods for all indicators`
+        );
+      } else {
+        console.log(
+          `📈 [SESSION_400B_CONFIG] LIVE MODE ACTIVE: Using SESSION #185 enhanced ${calendarDaysToUse}-day rolling window for reliable multi-timeframe data`
+        );
+        console.log(
+          `📅 [SESSION_400B_CONFIG] SESSION #185 Enhanced Date Range: ${recentStartDate} to ${today} (${calendarDaysToUse} calendar days)`
+        );
+      }
 
       return {
         recent: {
@@ -202,7 +229,7 @@ export class ScanningConfiguration {
    */
   setUseBacktest(useBacktest: boolean): void {
     console.log(
-      `🔧 [SESSION_310_CONFIG] Setting backtest mode: ${useBacktest}`
+      `🔧 [SESSION_400B_CONFIG] Setting backtest mode: ${useBacktest}`
     );
     this.settings.useBacktest = useBacktest;
   }
@@ -215,13 +242,26 @@ export class ScanningConfiguration {
    */
   setCalendarDays(calendarDays: number): void {
     console.log(
-      `🔧 [SESSION_310_CONFIG] Setting calendar days: ${calendarDays}`
+      `🔧 [SESSION_400B_CONFIG] Setting calendar days: ${calendarDays}`
     );
     this.settings.dateRangeSettings.calendarDays = calendarDays;
   }
 
   /**
-   * 🔧 GET FULL SETTINGS - SESSION #310 COMPLETE CONFIGURATION ACCESS
+   * 🏆 SET WEEKLY CALENDAR DAYS - SESSION #400B NEW FUNCTIONALITY
+   * 🎯 PURPOSE: Allow optimization of 1W timeframe data range specifically
+   * 🚨 1W FIX: Enable fine-tuning of weekly timeframe data sufficiency
+   * 📊 USAGE: Adjust 1W data range without affecting other timeframes
+   */
+  setWeeklyCalendarDays(weeklyCalendarDays: number): void {
+    console.log(
+      `🔧 [SESSION_400B_CONFIG] Setting weekly calendar days: ${weeklyCalendarDays}`
+    );
+    this.settings.dateRangeSettings.weeklyCalendarDays = weeklyCalendarDays;
+  }
+
+  /**
+   * 🔧 GET FULL SETTINGS - SESSION #400B COMPLETE CONFIGURATION ACCESS
    * 🎯 PURPOSE: Provide complete configuration object for advanced usage
    * 🛡️ PRESERVATION: Returns deep copy to prevent external modification
    * 📊 USAGE: Used for configuration validation and AI optimization analysis
@@ -234,7 +274,7 @@ export class ScanningConfiguration {
    * 📊 GET CONFIGURATION NAME - SESSION #310 MODULAR IDENTIFICATION
    * 🎯 PURPOSE: Identify this configuration module for logging and debugging
    * 🔧 USAGE: Used by orchestrator for module tracking and error reporting
-   * 🛡️ SESSION #301-309B COMPATIBILITY: Follows same naming pattern as other modular components
+   * 🛡️ SESSION #301-310 COMPATIBILITY: Follows same naming pattern as other modular components
    */
   getName(): string {
     return "ScanningConfiguration";
@@ -242,11 +282,12 @@ export class ScanningConfiguration {
 }
 
 /**
- * 🔧 SCANNING CONFIGURATION HELPER FUNCTIONS - SESSION #310 UTILITY FUNCTIONS
+ * 🔧 SCANNING CONFIGURATION HELPER FUNCTIONS - SESSION #400B WITH 1W FIX
  * 🎯 PURPOSE: Provide configuration access in original Edge Function format for backward compatibility
  * 🔧 BRIDGE FUNCTIONS: Converts modular configuration back to original constant format
  * 🛡️ ANTI-REGRESSION: Maintains exact return format expected by main processing loop
  * 📊 SESSION #151-185 PRESERVED: All scanning configuration maintained exactly
+ * 🏆 SESSION #400B: Added timeframe-aware date ranges for 1W fix
  */
 
 // Global configuration instance for backward compatibility
@@ -280,25 +321,30 @@ export function getTimeframeConfig(): Record<string, TimeframeConfig> {
 }
 
 /**
- * 🚀 GET DATE RANGES HELPER - SESSION #310 BACKWARD COMPATIBILITY
+ * 🚀 GET DATE RANGES HELPER - SESSION #400B WITH 1W TIMEFRAME FIX
  * 🎯 PURPOSE: Provide getDateRanges() function replacement for main processing loop
- * 🛡️ ANTI-REGRESSION: Maintains exact return value expected by index.ts
+ * 🛡️ ANTI-REGRESSION: Maintains exact return value expected by index.ts for backward compatibility
+ * 🏆 SESSION #400B: Added optional timeframe parameter for 1W data sufficiency fix
+ * @param timeframe Optional timeframe parameter (1W gets extended range, others get standard range)
  */
-export function getDateRanges(): { recent: { start: string; end: string } } {
-  return globalScanningConfig.getDateRanges();
+export function getDateRanges(timeframe?: string): {
+  recent: { start: string; end: string };
+} {
+  return globalScanningConfig.getDateRanges(timeframe);
 }
 
 // ==================================================================================
-// 🎯 SESSION #310 SCANNING CONFIGURATION EXTRACTION COMPLETE
+// 🎯 SESSION #400B SCANNING CONFIGURATION WITH 1W TIMEFRAME FIX COMPLETE
 // ==================================================================================
-// 📊 FUNCTIONALITY: Complete scanning and timeframe configuration with Session #151-185 preservation + Session #310 modular architecture integration
+// 📊 FUNCTIONALITY: Complete scanning and timeframe configuration with Session #151-185 preservation + Session #400B 1W data fix
 // 🛡️ PRESERVATION: Session #185 400-day range + Session #151-185 timeframe weights + Session #152 backtest mode + Session #153 test stocks + all configuration maintained exactly
-// 🔧 EXTRACTION SUCCESS: Moved from monolithic function constants to isolated, configurable module following Session #301-309B patterns
+// 🔧 EXTRACTION SUCCESS: Moved from monolithic function constants to isolated, configurable module following Session #301-310 patterns
 // 📈 CONFIGURATION MANAGEMENT: Maintains exact scanning logic through helper functions for main processing loop compatibility + AI optimization ready
 // 🎖️ ANTI-REGRESSION: All existing configuration logic preserved exactly - scanning requirements identical to original function + all Session #151-185 functionality maintained
-// ⚡ MODULAR BENEFITS: Isolated configuration + AI optimization ready + clean interfaces + professional architecture + future enhancement ready + Session #301-309B pattern compliance
-// 🚀 PRODUCTION READY: Session #310 Scanning Configuration extraction complete - maintains institutional-grade scanning standards with modular architecture advantages + AI optimization capability
-// 🔄 NEXT MODULE: Create stock-universe.ts configuration or integrate Session #310 scanning configuration
-// 🏆 TESTING VALIDATION: Extracted Scanning Configuration module must produce identical configuration values (100% exact settings) to original monolithic function constants + maintain all Session #151-185 functionality
-// 🎯 SESSION #310A ACHIEVEMENT: Scanning Configuration successfully extracted with 100% functionality preservation + Session #151-185 institutional standards + AI optimization foundation + modular architecture enhanced (8/9 major extractions approaching completion)
+// ⚡ MODULAR BENEFITS: Isolated configuration + AI optimization ready + clean interfaces + professional architecture + future enhancement ready + Session #301-310 pattern compliance
+// 🏆 SESSION #400B ACHIEVEMENT: 1W timeframe data sufficiency fix - extended calendar days for weekly analysis to ensure 26+ weeks for MACD
+// 🚀 PRODUCTION READY: Session #400B Scanning Configuration with 1W fix complete - maintains institutional-grade scanning standards with modular architecture advantages + AI optimization capability
+// 🔄 BACKWARD COMPATIBILITY: All existing calls to getDateRanges() continue working exactly as before
+// 🎯 1W FIX DETAILS: Weekly timeframe now uses 800 calendar days instead of 500 to ensure sufficient data for all technical indicators
+// 🏆 TESTING VALIDATION: Extracted Scanning Configuration module must produce identical configuration values (100% exact settings) to original monolithic function constants + maintain all Session #151-185 functionality + fix 1W data insufficiency
 // ==================================================================================
