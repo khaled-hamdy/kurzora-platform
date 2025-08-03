@@ -150,7 +150,7 @@ export class ManualAggregator {
     try {
       // 🚨 SESSION #400I STEP 1: Try minimal approach (5 days = 30 4H bars)
       const config = this.defaultConfigs["4H"];
-      let sourceData = await this.fetch1HSourceData(symbol, 15);
+      let sourceData = await this.fetch1HSourceData(symbol, 30);
 
       if (!sourceData || sourceData.length === 0) {
         console.log(
@@ -169,7 +169,7 @@ export class ManualAggregator {
         );
 
         // Try 7 days for 40+ bars
-        sourceData = await this.fetch1HSourceData(symbol, 30);
+        sourceData = await this.fetch1HSourceData(symbol, 150);
         if (sourceData && sourceData.length > 0) {
           aggregatedBars = this.groupHourlyBarsTo4H(sourceData);
           console.log(

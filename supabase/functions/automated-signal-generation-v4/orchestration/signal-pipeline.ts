@@ -376,7 +376,8 @@ export class SignalPipeline {
             data.highs || data.prices,
             data.lows || data.prices,
             20,
-            volatilityDistance // SESSION #313C: Add volatility distance for proximity filtering
+            volatilityDistance, // SESSION #313C: Add volatility distance for proximity filtering
+            timeframe
           );
 
           const stoch = calculateStochastic(

@@ -399,8 +399,8 @@ import {
         changePercent: weeklyChangePercent,
         volume: latestResult.v,
         prices: apiFormatResults.map((r) => r.c),
-        highs: apiFormatResults.map((r) => r.h),
-        lows: apiFormatResults.map((r) => r.l),
+        highs: apiFormatResults.map((r) => r.h), // Support/Resistance 4H/1W fix: Add highs array
+        lows: apiFormatResults.map((r) => r.l), // Support/Resistance 4H/1W fix: Add lows array
         volumes: apiFormatResults.map((r) => r.v),
       };
 
@@ -438,8 +438,8 @@ import {
           ((finalCurrentPrice - previousResult.c) / previousResult.c) * 100,
         volume: latestResult.v,
         prices: processedResults.map((r) => r.c),
-        highs: processedResults.map((r) => r.h),
-        lows: processedResults.map((r) => r.l),
+        highs: processedResults.map((r) => r.h), // Support/Resistance 4H/1W fix: Add highs array
+        lows: processedResults.map((r) => r.l), // Support/Resistance 4H/1W fix: Add lows array
         volumes: processedResults.map((r) => r.v),
       };
 
