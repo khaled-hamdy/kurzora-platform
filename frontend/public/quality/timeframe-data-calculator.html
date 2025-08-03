@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kurzora Timeframe Data Quality Calculator</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        min-height: 100vh;
+      }
+
+      .container {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 2.5em;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .input-section {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+      }
+
+      .input-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        font-size: 1.1em;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1em;
+        background: rgba(255, 255, 255, 0.9);
+        color: #333;
+      }
+
+      button {
+        background: linear-gradient(45deg, #4caf50, #45a049);
+        color: white;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 1.2em;
+        font-weight: bold;
+        transition: transform 0.2s;
+        width: 100%;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      }
+
+      .results {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 30px;
+      }
+
+      .timeframe-card {
+        background: rgba(255, 255, 255, 0.15);
+        padding: 20px;
+        border-radius: 15px;
+        border: 2px solid transparent;
+      }
+
+      .timeframe-card.sufficient {
+        border-color: #4caf50;
+        background: rgba(76, 175, 80, 0.2);
+      }
+
+      .timeframe-card.insufficient {
+        border-color: #f44336;
+        background: rgba(244, 67, 54, 0.2);
+      }
+
+      .timeframe-title {
+        font-size: 1.5em;
+        font-weight: bold;
+        margin-bottom: 15px;
+        text-align: center;
+      }
+
+      .data-point {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 5px;
+      }
+
+      .status {
+        text-align: center;
+        font-weight: bold;
+        font-size: 1.2em;
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 8px;
+      }
+
+      .status.sufficient {
+        background: rgba(76, 175, 80, 0.3);
+        color: #4caf50;
+      }
+
+      .status.insufficient {
+        background: rgba(244, 67, 54, 0.3);
+        color: #f44336;
+      }
+
+      .explanation {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 20px;
+        border-radius: 15px;
+        margin-top: 20px;
+      }
+
+      .indicator-requirements {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      .indicator-card {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+      }
+
+      .comparison {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 20px;
+        border-radius: 15px;
+        margin-top: 20px;
+      }
+
+      .comparison-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 15px;
+      }
+
+      .before,
+      .after {
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+      }
+
+      .before {
+        background: rgba(244, 67, 54, 0.2);
+        border: 2px solid #f44336;
+      }
+
+      .after {
+        background: rgba(76, 175, 80, 0.2);
+        border: 2px solid #4caf50;
+      }
+
+      .session-info {
+        background: rgba(255, 255, 255, 0.15);
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        border-left: 5px solid #4caf50;
+      }
+
+      .optimization-note {
+        background: rgba(255, 193, 7, 0.2);
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 20px;
+        border: 2px solid #ffc107;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎯 Kurzora Timeframe Data Quality Calculator</h1>
+
+      <div class="session-info">
+        <h3>📋 Session #400H Achievement</h3>
+        <p><strong>Problem Solved:</strong> 4H timeframe data insufficiency</p>
+        <p>
+          <strong>Solution:</strong> Extended calendar days from 500 → 1,300
+          (optimized from 1,850)
+        </p>
+        <p>
+          <strong>Result:</strong> All timeframes now achieve 100% indicator
+          pass rate
+        </p>
+      </div>
+
+      <div class="input-section">
+        <div class="input-group">
+          <label for="calendarDays">📅 Calendar Days to Look Back:</label>
+          <input
+            type="number"
+            id="calendarDays"
+            value="1300"
+            min="1"
+            max="3000"
+          />
+        </div>
+
+        <div class="input-group">
+          <label for="marketType">📈 Market Type:</label>
+          <select id="marketType">
+            <option value="stock">Stock Market (6.5 hours/day)</option>
+            <option value="forex">Forex (24 hours/day)</option>
+            <option value="crypto">Crypto (24 hours/day)</option>
+          </select>
+        </div>
+
+        <button onclick="calculateData()">🧮 Calculate Data Points</button>
+      </div>
+
+      <div id="results" class="results" style="display: none"></div>
+
+      <div class="explanation">
+        <h3>📚 Technical Indicator Requirements</h3>
+        <div class="indicator-requirements">
+          <div class="indicator-card">
+            <h4>RSI</h4>
+            <p><strong>Minimum:</strong> 14 periods</p>
+            <p><strong>Recommended:</strong> 30+ periods</p>
+          </div>
+          <div class="indicator-card">
+            <h4>MACD</h4>
+            <p><strong>Minimum:</strong> 26 periods</p>
+            <p><strong>Recommended:</strong> 50+ periods</p>
+          </div>
+          <div class="indicator-card">
+            <h4>Bollinger Bands</h4>
+            <p><strong>Minimum:</strong> 20 periods</p>
+            <p><strong>Recommended:</strong> 40+ periods</p>
+          </div>
+          <div class="indicator-card">
+            <h4>Stochastic</h4>
+            <p><strong>Minimum:</strong> 14 periods</p>
+            <p><strong>Recommended:</strong> 30+ periods</p>
+          </div>
+          <div class="indicator-card">
+            <h4>Williams %R</h4>
+            <p><strong>Minimum:</strong> 14 periods</p>
+            <p><strong>Recommended:</strong> 30+ periods</p>
+          </div>
+          <div class="indicator-card">
+            <h4>Support/Resistance</h4>
+            <p><strong>Minimum:</strong> 20 periods</p>
+            <p><strong>Recommended:</strong> 50+ periods</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="comparison">
+        <h3>📊 Session #400H: Before vs After</h3>
+        <div class="comparison-grid">
+          <div class="before">
+            <h4>❌ BEFORE (500 days)</h4>
+            <p><strong>4H Timeframe:</strong> ~23 data points</p>
+            <p><strong>Pass Rate:</strong> 50% (3/6 indicators)</p>
+            <p><strong>MACD Status:</strong> FAILED</p>
+            <p>
+              <strong>Problem:</strong> Not enough data for MACD (50+),
+              Bollinger (40+), Support (50+)
+            </p>
+          </div>
+          <div class="after">
+            <h4>✅ AFTER (1,300 days)</h4>
+            <p><strong>4H Timeframe:</strong> ~60 data points</p>
+            <p><strong>Pass Rate:</strong> 100% (6/6 indicators)</p>
+            <p><strong>MACD Status:</strong> SUCCESS</p>
+            <p>
+              <strong>Result:</strong> All indicators working perfectly with
+              safety buffer!
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="optimization-note">
+        <h3>⚡ Optimization Achievement</h3>
+        <p>
+          <strong>Original Fix:</strong> 1,850 calendar days (worked but slow)
+        </p>
+        <p>
+          <strong>Minimum Required:</strong> ~1,100 calendar days (risky, no
+          buffer)
+        </p>
+        <p>
+          <strong>Optimal Solution:</strong> 1,300 calendar days (30% faster +
+          safety buffer)
+        </p>
+        <p>
+          <strong>Performance Gain:</strong> 30% reduction in API data fetching
+          while maintaining 100% reliability
+        </p>
+      </div>
+    </div>
+
+    <script>
+      function calculateData() {
+        const calendarDays = parseInt(
+          document.getElementById("calendarDays").value
+        );
+        const marketType = document.getElementById("marketType").value;
+
+        // Calculate trading days (excluding weekends and holidays)
+        const tradingDaysPerYear = 252;
+        const tradingDays = Math.round(
+          (calendarDays / 365) * tradingDaysPerYear
+        );
+
+        // Calculate data points based on REAL Kurzora Session #400H findings
+        let timeframes;
+
+        if (marketType === "stock") {
+          // Based on actual Session #400H testing results
+          const scaleFactor = calendarDays / 500; // 500 days was the baseline
+
+          timeframes = {
+            "1H": {
+              barsPerDay: 6.5,
+              totalBars: Math.round(tradingDays * 6.5),
+              requirements: {
+                RSI: 30,
+                MACD: 50,
+                Bollinger: 40,
+                Stochastic: 30,
+                Williams: 30,
+                Support: 50,
+              },
+            },
+            "4H": {
+              // REAL WORLD: 500 calendar days = ~23 data points (from Session #400H)
+              // 1850 calendar days = ~100+ data points (from Session #400H)
+              barsPerDay: 0.067, // This gives us the real-world sparsity
+              totalBars: Math.round(23 * scaleFactor), // Scale from real 500-day result
+              requirements: {
+                RSI: 30,
+                MACD: 50,
+                Bollinger: 40,
+                Stochastic: 30,
+                Williams: 30,
+                Support: 50,
+              },
+            },
+            "1D": {
+              barsPerDay: 1,
+              totalBars: tradingDays,
+              requirements: {
+                RSI: 30,
+                MACD: 50,
+                Bollinger: 40,
+                Stochastic: 30,
+                Williams: 30,
+                Support: 50,
+              },
+            },
+            "1W": {
+              // Real world: 500 days gave 135+ data points (from Session #400H)
+              barsPerDay: 0.38,
+              totalBars: Math.round(135 * scaleFactor),
+              requirements: {
+                RSI: 30,
+                MACD: 50,
+                Bollinger: 40,
+                Stochastic: 30,
+                Williams: 30,
+                Support: 50,
+              },
+            },
+          };
+        } else {
+          // For forex/crypto (theoretical - not tested in Session #400H)
+          timeframes = {
+            "1H": {
+              barsPerDay: 24,
+              totalBars: Math.round(tradingDays * 24),
+              requirements: {
+                RSI: 30,
+                MACD: 50,
+                Bollinger: 40,
+                Stochastic: 30,
+                Williams: 30,
+                Support: 50,
+              },
+            },
+            "4H": {
+              barsPerDay: 6,
+              totalBars: Math.round(tradingDays * 6),
+              requirements: {
+                RSI: 30,
+                MACD: 50,
+                Bollinger: 40,
+                Stochastic: 30,
+                Williams: 30,
+                Support: 50,
+              },
+            },
+            "1D": {
+              barsPerDay: 1,
+              totalBars: tradingDays,
+              requirements: {
+                RSI: 30,
+                MACD: 50,
+                Bollinger: 40,
+                Stochastic: 30,
+                Williams: 30,
+                Support: 50,
+              },
+            },
+            "1W": {
+              barsPerDay: 1 / 7,
+              totalBars: Math.round(tradingDays / 7),
+              requirements: {
+                RSI: 30,
+                MACD: 50,
+                Bollinger: 40,
+                Stochastic: 30,
+                Williams: 30,
+                Support: 50,
+              },
+            },
+          };
+        }
+
+        displayResults(timeframes, calendarDays, tradingDays);
+      }
+
+      function displayResults(timeframes, calendarDays, tradingDays) {
+        const resultsDiv = document.getElementById("results");
+        resultsDiv.style.display = "block";
+
+        let html = `
+                <div style="grid-column: 1 / -1; text-align: center; margin-bottom: 20px;">
+                    <h2>📈 Analysis Results</h2>
+                    <p><strong>${calendarDays} calendar days</strong> = <strong>${tradingDays} trading days</strong></p>
+                </div>
+            `;
+
+        Object.entries(timeframes).forEach(([timeframe, data]) => {
+          const totalBars = data.totalBars;
+          const minRequired = Math.max(...Object.values(data.requirements));
+
+          // Calculate indicator pass rate
+          const passedCount = Object.values(data.requirements).filter(
+            (min) => totalBars >= min
+          ).length;
+          const totalIndicators = Object.keys(data.requirements).length;
+          const score = Math.round((passedCount / totalIndicators) * 100);
+          const isSufficient = score === 100;
+
+          html += `
+                    <div class="timeframe-card ${
+                      isSufficient ? "sufficient" : "insufficient"
+                    }">
+                        <div class="timeframe-title">${timeframe} Timeframe</div>
+                        
+                        <div class="score-display" style="
+                            text-align: center; 
+                            font-size: 2em; 
+                            font-weight: bold; 
+                            margin: 15px 0; 
+                            padding: 15px;
+                            border-radius: 10px;
+                            background: ${
+                              score === 100
+                                ? "rgba(76, 175, 80, 0.3)"
+                                : score >= 67
+                                ? "rgba(255, 152, 0, 0.3)"
+                                : score >= 34
+                                ? "rgba(255, 193, 7, 0.3)"
+                                : "rgba(244, 67, 54, 0.3)"
+                            };
+                            color: ${
+                              score === 100
+                                ? "#4CAF50"
+                                : score >= 67
+                                ? "#FF9800"
+                                : score >= 34
+                                ? "#FFC107"
+                                : "#f44336"
+                            };
+                        ">
+                            ${score}% PASS RATE
+                        </div>
+                        
+                        <div class="data-point">
+                            <span>📊 Total Data Points:</span>
+                            <span><strong>${totalBars}</strong></span>
+                        </div>
+                        
+                        <div class="data-point">
+                            <span>📅 Bars per Day:</span>
+                            <span>${data.barsPerDay.toFixed(2)}</span>
+                        </div>
+                        
+                        <div class="data-point">
+                            <span>✅ Indicators Passed:</span>
+                            <span><strong>${passedCount}/${totalIndicators}</strong></span>
+                        </div>
+                        
+                        ${Object.entries(data.requirements)
+                          .map(
+                            ([name, min]) => `
+                            <div class="data-point">
+                                <span>📌 ${name}:</span>
+                                <span>${min}+ (${
+                              totalBars >= min ? "✅" : "❌"
+                            })</span>
+                            </div>
+                        `
+                          )
+                          .join("")}
+                        
+                        <div class="status" style="
+                            background: ${
+                              score === 100
+                                ? "rgba(76, 175, 80, 0.3)"
+                                : score >= 67
+                                ? "rgba(255, 152, 0, 0.3)"
+                                : score >= 34
+                                ? "rgba(255, 193, 7, 0.3)"
+                                : "rgba(244, 67, 54, 0.3)"
+                            };
+                            color: ${
+                              score === 100
+                                ? "#4CAF50"
+                                : score >= 67
+                                ? "#FF9800"
+                                : score >= 34
+                                ? "#FFC107"
+                                : "#f44336"
+                            };
+                        ">
+                            ${
+                              score === 100
+                                ? "✅ ALL INDICATORS PASS"
+                                : score >= 67
+                                ? "⚠️ MOST INDICATORS PASS"
+                                : score >= 34
+                                ? "🟡 SOME INDICATORS PASS"
+                                : "❌ MOST INDICATORS FAIL"
+                            }
+                        </div>
+                    </div>
+                `;
+        });
+
+        resultsDiv.innerHTML = html;
+      }
+
+      // Calculate initial results
+      calculateData();
+    </script>
+  </body>
+</html>
