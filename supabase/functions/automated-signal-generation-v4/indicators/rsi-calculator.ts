@@ -7,6 +7,7 @@
 // 🔧 ORIGINAL FUNCTION PROTECTION: Original index.ts remains UNTOUCHED during extraction
 // ✅ PRODUCTION READY: Identical RSI behavior with modular architecture benefits
 // 📊 SESSION #183 COMPLIANCE: Returns null for insufficient data (no synthetic fallbacks)
+// 🔧 RSI FIX: Updated to use Wilder's Smoothing (EMA) instead of SMA for TradingView compatibility
 // ==================================================================================
 
 import {
@@ -22,15 +23,16 @@ import {
  * SESSION #301: First modular component extraction - proves modular approach works
  * SESSION #183 PRESERVATION: All real-data-only logic preserved exactly
  * ANTI-REGRESSION: Identical input/output behavior to original calculateRSI function
+ * 🔧 RSI FIX: Now uses Wilder's Smoothing (EMA) for TradingView compatibility
  */
 export class RSICalculator implements TechnicalIndicatorModule {
   private readonly defaultPeriod = 14;
 
   /**
-   * 🎯 RSI CALCULATION - SESSION #183 REAL INDICATOR LOGIC PRESERVED EXACTLY
-   * EXTRACTED FROM: Original Edge Function lines 451-480
+   * 🎯 RSI CALCULATION - FIXED WITH WILDER'S SMOOTHING (EMA)
+   * FIXED FROM: SMA-based calculation to EMA-based calculation
    * SESSION #183 FIX: Returns null for insufficient data (no synthetic "50" fallback)
-   * ANTI-REGRESSION: Identical algorithm, validation, and output as original function
+   * 🔧 TRADINGVIEW COMPATIBLE: Uses Wilder's smoothing for accurate RSI values
    */
   calculate(input: TechnicalIndicatorInput): IndicatorResult {
     const prices = input.prices;
@@ -50,22 +52,20 @@ export class RSICalculator implements TechnicalIndicatorModule {
         metadata: {
           period: period,
           dataPoints: prices?.length || 0,
-          calculationMethod: "session-183-real-data-only",
+          calculationMethod: "session_301_modular",
           sessionFix:
             "SESSION #183: Returns null for insufficient data (no synthetic fallback)",
         },
       };
     }
 
-    // 🎯 EXACT RSI ALGORITHM FROM ORIGINAL FUNCTION
-    // PRESERVED: Identical price change calculation logic
+    // 🎯 CALCULATE PRICE CHANGES
     const changes = [];
     for (let i = 1; i < prices.length; i++) {
       changes.push(prices[i] - prices[i - 1]);
     }
 
     // 🚨 SESSION #183 PRODUCTION FIX: Exact validation from original function
-    // PRESERVED: Same change validation - changes.length < period
     if (changes.length < period) {
       console.log(
         `⚠️ RSI: Insufficient change data (${changes.length} changes, need ${period}) - returning null (no synthetic fallback)`
@@ -76,29 +76,41 @@ export class RSICalculator implements TechnicalIndicatorModule {
         metadata: {
           period: period,
           dataPoints: changes.length,
-          calculationMethod: "session-183-real-data-only",
+          calculationMethod: "session_301_modular",
           sessionFix: "SESSION #183: Returns null for insufficient change data",
         },
       };
     }
 
-    // 🎯 EXACT GAIN/LOSS CALCULATION FROM ORIGINAL FUNCTION
-    // PRESERVED: Identical average gain/loss algorithm
-    let avgGain = 0,
-      avgLoss = 0;
+    // 🔧 FIXED: WILDER'S SMOOTHING CALCULATION (TradingView Compatible)
+    // Step 1: Calculate initial SMA for first period
+    let initialGains = 0;
+    let initialLosses = 0;
+
     for (let i = 0; i < period; i++) {
       if (changes[i] > 0) {
-        avgGain += changes[i];
+        initialGains += changes[i];
       } else {
-        avgLoss += Math.abs(changes[i]);
+        initialLosses += Math.abs(changes[i]);
       }
     }
 
-    avgGain = avgGain / period;
-    avgLoss = avgLoss / period;
+    // Initial averages (SMA for first calculation)
+    let avgGain = initialGains / period;
+    let avgLoss = initialLosses / period;
 
-    // 🎯 EXACT RSI CALCULATION FROM ORIGINAL FUNCTION
-    // PRESERVED: Identical edge case handling and RS calculation
+    // Step 2: Apply Wilder's smoothing for subsequent values
+    // Wilder's smoothing: EMA with alpha = 1/period
+    for (let i = period; i < changes.length; i++) {
+      const gain = changes[i] > 0 ? changes[i] : 0;
+      const loss = changes[i] < 0 ? Math.abs(changes[i]) : 0;
+
+      // Wilder's smoothing formula: ((previous_avg * (period-1)) + current_value) / period
+      avgGain = (avgGain * (period - 1) + gain) / period;
+      avgLoss = (avgLoss * (period - 1) + loss) / period;
+    }
+
+    // 🎯 RSI CALCULATION WITH EDGE CASE HANDLING
     if (avgLoss === 0) {
       const edgeCaseResult = avgGain > 0 ? 100 : 50;
       DefaultIndicatorLogger.logCalculationSuccess("RSI", edgeCaseResult);
@@ -108,19 +120,17 @@ export class RSICalculator implements TechnicalIndicatorModule {
         metadata: {
           period: period,
           dataPoints: prices.length,
-          calculationMethod: "session-183-real-data-edge-case",
+          calculationMethod: "session_301_modular",
           sessionFix: "SESSION #183: Edge case - zero average loss",
         },
       };
     }
 
-    // 🎯 FINAL RSI CALCULATION - EXACT ALGORITHM FROM ORIGINAL FUNCTION
-    // PRESERVED: Identical RS ratio and RSI formula
+    // 🎯 FINAL RSI CALCULATION - STANDARD FORMULA
     const rs = avgGain / avgLoss;
     const rsi = 100 - 100 / (1 + rs);
 
-    // 🎯 EXACT OUTPUT FORMAT FROM ORIGINAL FUNCTION
-    // PRESERVED: Same rounding logic - Math.round(rsi * 100) / 100
+    // 🎯 ROUND TO 2 DECIMAL PLACES
     const finalRSI = Math.round(rsi * 100) / 100;
 
     DefaultIndicatorLogger.logCalculationSuccess("RSI", finalRSI);
@@ -131,9 +141,9 @@ export class RSICalculator implements TechnicalIndicatorModule {
       metadata: {
         period: period,
         dataPoints: prices.length,
-        calculationMethod: "session-183-real-rsi-calculation",
+        calculationMethod: "session_301_modular",
         sessionFix:
-          "SESSION #183: Real RSI calculation with authentic market data",
+          "FIXED: RSI calculation with Wilder's smoothing (TradingView compatible)",
       },
     };
   }
@@ -164,7 +174,7 @@ export class RSICalculator implements TechnicalIndicatorModule {
    * 🎯 LEGACY FUNCTION COMPATIBILITY
    * PURPOSE: Provide exact same function signature as original Edge Function
    * SESSION #301: Enables drop-in replacement during integration testing
-   * ANTI-REGRESSION: Identical behavior to original calculateRSI(prices, period = 14)
+   * 🔧 FIXED: Now uses Wilder's smoothing for accurate RSI calculation
    */
   static calculateRSI(prices: number[], period: number = 14): number | null {
     const calculator = new RSICalculator();
@@ -177,7 +187,7 @@ export class RSICalculator implements TechnicalIndicatorModule {
  * 🎯 DIRECT EXPORT FOR LEGACY COMPATIBILITY
  * PURPOSE: Maintain exact same function call pattern as original Edge Function
  * SESSION #301: Enables seamless integration without changing calling code
- * ANTI-REGRESSION: Drop-in replacement for original calculateRSI function
+ * 🔧 FIXED: Now uses Wilder's smoothing for accurate RSI calculation
  */
 export function calculateRSI(
   prices: number[],
@@ -187,18 +197,18 @@ export function calculateRSI(
 }
 
 // ==================================================================================
-// 🎯 SESSION #301 RSI CALCULATOR EXTRACTION COMPLETE
+// 🎯 SESSION #301 RSI CALCULATOR EXTRACTION COMPLETE - FIXED ALGORITHM
 // ==================================================================================
-// 📊 FUNCTIONALITY: Exact RSI calculation extracted from original Edge Function
+// 📊 FUNCTIONALITY: RSI calculation with Wilder's smoothing (TradingView compatible)
 // 🛡️ PRESERVATION: All Session #183 real-data-only logic preserved exactly
-// 🔧 MODULAR ARCHITECTURE: Clean separation with identical behavior to original
-// 📈 PRODUCTION READY: Drop-in replacement with enhanced modular benefits
+// 🔧 FIXED: Updated from SMA to EMA-based calculation for accuracy
+// 📈 PRODUCTION READY: Drop-in replacement with enhanced accuracy
 // 🎖️ ANTI-REGRESSION: Original Edge Function remains untouched - zero risk extraction
-// 🚀 TESTING READY: Legacy function available for validation against original
-// 📋 SESSION #302 PREPARATION: Template established for MACD Calculator extraction
+// 🚀 TESTING READY: Legacy function available for validation against TradingView
+// 🔧 ALGORITHM FIX: Wilder's smoothing ensures RSI values match industry standards
 // ==================================================================================
 // 🧪 VALIDATION COMMANDS:
-// const original = originalEdgeFunction.calculateRSI([100, 105, 103, 108], 14);
-// const extracted = calculateRSI([100, 105, 103, 108], 14);
-// console.log('Identical:', original === extracted); // Should be true
+// const tradingViewRSI = 55.13; // From chart
+// const calculatedRSI = calculateRSI(priceArray, 14);
+// console.log('RSI Match:', Math.abs(tradingViewRSI - calculatedRSI) < 1.0);
 // ==================================================================================
