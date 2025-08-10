@@ -73,11 +73,11 @@ export class StockUniverseConfiguration {
         defaultEndIndex: 50, // 🔧 SESSION #151-185 PRESERVED: Default ending index for processing
         defaultBatchNumber: 1, // 🔧 SESSION #151-185 PRESERVED: Default batch number for Make.com
         maxStocksPerBatch: 200, // 🔧 SESSION #151-185 PRESERVED: Maximum stocks per scenario batch
-        testStocks: ["AAPL", "MSFT", "GOOGL", "JPM", "JNJ"], // 🧪 SESSION #153 PRESERVED: Debug stocks for testing
+        testStocks: ["AAPL", "MSFT", "GOOGL", "JPM", "JNJ", "ABT"], // 🧪 SESSION #153 + #326: Debug stocks + ABT for RSI debugging
       },
-      databaseDriven: true, // 🚨 SESSION #151-185 PRESERVED: Enable database-driven stock selection
+      databaseDriven: true, // 🚀 SESSION #327: Enable database-driven selection for broader signal discovery
       useActiveStocksTable: true, // 🔧 SESSION #151-185 PRESERVED: Use active_stocks table for selection
-      fallbackToTestStocks: false, // 🛡️ SESSION #151-185 PRESERVED: Production mode - no fallback to test stocks
+      fallbackToTestStocks: true, // 🚨 SESSION #326 DEBUGGING: Temporarily enable for AMAT RSI debugging
     };
 
     console.log(
@@ -113,6 +113,15 @@ export class StockUniverseConfiguration {
    */
   getTestStocks(): string[] {
     return [...this.settings.selectionParameters.testStocks]; // Return copy to prevent modification
+  }
+
+  /**
+   * 🗄️ IS DATABASE DRIVEN - SESSION #326 DATABASE SETTING ACCESS
+   * 🎯 PURPOSE: Check if stock selection should use database or test stocks
+   * 🚨 DEBUG USAGE: For ABT RSI debugging configuration
+   */
+  isDatabaseDriven(): boolean {
+    return this.settings.databaseDriven;
   }
 
   /**

@@ -31,7 +31,7 @@ import {
 
 // 🔧 SESSION #313: COMPLETE MODULAR IMPORTS - PRODUCTION READY
 import { TimeframeDataCoordinator } from "../analysis/timeframe-processor.ts";
-import { calculateRSI } from "../indicators/rsi-calculator.ts";
+import { calculateRSI, RSICalculator } from "../indicators/rsi-calculator.ts";
 import { calculateMACD } from "../indicators/macd-calculator.ts";
 import { calculateBollingerBands } from "../indicators/bollinger-bands.ts";
 import { calculateVolumeAnalysis } from "../indicators/volume-analyzer.ts";
@@ -55,12 +55,18 @@ import {
   deleteAllSignals,
   saveSignal,
 } from "../database/signal-repository.ts";
+// 🚨 SESSION #326: Import StockUniverseConfiguration to respect databaseDriven setting
+import { StockUniverseConfiguration } from "../config/stock-universe.ts";
 // 🎯 SESSION #321: NEW IMPORT - Indicators repository for 28-record creation
 import {
   saveSignalWithIndicators,
   calculateIndicatorScoreContribution,
 } from "../database/indicator-repository.ts";
 import { CacheManager } from "../data/cache-manager.ts";
+
+// 🔍 DEBUG: Module-level variable for debugging info
+let debugInfo: any = null;
+let rsiMacdDebug: any = null;
 
 /**
  * 🎯 SESSION #321B: PRODUCTION SIGNAL PROCESSING PIPELINE WITH FINAL 28-RECORD TRANSPARENCY
@@ -73,7 +79,7 @@ import { CacheManager } from "../data/cache-manager.ts";
  * BUG FIX: Fixed hardcoded support/resistance classification with Session #313D position-based validation
  */
 export class SignalPipeline {
-  globalCacheManager = null;
+  globalCacheManager: CacheManager | null = null;
 
   /**
    * 🗄️ SESSION #313: GET CACHE MANAGER - PRODUCTION READY
@@ -179,14 +185,65 @@ export class SignalPipeline {
     );
 
     // 🗄️ SESSION #313: DATABASE-DRIVEN STOCK SELECTION - PRODUCTION READY
-    console.log(
-      `\n🗄️ ========== SESSION #325 PRODUCTION DATABASE-DRIVEN STOCK SELECTION ==========`
-    );
-    const ACTIVE_STOCKS = await getActiveStocksWithParameters(
-      startIndex,
-      endIndex,
-      batchNumber
-    );
+    // 🚨 SESSION #326 FIX: Respect StockUniverseConfiguration databaseDriven setting
+    const stockConfig = new StockUniverseConfiguration();
+
+    let ACTIVE_STOCKS;
+
+    if (stockConfig.isDatabaseDriven()) {
+      console.log(
+        `\n🗄️ ========== SESSION #325 PRODUCTION DATABASE-DRIVEN STOCK SELECTION ==========`
+      );
+      ACTIVE_STOCKS = await getActiveStocksWithParameters(
+        startIndex,
+        endIndex,
+        batchNumber
+      );
+    } else {
+      console.error(
+        `\n🧪🧪🧪 SESSION #327 TEST STOCK SELECTION ACTIVE - ABT RSI DEBUGGING! 🧪🧪🧪`
+      );
+      console.log(
+        `🚨 [STOCK_SELECTION] databaseDriven: false - FORCING ABT PROCESSING for RSI debugging`
+      );
+
+      // 🚨 SESSION #327 ABT RSI FIX: Always ensure ABT is processed for debugging
+      const testStocks = stockConfig.getTestStocks();
+      console.error(
+        `🔍 [DEBUG] Test stocks available: ${testStocks.join(", ")}`
+      );
+      console.error(
+        `🔍 [DEBUG] Parameters - startIndex: ${startIndex}, endIndex: ${endIndex}`
+      );
+
+      // 🎯 FORCE ABT PROCESSING: Always include ABT when debugging RSI
+      let selectedStocks = ["ABT"]; // Force ABT first
+
+      // Add other stocks if there's capacity
+      const remainingSlots = Math.max(0, endIndex - startIndex - 1);
+      if (remainingSlots > 0) {
+        const otherStocks = testStocks
+          .filter((stock) => stock !== "ABT")
+          .slice(0, remainingSlots);
+        selectedStocks = [...selectedStocks, ...otherStocks];
+      }
+
+      ACTIVE_STOCKS = selectedStocks.map((ticker) => ({
+        ticker: ticker,
+        company_name: `${ticker} Corporation`,
+        sector: ticker === "ABT" ? "Healthcare" : "Technology",
+        source: "session_327_abt_rsi_debugging_forced",
+      }));
+
+      console.error(
+        `🚨🚨🚨 [STOCK_SELECTION] ABT FORCED TO TOP: ${ACTIVE_STOCKS.map(
+          (s) => s.ticker
+        ).join(", ")} 🚨🚨🚨`
+      );
+      console.error(
+        `✅✅✅ ABT will be processed first for RSI debugging! ✅✅✅`
+      );
+    }
     console.log(
       `✅ SESSION #325 PRODUCTION DATABASE-DRIVEN STOCK SELECTION COMPLETE:`
     );
@@ -228,6 +285,32 @@ export class SignalPipeline {
         console.log(
           `📡 [${ticker}] Production: Fetching real market data with SESSION #325 migration complete...`
         );
+
+        // 🚨 SESSION #326 ABT 1H CACHE BYPASS: Force fresh data for debugging
+        if (ticker === "ABT") {
+          console.error(
+            `🚨🚨🚨 [ABT FOUND!] SESSION #326 ABT PROCESSING STARTED! 🚨🚨🚨`
+          );
+          console.error(
+            `🚨 [ABT CACHE BYPASS] Forcing fresh data fetch to debug 1H RSI discrepancy`
+          );
+          console.error(
+            `🚨 [ABT CACHE BYPASS] Current platform RSI: 45.57, testing 1H accuracy`
+          );
+          console.error(
+            `🚨 [ABT CACHE BYPASS] Testing healthcare sector data quality hypothesis...`
+          );
+          // Clear any potential cached data for ABT to force fresh API calls
+          if (
+            this.globalCacheManager &&
+            typeof this.globalCacheManager.clearAll === "function"
+          ) {
+            this.globalCacheManager.clearAll();
+          } else {
+            console.log("Cache manager not available for clearing");
+          }
+        }
+
         const coordinator = new TimeframeDataCoordinator(USE_BACKTEST);
         // SESSION #316 FIX: Removed redundant getDateRanges() call here to prevent date range inconsistencies
         const timeframeData = await coordinator.fetchMultiTimeframeData(
@@ -318,8 +401,34 @@ export class SignalPipeline {
           );
 
           // 🔧 SESSION #313: MODULAR CALCULATIONS - PRODUCTION READY
-          const rsi = calculateRSI(data.prices);
-          const macd = calculateMACD(data.prices);
+          // 🐛 SESSION #326: RSI with debug logging
+          const rsiCalculator = new RSICalculator();
+          const rsiResult = rsiCalculator.calculate({
+            prices: data.prices,
+            ticker: ticker,
+            timeframe: timeframe,
+          });
+          const rsi = rsiResult.value;
+          const macd = calculateMACD(data.prices, 12, 26, ticker, timeframe);
+
+          // 🔍 DEBUG: Capture RSI/MACD debug info for "A" stock
+          if (ticker === "A" && (timeframe === "1H" || timeframe === "1D")) {
+            rsiMacdDebug = {
+              ticker,
+              timeframe,
+              dataLength: data.prices?.length,
+              rsiResult: {
+                value: rsi,
+                isValid: rsiResult.isValid,
+                metadata: rsiResult.metadata,
+              },
+              macdResult: macd,
+              pricesLast10: data.prices?.slice(-10),
+              pricesFirst5: data.prices?.slice(0, 5),
+              currentPrice:
+                data.currentPrice || data.prices[data.prices.length - 1],
+            };
+          }
           const bb = calculateBollingerBands(data.prices);
           const volumeAnalysis = calculateVolumeAnalysis(
             data.volume,
@@ -376,20 +485,35 @@ export class SignalPipeline {
             data.highs || data.prices,
             data.lows || data.prices,
             20,
-            volatilityDistance, // SESSION #313C: Add volatility distance for proximity filtering
-            timeframe
+            volatilityDistance // SESSION #313C: Add volatility distance for proximity filtering
           );
 
+          // 🔍 DEBUG: Get indicator results for comparison
           const stoch = calculateStochastic(
             data.prices,
             data.highs || data.prices,
             data.lows || data.prices
           );
+
           const williams = calculateWilliamsR(
             data.prices,
             data.highs || data.prices,
             data.lows || data.prices
           );
+
+          // 🔍 DEBUG: Store debug info for JSON response (more reliable than logs)
+          if (ticker === "A" && timeframe === "1H") {
+            debugInfo = {
+              ticker,
+              timeframe,
+              dataLength: data.prices?.length,
+              stochasticResult: stoch,
+              williamsResult: williams,
+              pricesLast5: data.prices?.slice(-5),
+              highsLast5: (data.highs || data.prices)?.slice(-5),
+              lowsLast5: (data.lows || data.prices)?.slice(-5),
+            };
+          }
 
           // 🔧 SESSION #313: SIGNAL COMPOSITION - PRODUCTION READY
           const timeframeScore = calculate7IndicatorScore(
@@ -416,7 +540,7 @@ export class SignalPipeline {
               macd: macd?.macd || null,
               bollingerB: bb?.percentB || null,
               volumeRatio: volumeAnalysis?.ratio || null,
-              stochastic: stoch?.percentK || null,
+              stochastic: stoch?.percentK ?? null,
               williamsR: williams?.value || null,
               // 🔧 SESSION #313D: Support/Resistance levels - fixed mapping for actual price values instead of proximity scores
               supportLevel:
@@ -451,13 +575,14 @@ export class SignalPipeline {
           }
 
           timeframeScores[timeframe] = timeframeScore;
+
           timeframeDetails[timeframe] = {
             score: timeframeScore,
             rsi: rsi || null,
             macd: macd?.macd || null,
             bollingerB: bb?.percentB || null,
             volumeRatio: volumeAnalysis?.ratio || null,
-            stochastic: stoch?.percentK || null,
+            stochastic: stoch?.percentK ?? null,
             williamsR: williams?.value || null,
             // 🔧 SESSION #313D: Support/Resistance levels - fixed mapping for actual price values instead of proximity scores
             supportLevel:
@@ -786,6 +911,7 @@ export class SignalPipeline {
 
           // 🎯 SESSION #321B FINAL: STOCHASTIC INDICATOR RECORD CREATION - Always create for transparency
           const stochasticValue = details?.stochastic;
+
           const stochasticContribution = calculateIndicatorScoreContribution(
             "Stochastic",
             stochasticValue,
@@ -1299,6 +1425,10 @@ export class SignalPipeline {
       message: `SESSION #325 MIGRATION COMPLETE system with ${
         totalSavedCount > 0 ? "successful" : "attempted"
       } database operations using complete transparency architecture with ${totalIndicatorRecordsCreated} indicator records created for total signal scoring understanding`,
+      // 🔍 DEBUG: Include Stochastic debug info in response (bypass log issues)
+      stochastic_debug: debugInfo,
+      // 🔍 DEBUG: Include RSI/MACD debug info in response (bypass log issues)
+      rsi_macd_debug: rsiMacdDebug,
     };
   }
 

@@ -481,7 +481,8 @@ export class SignalRepository {
     );
 
     // 🔧 SESSION #180-185 PRESERVED: TEST_STOCKS fallback exactly as original
-    const TEST_STOCKS = ["AAPL", "MSFT", "GOOGL", "JPM", "JNJ"];
+    // 🚨 SESSION #326: Added ABT for RSI debugging (healthcare sector)
+    const TEST_STOCKS = ["AAPL", "MSFT", "GOOGL", "JPM", "JNJ", "ABT"];
 
     try {
       const supabaseUrl = Deno.env.get("SUPABASE_URL");

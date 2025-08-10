@@ -279,6 +279,33 @@ export class CacheManager {
    * PURPOSE: Identify this manager module for logging and debugging
    * SESSION #301-308 COMPATIBILITY: Follows same naming pattern as other modular components
    */
+  /**
+   * 🧹 CLEAR ALL CACHE - SESSION #326 CACHE BYPASS
+   * 🎯 PURPOSE: Force clear all cached data to eliminate staleness
+   * 🚨 DEBUG USAGE: Clear cache for specific stocks to test fresh data
+   */
+  clearAll(): void {
+    const clearedCount = this.cache.size;
+    this.cache.clear();
+    console.log(
+      `🧹 [SESSION_326_CACHE] Cleared ${clearedCount} cache entries for fresh data fetch`
+    );
+  }
+
+  /**
+   * 🧹 CLEAR SPECIFIC KEY - SESSION #326 TARGETED BYPASS
+   * 🎯 PURPOSE: Clear specific cache entry by key
+   * 🚨 DEBUG USAGE: Clear cache for specific ticker/timeframe combinations
+   */
+  clearKey(key: string): boolean {
+    const existed = this.cache.has(key);
+    this.cache.delete(key);
+    if (existed) {
+      console.log(`🧹 [SESSION_326_CACHE] Cleared cache key: ${key}`);
+    }
+    return existed;
+  }
+
   getName(): string {
     return "CacheManager";
   }

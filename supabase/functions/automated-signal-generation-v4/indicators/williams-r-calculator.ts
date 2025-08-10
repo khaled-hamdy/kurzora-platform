@@ -99,9 +99,28 @@ export class WilliamsRCalculator implements TechnicalIndicatorModule {
         };
       }
 
+      // 🚨🚨🚨 SESSION #327 CRITICAL DEBUG: WILLIAMS R THOUSANDS BUG INVESTIGATION 🚨🚨🚨
+      console.error(
+        `🚨🚨🚨 [WILLIAMS R THOUSANDS DEBUG] STARTING CALCULATION 🚨🚨🚨`
+      );
+      console.error(`🔍 Current Price: ${currentPrice}`);
+      console.error(`🔍 Highest High: ${highestHigh}`);
+      console.error(`🔍 Lowest Low: ${lowestLow}`);
+      console.error(`🔍 Range: ${highestHigh - lowestLow}`);
+      console.error(`🔍 Last 5 prices: ${prices.slice(-5).join(", ")}`);
+      console.error(`🔍 Last 5 highs: ${highs.slice(-5).join(", ")}`);
+      console.error(`🔍 Last 5 lows: ${lows.slice(-5).join(", ")}`);
+
       // 🎯 WILLIAMS %R CALCULATION: Inverted position within price range
       const williamsR =
         ((highestHigh - currentPrice) / (highestHigh - lowestLow)) * -100;
+
+      console.error(
+        `🚨🚨🚨 [WILLIAMS R THOUSANDS DEBUG] RAW RESULT: ${williamsR} 🚨🚨🚨`
+      );
+      console.error(
+        `🔍 Formula: ((${highestHigh} - ${currentPrice}) / (${highestHigh} - ${lowestLow})) * -100 = ${williamsR}`
+      );
 
       // 🚀 SESSION #301D SUCCESS LOGGING: Maintain original function logging for consistency
       logger.logCalculationSuccess("Williams %R", williamsR);
@@ -186,26 +205,54 @@ export function calculateWilliamsR(
   lows?: number[],
   period: number = 14
 ): { value: number } | null {
-  const calculator = new WilliamsRCalculator();
-  const input: TechnicalIndicatorInput = {
-    prices,
-    highs: highs || prices,
-    lows: lows || prices,
-    period,
-  };
+  // 🚨🚨🚨 SESSION #327 EXCEPTION CATCH: Find out why debug logs don't appear! 🚨🚨🚨
+  console.error(`🚨🚨🚨 [WILLIAMS R ENTRY POINT] FUNCTION CALLED! 🚨🚨🚨`);
+  console.error(
+    `🔍 Parameters: prices.length=${prices?.length}, highs.length=${highs?.length}, lows.length=${lows?.length}, period=${period}`
+  );
 
-  const result = calculator.calculate(input);
+  try {
+    const calculator = new WilliamsRCalculator();
+    const input: TechnicalIndicatorInput = {
+      prices,
+      highs: highs || prices,
+      lows: lows || prices,
+      period,
+    };
 
-  // 🚨 SESSION #183 PRESERVED: Return null for insufficient data
-  if (!result.isValid || result.value === null) {
+    console.error(
+      `🚨🚨🚨 [WILLIAMS R ENTRY POINT] About to call calculator.calculate() 🚨🚨🚨`
+    );
+    const result = calculator.calculate(input);
+    console.error(
+      `🚨🚨🚨 [WILLIAMS R ENTRY POINT] Calculator returned: isValid=${result.isValid}, value=${result.value} 🚨🚨🚨`
+    );
+
+    // 🚨 SESSION #183 PRESERVED: Return null for insufficient data
+    if (!result.isValid || result.value === null) {
+      console.error(
+        `🚨🚨🚨 [WILLIAMS R ENTRY POINT] Returning null: isValid=${result.isValid}, value=${result.value} 🚨🚨🚨`
+      );
+      return null;
+    }
+
+    // 🎖️ SESSION #183 PRESERVED RETURN FORMAT: Exact return structure for composite scoring
+    // 🔧 CRITICAL FORMAT: Returns { value: Number } for Williams %R oscillator logic
+    console.error(
+      `🚨🚨🚨 [WILLIAMS R ENTRY POINT] Returning value: ${result.value} 🚨🚨🚨`
+    );
+    return {
+      value: result.value,
+    };
+  } catch (error) {
+    console.error(
+      `🚨🚨🚨 [WILLIAMS R ENTRY POINT] EXCEPTION CAUGHT: ${error.message} 🚨🚨🚨`
+    );
+    console.error(
+      `🚨🚨🚨 [WILLIAMS R ENTRY POINT] STACK TRACE: ${error.stack} 🚨🚨🚨`
+    );
     return null;
   }
-
-  // 🎖️ SESSION #183 PRESERVED RETURN FORMAT: Exact return structure for composite scoring
-  // 🔧 CRITICAL FORMAT: Returns { value: Number } for Williams %R oscillator logic
-  return {
-    value: result.value,
-  };
 }
 
 // ==================================================================================

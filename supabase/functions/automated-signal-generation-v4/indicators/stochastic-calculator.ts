@@ -186,26 +186,31 @@ export function calculateStochastic(
   lows?: number[],
   period: number = 14
 ): { percentK: number } | null {
-  const calculator = new StochasticCalculator();
-  const input: TechnicalIndicatorInput = {
-    prices,
-    highs: highs || prices,
-    lows: lows || prices,
-    period,
-  };
+  try {
+    const calculator = new StochasticCalculator();
+    const input: TechnicalIndicatorInput = {
+      prices,
+      highs: highs || prices,
+      lows: lows || prices,
+      period,
+    };
 
-  const result = calculator.calculate(input);
+    const result = calculator.calculate(input);
 
-  // 🚨 SESSION #183 PRESERVED: Return null for insufficient data
-  if (!result.isValid || result.value === null) {
+    // 🚨 SESSION #183 PRESERVED: Return null for insufficient data
+    if (!result.isValid || result.value === null) {
+      return null;
+    }
+
+    // 🎖️ SESSION #183 PRESERVED RETURN FORMAT: Exact return structure for composite scoring
+    // 🔧 CRITICAL FORMAT: Returns { percentK: Number } for oscillator position logic
+    return {
+      percentK: result.value,
+    };
+  } catch (error) {
+    console.error(`[STOCHASTIC] Calculation error: ${error.message}`);
     return null;
   }
-
-  // 🎖️ SESSION #183 PRESERVED RETURN FORMAT: Exact return structure for composite scoring
-  // 🔧 CRITICAL FORMAT: Returns { percentK: Number } for oscillator position logic
-  return {
-    percentK: result.value,
-  };
 }
 
 // ==================================================================================

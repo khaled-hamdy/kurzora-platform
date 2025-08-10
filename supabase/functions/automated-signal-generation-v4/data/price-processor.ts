@@ -101,11 +101,14 @@ export class PriceProcessor {
 
       return timeframeData;
     } else {
-      // 🚀 SESSION #184 PRESERVATION: Use more data points for better technical analysis (extracted exactly from TimeframeDataCoordinator)
-      const maxPoints = processingConfig.preserveAllData
-        ? results.length
-        : Math.min(results.length, processingConfig.maxDataPoints || 200);
-      const processedResults = results.slice(-maxPoints); // Keep last N periods for better analysis
+      // 🎯 SESSION #326 RSI FIX: Use ALL data for 1H like Daily does
+      // CRITICAL: RSI needs full historical context for accurate Wilder's smoothing
+      const processedResults =
+        timeframe === "1H" || processingConfig.preserveAllData
+          ? results // Use ALL available data for accurate RSI calculation
+          : results.slice(
+              -Math.min(results.length, processingConfig.maxDataPoints || 200)
+            );
 
       const timeframeData: TimeframeDataPoint = {
         currentPrice: processedResults[processedResults.length - 1].c,

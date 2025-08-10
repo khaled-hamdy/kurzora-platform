@@ -1,16 +1,11 @@
 // ==================================================================================
 // 🎯 SESSION #317 PRODUCTION FIX: MULTI-FALLBACK getCurrentPrice() IMPLEMENTATION
-// 🎯 SESSION #400K INTEGRATION: MANUAL AGGREGATOR FOR 4H/1W TIMEFRAMES
 // ==================================================================================
 // 🚨 PURPOSE: Fix getCurrentPrice() returning null due to empty snapshot API results
-// 🚨 SESSION #400K PURPOSE: Integrate Manual Aggregator to solve 4H/1W data insufficiency
 // 🔧 SOLUTION: Add production-grade fallback APIs when snapshot endpoint returns empty results
-// 🔧 SESSION #400K SOLUTION: Route 4H/1W to Manual Aggregator, keep 1H/1D via API
-// 🛡️ PRESERVATION: ALL Session #301-317 modular architecture maintained exactly
-// 🛡️ SESSION #400K PRESERVATION: ALL Session #317/316/185 functionality preserved exactly
+// 🛡️ PRESERVATION: ALL Session #301-316 modular architecture maintained exactly
 // 📝 ANTI-REGRESSION: Complete Session #185 + #184 + #183 functionality preserved
 // 🎯 PRODUCTION READY: Real Polygon.io endpoints only, no synthetic data generation
-// 🎯 SESSION #400K READY: Real manual aggregation only, no synthetic data generation
 // ==================================================================================
 // 💰 DAILY CHANGE FIX: Proper async handling to get actual yesterday's close price
 // 🔧 ULTRA-CONSERVATIVE: Fetch yesterday's close before processing, pass as parameter
@@ -18,24 +13,16 @@
 // 🛡️ ANTI-REGRESSION: processTimeframeData remains synchronous (Session #220 lesson)
 // ==================================================================================
 
-import {
-  ManualAggregator,
-  AggregatedBarData,
-} from "../data/manual-aggregator.ts";
-
 /**
  * 🌐 TIMEFRAME DATA INTERFACE - SESSION #305B STRUCTURE
  * PURPOSE: Define structure for multi-timeframe market data
  * SESSION #305B: Foundation for modular timeframe processing
  * PRODUCTION READY: Type-safe data structure for all timeframes
  */ /**
- * 📡 MULTI-TIMEFRAME DATA COORDINATOR - SESSION #305B MODULAR EXTRACTION + SESSION #400K INTEGRATION
+ * 📡 MULTI-TIMEFRAME DATA COORDINATOR - SESSION #305B MODULAR EXTRACTION
  * 🚨 CRITICAL EXTRACTION: Moving fetchMultiTimeframeData from main Edge Function
- * 🚨 SESSION #400K INTEGRATION: Adding Manual Aggregator for 4H/1W timeframes
  * 🛡️ ANTI-REGRESSION: ALL Session #185 + #184 + #183 functionality preserved EXACTLY
- * 🛡️ SESSION #400K ANTI-REGRESSION: ALL Session #317/316/185 functionality preserved EXACTLY
  * 🎯 PURPOSE: Fetch market data across all 4 timeframes with institutional reliability
- * 🎯 SESSION #400K PURPOSE: Solve 4H/1W data insufficiency via manual aggregation
  * 🔧 SESSION #185 PRESERVATION: 400-day extended range support for reliable 4H/Weekly data
  * 🚀 SESSION #184 PRESERVATION: Enhanced data pipeline with retry logic and comprehensive debugging
  * 🚨 SESSION #183 PRESERVATION: Real data only (no synthetic fallbacks)
@@ -44,22 +31,19 @@ import {
  * 💰 SESSION #317 PRODUCTION FIX: Multi-fallback getCurrentPrice() to resolve null return issue
  * 🔧 SESSION #316 PRICE ACCURACY FIX: Consistent current price across all timeframes
  * 💰 DAILY CHANGE FIX: Proper yesterday's close fetching with correct async handling
- * 🔄 SESSION #400K INTEGRATION: Manual aggregation for 4H (1H→4H) and 1W (1D→1W) timeframes
  */ export class TimeframeDataCoordinator {
   USE_BACKTEST;
   POLYGON_API_KEY;
-  manualAggregator; // SESSION #400K: Manual Aggregator instance
 
   constructor(useBacktest = false) {
     this.USE_BACKTEST = useBacktest;
     this.POLYGON_API_KEY = Deno.env.get("POLYGON_API_KEY") || null;
-    this.manualAggregator = new ManualAggregator(); // SESSION #400K: Initialize Manual Aggregator
   }
 
   async fetchMultiTimeframeData(ticker, dateRanges) {
     try {
       console.log(
-        `🚨 [${ticker}] SESSION #400K INTEGRATION - MANUAL AGGREGATOR + PRODUCTION FIX VERSION`
+        `🚨 [${ticker}] SIMPLE TEST LOG - PRODUCTION FIX VERSION - SESSION #317`
       );
 
       // 🚨 SESSION #305B VALIDATION: Preserve original API key validation
@@ -79,7 +63,7 @@ import {
 
       const modeLabel = this.USE_BACKTEST ? "BACKTEST" : "LIVE";
       console.log(
-        `\n🔄 [${ticker}] Using ${modeLabel} MODE for SESSION #185 enhanced real market data collection + SESSION #400K manual aggregation`
+        `\n🔄 [${ticker}] Using ${modeLabel} MODE for SESSION #185 enhanced real market data collection`
       );
       console.log(
         `📅 [${ticker}] SESSION #185 Date Range: ${dateRanges.recent.start} to ${dateRanges.recent.end} (400 calendar days for reliable multi-timeframe data)`
@@ -107,65 +91,130 @@ import {
         }`
       );
 
+      // 🚀 SESSION #184 PRESERVATION: Improved API endpoints with higher limits and better error handling
+      const endpoints = {
+        "1H": `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/hour/${dateRanges.recent.start}/${dateRanges.recent.end}?adjusted=true&sort=asc&limit=5000&apikey=${this.POLYGON_API_KEY}`,
+        "4H": `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/4/hour/${dateRanges.recent.start}/${dateRanges.recent.end}?adjusted=true&sort=asc&limit=2000&apikey=${this.POLYGON_API_KEY}`,
+        "1D": `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${dateRanges.recent.start}/${dateRanges.recent.end}?adjusted=true&sort=asc&limit=200&apikey=${this.POLYGON_API_KEY}`,
+        "1W": `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/week/${dateRanges.recent.start}/${dateRanges.recent.end}?adjusted=true&sort=asc&limit=50&apikey=${this.POLYGON_API_KEY}`,
+      };
+
+      // 🚨 SESSION #317 DEBUG: Log API URLs for each timeframe
+      console.log(
+        `🔍 [${ticker}] SESSION #317 DEBUG: API URLs constructed for each timeframe:`
+      );
+      for (const [timeframe, url] of Object.entries(endpoints)) {
+        const debugUrl = url.replace(this.POLYGON_API_KEY, "[API_KEY_HIDDEN]");
+        console.log(`🔍 [${ticker}] ${timeframe} URL: ${debugUrl}`);
+        const dateMatch = url.match(/(\d{4}-\d{2}-\d{2})\/(\d{4}-\d{2}-\d{2})/);
+        if (dateMatch) {
+          console.log(
+            `🔍 [${ticker}] ${timeframe} dates: ${dateMatch[1]} to ${dateMatch[2]}`
+          );
+        }
+      }
+
       const timeframeData = {};
 
-      // 🔄 SESSION #400K INTEGRATION: Smart timeframe routing (Manual Aggregator vs API)
-      const timeframes = ["1H", "4H", "1D", "1W"];
-
-      for (const timeframe of timeframes) {
+      // 📡 SESSION #305B EXTRACTION: Process each timeframe with Session #184 enhanced error handling
+      for (const [timeframe, url] of Object.entries(endpoints)) {
         try {
           console.log(
-            `📡 [${ticker}] ${modeLabel}: Processing ${timeframe} timeframe...`
+            `📡 [${ticker}] ${modeLabel}: Fetching ${timeframe} real market data with SESSION #185 enhanced 400-day range...`
           );
 
-          let timeframeResult = null;
-
-          // 🚨 SESSION #400K ROUTING: Use Manual Aggregator for 4H/1W, API for 1H/1D
-          if (timeframe === "4H") {
+          // 🚨 SESSION #326 ABT 1H DATA FRESHNESS DEBUG
+          if (ticker === "ABT" && timeframe === "1H") {
+            console.log(`🚨 [ABT 1H DATA DEBUG] About to fetch fresh data:`);
+            console.log(`🚨 [ABT 1H DATA DEBUG] URL: ${url}`);
             console.log(
-              `🔄 [${ticker}] SESSION #400K: Using Manual Aggregator for 4H (1H→4H aggregation)`
+              `🚨 [ABT 1H DATA DEBUG] Timestamp: ${new Date().toISOString()}`
             );
-            timeframeResult = await this.fetchViaManualAggregation(
-              ticker,
-              timeframe,
-              modeLabel,
-              consistentCurrentPrice
-            );
-          } else if (timeframe === "1W") {
             console.log(
-              `📅 [${ticker}] SESSION #400K: Using Manual Aggregator for 1W (1D→1W aggregation)`
-            );
-            timeframeResult = await this.fetchViaManualAggregation(
-              ticker,
-              timeframe,
-              modeLabel,
-              consistentCurrentPrice
-            );
-          } else {
-            console.log(
-              `📡 [${ticker}] SESSION #400K: Using API for ${timeframe} (working perfectly)`
-            );
-            timeframeResult = await this.fetchViaAPI(
-              ticker,
-              timeframe,
-              dateRanges,
-              modeLabel,
-              consistentCurrentPrice
+              `🚨 [ABT 1H DATA DEBUG] Cache bypassed, expecting fresh API call...`
             );
           }
 
+          // 🚀 SESSION #184 PRESERVATION: Improved fetch with retry logic and better timeout handling
+          // 🔧 SESSION #316 FIX: Pass consistent current price to prevent timeframe-specific price inconsistencies
+          const timeframeResult = await this.fetchTimeframeWithRetry(
+            ticker,
+            timeframe,
+            url,
+            modeLabel,
+            consistentCurrentPrice // SESSION #316: Pass consistent price to all timeframes
+          );
           if (timeframeResult) {
             timeframeData[timeframe] = timeframeResult;
+
+            // 🚨 SESSION #326 ABT 1H POST-FETCH ANALYSIS
+            if (
+              ticker === "ABT" &&
+              timeframe === "1H" &&
+              timeframeResult.prices
+            ) {
+              console.log(`🚨 [ABT 1H DATA ANALYSIS] Fresh data received:`);
+              console.log(
+                `🚨 [ABT 1H DATA ANALYSIS] Total prices: ${timeframeResult.prices.length}`
+              );
+              console.log(
+                `🚨 [ABT 1H DATA ANALYSIS] First 5 prices: ${timeframeResult.prices
+                  .slice(0, 5)
+                  .map((p) => p.toFixed(2))
+                  .join(", ")}`
+              );
+              console.log(
+                `🚨 [ABT 1H DATA ANALYSIS] Last 5 prices: ${timeframeResult.prices
+                  .slice(-5)
+                  .map((p) => p.toFixed(2))
+                  .join(", ")}`
+              );
+              console.log(
+                `🚨 [ABT 1H DATA ANALYSIS] Price range: $${Math.min(
+                  ...timeframeResult.prices
+                ).toFixed(2)} - $${Math.max(...timeframeResult.prices).toFixed(
+                  2
+                )}`
+              );
+              console.log(
+                `🚨 [ABT 1H DATA ANALYSIS] Current price: $${timeframeResult.currentPrice?.toFixed(
+                  2
+                )}`
+              );
+
+              // Calculate basic trend
+              const recentChanges = [];
+              for (
+                let i = 1;
+                i < Math.min(timeframeResult.prices.length, 20);
+                i++
+              ) {
+                recentChanges.push(
+                  timeframeResult.prices[timeframeResult.prices.length - i] -
+                    timeframeResult.prices[
+                      timeframeResult.prices.length - i - 1
+                    ]
+                );
+              }
+              const recentUps = recentChanges.filter((c) => c > 0).length;
+              const recentDowns = recentChanges.filter((c) => c < 0).length;
+              console.log(
+                `🚨 [ABT 1H DATA ANALYSIS] Recent trend (last 19 changes): ${recentUps} ups, ${recentDowns} downs`
+              );
+              console.log(
+                `🚨 [ABT 1H DATA ANALYSIS] This should help explain RSI calculation...`
+              );
+            }
           }
 
           // 🚀 SESSION #184 PRESERVATION: Improved rate limiting with shorter delays for better performance
           await new Promise((resolve) => setTimeout(resolve, 100)); // Reduced from 150ms to 100ms
         } catch (timeframeError) {
           console.log(
-            `❌ [${ticker}] Error processing ${timeframe}: ${timeframeError.message}`
+            `❌ [${ticker}] Error fetching ${timeframe}: ${timeframeError.message}`
           );
           console.log(
-            `🚫 [${ticker}] ${timeframe}: Processing error - no synthetic fallback, skipping`
+            `🚫 [${ticker}] ${timeframe}: API error - no synthetic fallback, skipping`
           );
           // Note: No synthetic data fallback - we skip this timeframe instead
         }
@@ -186,7 +235,7 @@ import {
 
       // 🚀 SESSION #185 PRESERVATION: Comprehensive data summary logging with 400-day range context
       console.log(
-        `📊 [${ticker}] ${modeLabel} SESSION #185 + #400K Enhanced Real Market Data Summary:`
+        `📊 [${ticker}] ${modeLabel} SESSION #185 Enhanced Real Market Data Summary:`
       );
       console.log(
         `   ✅ Timeframes Available: ${
@@ -194,19 +243,15 @@ import {
         }/4 (${Object.keys(timeframeData).join(", ")})`
       );
       for (const [tf, data] of Object.entries(timeframeData)) {
-        const dataSource =
-          tf === "4H" || tf === "1W" ? "MANUAL_AGGREGATION" : "API";
         console.log(
           `   📈 ${tf}: ${
             data.prices?.length || 0
-          } data points, Current: $${data.currentPrice?.toFixed(
-            2
-          )} (${dataSource})`
+          } data points, Current: $${data.currentPrice?.toFixed(2)}`
         );
       }
 
       console.log(
-        `✅ [${ticker}] Processing with SESSION #185 enhanced 400-day range + SESSION #400K manual aggregation`
+        `✅ [${ticker}] Processing with SESSION #185 enhanced 400-day range real market data`
       );
       console.log(
         `🔧 [${ticker}] SESSION #316 PRICE CONSISTENCY: All timeframes using ${
@@ -223,240 +268,6 @@ import {
         `🚫 [${ticker}] Critical error - no synthetic fallback, returning null`
       );
       return null; // Return null instead of synthetic data
-    }
-  }
-
-  /**
-   * 🔄 FETCH VIA MANUAL AGGREGATION - SESSION #400K NEW METHOD
-   * 🎯 PURPOSE: Fetch 4H/1W data using Manual Aggregator instead of calendar API
-   * 🚨 SESSION #400K: Solve 4H/1W data insufficiency (17 bars → 30+ bars, 11 bars → 104+ bars)
-   * 🔧 SOLUTION: Use Manual Aggregator for reliable 1H→4H and 1D→1W aggregation
-   * 🛡️ PRESERVATION: Convert to exact same format as existing API processing
-   *
-   * @param ticker - Stock ticker symbol
-   * @param timeframe - Timeframe (4H or 1W)
-   * @param modeLabel - Mode label for logging (LIVE/BACKTEST)
-   * @param consistentCurrentPrice - SESSION #316: Consistent current price
-   * @returns TimeframeDataPoint or null
-   */
-  async fetchViaManualAggregation(
-    ticker,
-    timeframe,
-    modeLabel,
-    consistentCurrentPrice = null
-  ) {
-    try {
-      console.log(
-        `🔄 [${ticker}] SESSION #400K: Starting manual aggregation for ${timeframe}...`
-      );
-
-      let aggregatedBars = [];
-
-      // 🚨 SESSION #400K: Route to appropriate aggregation method
-      if (timeframe === "4H") {
-        aggregatedBars = await this.manualAggregator.aggregate1HTo4H(ticker);
-      } else if (timeframe === "1W") {
-        aggregatedBars = await this.manualAggregator.aggregate1DTo1W(ticker);
-      }
-
-      if (!aggregatedBars || aggregatedBars.length === 0) {
-        console.log(
-          `❌ [${ticker}] SESSION #400K: Manual aggregation returned no data for ${timeframe}`
-        );
-        return null;
-      }
-
-      console.log(
-        `✅ [${ticker}] SESSION #400K: Manual aggregation success - ${aggregatedBars.length} ${timeframe} bars generated`
-      );
-
-      // 🔧 SESSION #400K: Convert AggregatedBarData[] to expected TimeframeDataPoint format
-      return this.convertAggregatedDataToTimeframeFormat(
-        ticker,
-        timeframe,
-        aggregatedBars,
-        modeLabel,
-        consistentCurrentPrice
-      );
-    } catch (error) {
-      console.log(
-        `🚨 [${ticker}] SESSION #400K: Manual aggregation error for ${timeframe}: ${error.message}`
-      );
-      return null;
-    }
-  }
-
-  /**
-   * 📡 FETCH VIA API - SESSION #400K EXTRACTED METHOD
-   * 🎯 PURPOSE: Fetch 1H/1D data using existing API logic (working perfectly)
-   * 🛡️ PRESERVATION: Exact same logic as original fetchTimeframeWithRetry
-   * 🔧 SESSION #400K: Extracted for routing clarity, no functional changes
-   *
-   * @param ticker - Stock ticker symbol
-   * @param timeframe - Timeframe (1H or 1D)
-   * @param dateRanges - Date ranges from signal-pipeline
-   * @param modeLabel - Mode label for logging (LIVE/BACKTEST)
-   * @param consistentCurrentPrice - SESSION #316: Consistent current price
-   * @returns TimeframeDataPoint or null
-   */
-  async fetchViaAPI(
-    ticker,
-    timeframe,
-    dateRanges,
-    modeLabel,
-    consistentCurrentPrice = null
-  ) {
-    // 🚀 SESSION #184 PRESERVATION: Improved API endpoints with higher limits and better error handling
-    const url = this.buildAPIEndpoint(ticker, timeframe, dateRanges);
-
-    console.log(
-      `📡 [${ticker}] ${modeLabel}: Fetching ${timeframe} real market data with SESSION #185 enhanced 400-day range...`
-    );
-
-    // 🔧 SESSION #316 FIX: Pass consistent current price to prevent timeframe-specific price inconsistencies
-    return await this.fetchTimeframeWithRetry(
-      ticker,
-      timeframe,
-      url,
-      modeLabel,
-      consistentCurrentPrice // SESSION #316: Pass consistent price to all timeframes
-    );
-  }
-
-  /**
-   * 🌐 BUILD API ENDPOINT - SESSION #400K EXTRACTED METHOD
-   * 🎯 PURPOSE: Build API endpoint URL for specific timeframe
-   * 🛡️ PRESERVATION: Exact same logic as original endpoints object
-   * 🔧 SESSION #400K: Extracted for routing clarity, no functional changes
-   */
-  buildAPIEndpoint(ticker, timeframe, dateRanges) {
-    const endpoints = {
-      "1H": `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/hour/${dateRanges.recent.start}/${dateRanges.recent.end}?adjusted=true&sort=asc&limit=5000&apikey=${this.POLYGON_API_KEY}`,
-      "1D": `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${dateRanges.recent.start}/${dateRanges.recent.end}?adjusted=true&sort=asc&limit=200&apikey=${this.POLYGON_API_KEY}`,
-    };
-
-    return endpoints[timeframe];
-  }
-
-  /**
-   * 🔧 CONVERT AGGREGATED DATA TO TIMEFRAME FORMAT - SESSION #400K NEW METHOD
-   * 🎯 PURPOSE: Convert AggregatedBarData[] to TimeframeDataPoint format for compatibility
-   * 🛡️ PRESERVATION: Ensure exact same format as processTimeframeData() output
-   * 📊 COMPATIBILITY: Works seamlessly with existing indicator calculations
-   *
-   * @param ticker - Stock ticker symbol
-   * @param timeframe - Timeframe (4H or 1W)
-   * @param aggregatedBars - Array of aggregated bars from Manual Aggregator
-   * @param modeLabel - Mode label for logging
-   * @param consistentCurrentPrice - SESSION #316: Consistent current price
-   * @returns TimeframeDataPoint format matching existing system
-   */
-  convertAggregatedDataToTimeframeFormat(
-    ticker,
-    timeframe,
-    aggregatedBars,
-    modeLabel,
-    consistentCurrentPrice = null
-  ) {
-    if (!aggregatedBars || aggregatedBars.length === 0) {
-      return null;
-    }
-
-    // 🔧 SESSION #400K: Convert AggregatedBarData to API response format
-    const apiFormatResults = aggregatedBars.map((bar) => ({
-      t: bar.timestamp,
-      o: bar.open,
-      h: bar.high,
-      l: bar.low,
-      c: bar.close,
-      v: bar.volume,
-    }));
-
-    console.log(
-      `🔧 [${ticker}] SESSION #400K: Converting ${aggregatedBars.length} aggregated bars to timeframe format`
-    );
-
-    // 🛡️ SESSION #400K: Use exact same processing logic as existing system
-    if (timeframe === "1W") {
-      // 💰 DAILY CHANGE FIX: Fetch yesterday's close for 1W timeframe (uses daily data)
-      // Note: 1W uses daily aggregation, so we treat it similar to daily processing
-      const latestResult = apiFormatResults[apiFormatResults.length - 1];
-
-      // 🔧 SESSION #316 PRICE ACCURACY FIX: Use consistent current price if available
-      const finalCurrentPrice = consistentCurrentPrice || latestResult.c;
-
-      // 📊 WEEKLY CHANGE: Calculate change vs previous week
-      const previousResult =
-        apiFormatResults.length >= 2
-          ? apiFormatResults[apiFormatResults.length - 2]
-          : apiFormatResults[0];
-
-      const weeklyChangePercent =
-        ((finalCurrentPrice - previousResult.c) / previousResult.c) * 100;
-
-      const timeframeData = {
-        currentPrice: finalCurrentPrice,
-        changePercent: weeklyChangePercent,
-        volume: latestResult.v,
-        prices: apiFormatResults.map((r) => r.c),
-        highs: apiFormatResults.map((r) => r.h), // Support/Resistance 4H/1W fix: Add highs array
-        lows: apiFormatResults.map((r) => r.l), // Support/Resistance 4H/1W fix: Add lows array
-        volumes: apiFormatResults.map((r) => r.v),
-      };
-
-      const priceSource = consistentCurrentPrice
-        ? "CONSISTENT_CURRENT"
-        : "TIMEFRAME_CLOSE";
-      console.log(
-        `✅ [${ticker}] ${timeframe} ${modeLabel} Success: ${
-          apiFormatResults.length
-        } weeks, Current: $${finalCurrentPrice.toFixed(
-          2
-        )} (${priceSource}), Change: ${timeframeData.changePercent.toFixed(
-          2
-        )}% (MANUAL_AGGREGATION), Vol: ${latestResult.v.toLocaleString()}`
-      );
-
-      return timeframeData;
-    } else {
-      // 🔧 SESSION #400K: Process 4H timeframe (similar to other non-daily timeframes)
-      const processedResults = apiFormatResults.slice(-200); // Keep last 200 periods for better analysis
-      const latestResult = processedResults[processedResults.length - 1];
-
-      // 🔧 PERIOD CHANGE FIX: Calculate change vs previous period
-      const previousResult =
-        processedResults.length >= 2
-          ? processedResults[processedResults.length - 2]
-          : processedResults[0];
-
-      // 🔧 SESSION #316 PRICE ACCURACY FIX: Use consistent current price if available
-      const finalCurrentPrice = consistentCurrentPrice || latestResult.c;
-
-      const timeframeData = {
-        currentPrice: finalCurrentPrice,
-        changePercent:
-          ((finalCurrentPrice - previousResult.c) / previousResult.c) * 100,
-        volume: latestResult.v,
-        prices: processedResults.map((r) => r.c),
-        highs: processedResults.map((r) => r.h), // Support/Resistance 4H/1W fix: Add highs array
-        lows: processedResults.map((r) => r.l), // Support/Resistance 4H/1W fix: Add lows array
-        volumes: processedResults.map((r) => r.v),
-      };
-
-      const priceSource = consistentCurrentPrice
-        ? "CONSISTENT_CURRENT"
-        : "TIMEFRAME_CLOSE";
-      console.log(
-        `✅ [${ticker}] ${timeframe} ${modeLabel} Success: ${
-          processedResults.length
-        } periods, Current: $${finalCurrentPrice.toFixed(
-          2
-        )} (${priceSource}), Change: ${timeframeData.changePercent.toFixed(
-          2
-        )}% (MANUAL_AGGREGATION)`
-      );
-
-      return timeframeData;
     }
   }
 
@@ -1104,13 +915,59 @@ import {
         );
       }
 
+      // 🔧 SESSION #327 RSI FIX: Replace last price in prices array with real-time current price
+      const basePrices = results.map((r) => r.c);
+      const adjustedPrices = consistentCurrentPrice
+        ? [...basePrices.slice(0, -1), consistentCurrentPrice] // Replace last price with real-time price
+        : basePrices; // Use original prices if no real-time price available
+
+      // 🔧 SESSION #327 STOCHASTIC/WILLIAMS R FIX: Ensure current price is considered in highs/lows
+      const baseHighs = results.map((r) => r.h);
+      const baseLows = results.map((r) => r.l);
+      const adjustedHighs = consistentCurrentPrice
+        ? [
+            ...baseHighs.slice(0, -1),
+            Math.max(baseHighs[baseHighs.length - 1], consistentCurrentPrice),
+          ]
+        : baseHighs;
+      const adjustedLows = consistentCurrentPrice
+        ? [
+            ...baseLows.slice(0, -1),
+            Math.min(baseLows[baseLows.length - 1], consistentCurrentPrice),
+          ]
+        : baseLows;
+
+      console.log(
+        `🔧 [${ticker}] ${timeframe} SESSION #327 RSI FIX: ${
+          consistentCurrentPrice ? "APPLIED" : "SKIPPED"
+        } - Last historical price: $${basePrices[
+          basePrices.length - 1
+        ]?.toFixed(2)}, Real-time price: $${
+          consistentCurrentPrice?.toFixed(2) || "N/A"
+        }`
+      );
+
+      if (consistentCurrentPrice) {
+        console.log(
+          `🔧 [${ticker}] ${timeframe} SESSION #327 STOCHASTIC/WILLIAMS R FIX: Historical high: $${baseHighs[
+            baseHighs.length - 1
+          ]?.toFixed(2)}, Adjusted high: $${adjustedHighs[
+            adjustedHighs.length - 1
+          ]?.toFixed(2)}, Historical low: $${baseLows[
+            baseLows.length - 1
+          ]?.toFixed(2)}, Adjusted low: $${adjustedLows[
+            adjustedLows.length - 1
+          ]?.toFixed(2)}`
+        );
+      }
+
       const timeframeData = {
         currentPrice: finalCurrentPrice,
         changePercent: dailyChangePercent, // Now uses accurate yesterday's close or fallback
         volume: latestResult.v,
-        prices: results.map((r) => r.c),
-        highs: results.map((r) => r.h),
-        lows: results.map((r) => r.l),
+        prices: adjustedPrices, // SESSION #327: Use real-time adjusted prices for RSI calculation
+        highs: adjustedHighs, // SESSION #327: Use real-time adjusted highs for Stochastic/Williams R calculation
+        lows: adjustedLows, // SESSION #327: Use real-time adjusted lows for Stochastic/Williams R calculation
         volumes: results.map((r) => r.v),
       };
 
@@ -1147,15 +1004,61 @@ import {
       // otherwise fallback to timeframe's close price (preserves existing fallback logic)
       const finalCurrentPrice = consistentCurrentPrice || latestResult.c;
 
+      // 🔧 SESSION #327 RSI FIX: Replace last price in prices array with real-time current price
+      const basePrices = processedResults.map((r) => r.c);
+      const adjustedPrices = consistentCurrentPrice
+        ? [...basePrices.slice(0, -1), consistentCurrentPrice] // Replace last price with real-time price
+        : basePrices; // Use original prices if no real-time price available
+
+      // 🔧 SESSION #327 STOCHASTIC/WILLIAMS R FIX: Ensure current price is considered in highs/lows
+      const baseHighs = processedResults.map((r) => r.h);
+      const baseLows = processedResults.map((r) => r.l);
+      const adjustedHighs = consistentCurrentPrice
+        ? [
+            ...baseHighs.slice(0, -1),
+            Math.max(baseHighs[baseHighs.length - 1], consistentCurrentPrice),
+          ]
+        : baseHighs;
+      const adjustedLows = consistentCurrentPrice
+        ? [
+            ...baseLows.slice(0, -1),
+            Math.min(baseLows[baseLows.length - 1], consistentCurrentPrice),
+          ]
+        : baseLows;
+
+      console.log(
+        `🔧 [${ticker}] ${timeframe} SESSION #327 RSI FIX: ${
+          consistentCurrentPrice ? "APPLIED" : "SKIPPED"
+        } - Last historical price: $${basePrices[
+          basePrices.length - 1
+        ]?.toFixed(2)}, Real-time price: $${
+          consistentCurrentPrice?.toFixed(2) || "N/A"
+        }`
+      );
+
+      if (consistentCurrentPrice) {
+        console.log(
+          `🔧 [${ticker}] ${timeframe} SESSION #327 STOCHASTIC/WILLIAMS R FIX: Historical high: $${baseHighs[
+            baseHighs.length - 1
+          ]?.toFixed(2)}, Adjusted high: $${adjustedHighs[
+            adjustedHighs.length - 1
+          ]?.toFixed(2)}, Historical low: $${baseLows[
+            baseLows.length - 1
+          ]?.toFixed(2)}, Adjusted low: $${adjustedLows[
+            adjustedLows.length - 1
+          ]?.toFixed(2)}`
+        );
+      }
+
       const timeframeData = {
         currentPrice: finalCurrentPrice,
         // 📊 PERIOD CHANGE FIX: Compare current price vs previous period's close
         changePercent:
           ((finalCurrentPrice - previousResult.c) / previousResult.c) * 100,
         volume: latestResult.v,
-        prices: processedResults.map((r) => r.c),
-        highs: processedResults.map((r) => r.h),
-        lows: processedResults.map((r) => r.l),
+        prices: adjustedPrices, // SESSION #327: Use real-time adjusted prices for RSI calculation
+        highs: adjustedHighs, // SESSION #327: Use real-time adjusted highs for Stochastic/Williams R calculation
+        lows: adjustedLows, // SESSION #327: Use real-time adjusted lows for Stochastic/Williams R calculation
         volumes: processedResults.map((r) => r.v),
       };
 
@@ -1177,28 +1080,22 @@ import {
 }
 
 // ==================================================================================
-// 🎯 SESSION #400K MANUAL AGGREGATOR INTEGRATION COMPLETE
 // 🎯 DAILY CHANGE FIX COMPLETE: PROPER ASYNC HANDLING FOR YESTERDAY'S CLOSE
-// ==================================================================================
 // 💰 PROBLEM SOLVED: Daily change percentages now use actual yesterday's close with proper await
-// 🔧 SESSION #400K PROBLEM SOLVED: 4H/1W data insufficiency resolved via manual aggregation
 // 🔧 SOLUTION IMPLEMENTED: Fetch yesterday's close BEFORE processing, pass as parameter
-// 🔧 SESSION #400K SOLUTION IMPLEMENTED: Smart routing (Manual Aggregator for 4H/1W, API for 1H/1D)
 // 📅 EXAMPLES FIXED: CRH will show real daily change instead of 400-day change, CMG will show correct daily change
-// 📊 SESSION #400K EXAMPLES FIXED: 4H now gets 30+ bars vs 17, 1W now gets 104+ bars vs 11
 // 🛡️ ULTRA-CONSERVATIVE: processTimeframeData remains synchronous (Session #220 lesson learned)
-// 🛡️ SESSION #400K ULTRA-CONSERVATIVE: All Session #317/316/185 functionality preserved exactly
 // 🛡️ ANTI-REGRESSION: ALL existing functionality preserved, zero breaking changes
 // ==================================================================================
-// 📊 FUNCTIONALITY: Complete multi-timeframe data fetching with Session #185 + #184 + #183 preservation + SESSION #400K manual aggregation integration + modular architecture benefits + Session #317 production-grade getCurrentPrice() fix + Session #316 price consistency + FIXED daily change calculations + all error handling and retry logic
-// 🛡️ PRESERVATION: Session #185 400-day extended range + Session #184 enhanced data pipeline + Session #183 real data only + SESSION #400K Manual Aggregator integration + all error handling and retry logic + ANTI-REGRESSION compliance + Session #316 price consistency + Session #317 reliability + FIXED daily change calculations
-// 🔧 PRODUCTION FIX: Multi-fallback getCurrentPrice() + proper async yesterday's close + SESSION #400K manual aggregation eliminates all timeframe data issues through production-grade systems using dedicated Polygon.io endpoints + FIXED daily change percentage calculations
-// 📈 API RELIABILITY: Maintains Session #184 enhanced retry logic and comprehensive data debugging exactly + Session #317 production-grade current price accuracy + Session #316 consistency + SESSION #400K manual aggregation reliability + FIXED daily change calculations with proper async handling
-// 🎖️ ANTI-REGRESSION: All Session #185 + #184 + #183 functionality preserved + enhanced with production-grade current price accuracy + Session #316 price consistency + Session #317 fallback reliability + SESSION #400K manual aggregation + FIXED daily change calculations + proper async handling
-// ⚡ MODULAR BENEFITS: Isolated testing + clean interfaces + professional architecture + future AI integration ready + accurate pricing + consistent timeframe pricing + production reliability + SESSION #400K manual aggregation + FIXED daily change calculations + proper yesterday API handling
-// 🚀 PRODUCTION READY: Complete fixed solution - provides institutional-grade multi-timeframe data with reliable current pricing and SESSION #400K manual aggregation + FIXED daily change calculations through proper async systems + comprehensive error handling + complete Session #301-317 + #400K preservation
-// 💰 PRICE ACCURACY: getCurrentPrice() null return issue resolved + proper async getYesterdayClose() provides fixed daily change calculation + Session #316 consistency maintained + SESSION #400K manual aggregation + proper async handling + complete fallback systems
-// 🏆 TESTING VALIDATION: Enhanced TimeframeDataCoordinator with production-grade getCurrentPrice() and SESSION #400K manual aggregation + FIXED daily change calculation maintains 100% backward compatibility + Session #316 consistency + Session #317 reliability + accurate daily percentages
-// 🎯 SESSION #400K ACHIEVEMENT: Multi-timeframe data fetching with reliable current price accuracy and SESSION #400K manual aggregation + FIXED daily change calculation through proper async systems while maintaining 100% Session #185 + #184 + #183 compliance + Session #316 consistency + Session #317 reliability + accurate daily change calculations + solved 4H/1W data insufficiency
-// 🔧 FIXED BREAKTHROUGH: Proper async handling of getYesterdayClose() + SESSION #400K manual aggregation resolves all timeframe data issues permanently through correct await pattern before data processing + complete fallback to existing logic + zero dependency issues + solved calendar API limitations
+// 📊 FUNCTIONALITY: Complete multi-timeframe data fetching with Session #185 + #184 + #183 preservation + modular architecture benefits + Session #317 production-grade getCurrentPrice() fix + Session #316 price consistency + FIXED daily change calculations + all error handling and retry logic
+// 🛡️ PRESERVATION: Session #185 400-day extended range + Session #184 enhanced data pipeline + Session #183 real data only + all error handling and retry logic + ANTI-REGRESSION compliance + Session #316 price consistency + Session #317 reliability + FIXED daily change calculations
+// 🔧 PRODUCTION FIX: Multi-fallback getCurrentPrice() + proper async yesterday's close eliminates all price accuracy issues through production-grade systems using dedicated Polygon.io endpoints + FIXED daily change percentage calculations
+// 📈 API RELIABILITY: Maintains Session #184 enhanced retry logic and comprehensive data debugging exactly + Session #317 production-grade current price accuracy + Session #316 consistency + FIXED daily change calculations with proper async handling
+// 🎖️ ANTI-REGRESSION: All Session #185 + #184 + #183 functionality preserved + enhanced with production-grade current price accuracy + Session #316 price consistency + Session #317 fallback reliability + FIXED daily change calculations + proper async handling
+// ⚡ MODULAR BENEFITS: Isolated testing + clean interfaces + professional architecture + future AI integration ready + accurate pricing + consistent timeframe pricing + production reliability + FIXED daily change calculations + proper yesterday API handling
+// 🚀 PRODUCTION READY: Complete fixed solution - provides institutional-grade multi-timeframe data with reliable current pricing and FIXED daily change calculations through proper async systems + comprehensive error handling + complete Session #301-317 preservation
+// 💰 PRICE ACCURACY: getCurrentPrice() null return issue resolved + proper async getYesterdayClose() provides fixed daily change calculation + Session #316 consistency maintained + proper async handling + complete fallback systems
+// 🏆 TESTING VALIDATION: Enhanced TimeframeDataCoordinator with production-grade getCurrentPrice() and FIXED daily change calculation maintains 100% backward compatibility + Session #316 consistency + Session #317 reliability + accurate daily percentages
+// 🎯 PRODUCTION ACHIEVEMENT: Multi-timeframe data fetching with reliable current price accuracy and FIXED daily change calculation through proper async systems while maintaining 100% Session #185 + #184 + #183 compliance + Session #316 consistency + Session #317 reliability + accurate daily change calculations
+// 🔧 FIXED BREAKTHROUGH: Proper async handling of getYesterdayClose() resolves daily change percentage bug permanently through correct await pattern before data processing + complete fallback to existing logic + zero dependency issues
 // ==================================================================================

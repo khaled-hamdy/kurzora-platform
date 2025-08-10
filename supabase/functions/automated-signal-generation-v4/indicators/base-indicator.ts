@@ -23,6 +23,10 @@ export interface TechnicalIndicatorInput {
   volumes?: number[];
   currentVolume?: number;
 
+  // 🔧 SESSION #326 DEBUG PARAMETERS
+  ticker?: string; // Stock ticker for debugging output
+  timeframe?: string; // Timeframe for debugging output
+
   // 🔧 SESSION #301 RSI PARAMETERS (PRESERVED EXACTLY)
   period?: number; // RSI period (default: 14) - Session #301 foundation
 

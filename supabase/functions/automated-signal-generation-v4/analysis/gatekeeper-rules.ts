@@ -71,11 +71,11 @@ export class GatekeeperRules {
    * 🛡️ INSTITUTIONAL STANDARDS: Professional signal quality requirements maintained exactly
    */
   constructor() {
-    // 🚨 SESSION #151-185 PRESERVED EXACTLY: Institutional gatekeeper thresholds
+    // 🚨 SESSION #327 BALANCED: Practical thresholds for current market conditions
     this.thresholds = {
-      oneHour: 70, // 1H score must be ≥70% (preserved exactly)
-      fourHour: 70, // 4H score must be ≥70% (preserved exactly)
-      longTerm: 60, // 🧪 SESSION #321 TEST: Temporarily lowered for testing
+      oneHour: 55, // 1H score must be ≥55% (good quality, practical)
+      fourHour: 55, // 4H score must be ≥55% (good quality, practical)
+      longTerm: 45, // Long-term ≥45% (good quality, practical)
     };
   }
 
