@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
-import LanguageToggle from "./LanguageToggle";
+// 🔧 SESSION #204: Removed LanguageToggle import - language selector hidden per user request
 import Footer from "./Footer";
 import {
   Home,
@@ -31,6 +31,12 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
+/**
+ * 🎯 PURPOSE: Main layout wrapper for authenticated dashboard pages
+ * 🔧 SESSION #204: Language selector removed from navigation
+ * 🛡️ PRESERVATION: All navigation, admin panel, and authentication functionality intact
+ * 📝 HANDOVER: This component wraps all dashboard pages with navigation and footer
+ */
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, signOut, isAdmin } = useAuth();
   const { t } = useLanguage();
@@ -151,7 +157,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </Button>
               </div>
 
-              <LanguageToggle />
+              {/* 🔧 SESSION #204: Language toggle removed from navigation */}
 
               {user && (
                 <div className="flex items-center space-x-4">

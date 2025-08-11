@@ -5,6 +5,7 @@
 // 🔧 SESSION #192: Fixed conditional scroll behavior + Pricing link uses window.location to bypass auth redirect
 // 🔧 SESSION #194: REMOVED Pricing link from dashboard footer - logged-in users don't need pricing in footer
 // 🔧 SESSION #208: RESTORED Pricing link to Platform section for complete footer consistency across all pages
+// 🔧 SESSION #204: Removed Shariah Compliant badge and link per user request
 // 🛡️ PRESERVATION: All existing functionality maintained exactly as before
 // 📝 HANDOVER: Dashboard footer now consistent with legal pages - includes Pricing link for uniform navigation
 
@@ -13,6 +14,12 @@ import { Link } from "react-router-dom";
 import { TrendingUp } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 
+/**
+ * 🎯 PURPOSE: Footer component displayed across all dashboard pages
+ * 🔧 SESSION #204: Shariah Compliant badge and link removed
+ * 🛡️ PRESERVATION: All navigation links and functionality intact
+ * 📝 HANDOVER: This footer appears on all authenticated pages via Layout component
+ */
 const Footer: React.FC = () => {
   const { t, language } = useLanguage();
 
@@ -51,6 +58,7 @@ const Footer: React.FC = () => {
     },
   ];
 
+  // 🔧 SESSION #204: Removed Shariah Compliance link from legal links
   const legalLinks = [
     { label: t("footer.privacyPolicy"), path: "/privacy-policy" },
     {
@@ -58,7 +66,7 @@ const Footer: React.FC = () => {
       path: language === "de" ? "/de/terms-of-service" : "/terms-of-service",
     },
     { label: t("footer.riskDisclosure"), path: "/risk-disclosure" },
-    { label: t("footer.shariahCompliance"), path: "/shariah-compliance" },
+    // Shariah Compliance link removed per user request
   ];
 
   const bottomLinks = [
@@ -81,10 +89,7 @@ const Footer: React.FC = () => {
               </div>
             </div>
             <p className="text-slate-400 mb-4">{t("footer.description")}</p>
-            <div className="flex items-center space-x-2 text-emerald-400">
-              <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
-              <span className="text-sm">{t("footer.shariahCompliantTag")}</span>
-            </div>
+            {/* 🔧 SESSION #204: Shariah Compliant badge removed */}
           </div>
 
           {/* Platform Links */}

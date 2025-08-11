@@ -25,7 +25,7 @@ import LoginForm from "../components/auth/LoginForm";
 import SignupForm from "../components/auth/SignupForm";
 import TestimonialCarousel from "../components/testimonials/TestimonialCarousel";
 import PricingSection from "../components/pricing/PricingSection";
-import LanguageToggle from "../components/LanguageToggle";
+// 🔧 SESSION #204: Removed LanguageToggle import - language selector hidden per user request
 import DemoSignalChart from "../components/dashboard/DemoSignalChart";
 import TrustSignalsBar from "../components/landing/TrustSignalsBar";
 import LiveActivityNotification from "../components/landing/LiveActivityNotification";
@@ -34,6 +34,12 @@ import ProfitStats from "../components/landing/ProfitStats";
 // 🔧 PRESERVATION: Lazy load FAQ section for better performance - existing functionality maintained
 const FAQSection = lazy(() => import("../components/landing/FAQSection"));
 
+/**
+ * 🎯 PURPOSE: Main landing page component for the Kurzora trading platform
+ * 🔧 SESSION #204: Language selector and Shariah references removed
+ * 🛡️ PRESERVATION: All authentication, pricing, and navigation functionality intact
+ * 📝 HANDOVER: This is the primary marketing page that converts visitors to users
+ */
 const LandingPage: React.FC = () => {
   // 🔧 PRESERVATION: All existing hooks and state management preserved exactly
   const { user, loading } = useAuth();
@@ -159,7 +165,7 @@ const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
-      {/* 🔧 PRESERVATION: Navigation - All existing functionality maintained */}
+      {/* 🔧 PRESERVATION: Navigation - Language selector removed, all other functionality maintained */}
       <nav className="bg-slate-900/50 backdrop-blur-sm border-b border-blue-800/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 sm:h-20">
@@ -196,7 +202,7 @@ const LandingPage: React.FC = () => {
             </div>
 
             <div className="hidden md:flex items-center space-x-3 lg:space-x-4">
-              <LanguageToggle />
+              {/* 🔧 SESSION #204: Language toggle removed from desktop navigation */}
               <Button
                 variant="ghost"
                 onClick={() => setShowAuth("login")}
@@ -214,8 +220,8 @@ const LandingPage: React.FC = () => {
               </Button>
             </div>
 
-            <div className="md:hidden flex items-center space-x-2">
-              <LanguageToggle />
+            <div className="md:hidden flex items-center">
+              {/* 🔧 SESSION #204: Language toggle removed from mobile navigation */}
               <Button
                 variant="ghost"
                 size="sm"
@@ -753,6 +759,7 @@ const LandingPage: React.FC = () => {
 
       {/* 🔧 PRESERVATION: Footer - All existing functionality maintained */}
       {/* 🔧 SESSION #190: PRICING LINK CONSISTENCY FIX - Added missing "Pricing" link to Platform section to complete platform-wide consistency */}
+      {/* 🔧 SESSION #204: Removed all Shariah references from footer */}
       <footer className="bg-slate-950/50 border-t border-blue-800/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
@@ -768,14 +775,10 @@ const LandingPage: React.FC = () => {
                 </div>
               </div>
               <p className="text-slate-400 text-sm mb-4">
-                Advanced trading signals platform for Islamic finance compliance
+                Advanced trading signals platform with professional-grade
+                analysis
               </p>
-              <div className="flex items-center mt-4">
-                <span className="text-xs text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full flex items-center animate-pulse">
-                  <Shield className="h-3 w-3 mr-1" />
-                  {t("legal.shariahCompliant")}
-                </span>
-              </div>
+              {/* 🔧 SESSION #204: Shariah Compliant badge removed */}
             </div>
 
             <div>
@@ -852,6 +855,7 @@ const LandingPage: React.FC = () => {
             </div>
 
             {/* 🔧 PRESERVATION: Legal section - Smart disclaimer strategy maintained */}
+            {/* 🔧 SESSION #204: Removed Shariah Compliance link from legal section */}
             <div>
               <h3 className="text-white font-semibold mb-4 text-sm sm:text-base">
                 {t("footer.legal")}
@@ -884,15 +888,7 @@ const LandingPage: React.FC = () => {
                     {t("footer.riskDisclosure")}
                   </Link>
                 </li>
-                <li>
-                  <Link
-                    to="/shariah-compliance"
-                    onClick={handleFooterLinkClick}
-                    className="hover:text-white transition-colors"
-                  >
-                    {t("footer.shariahCompliance")}
-                  </Link>
-                </li>
+                {/* Shariah Compliance link removed per user request */}
               </ul>
             </div>
           </div>
