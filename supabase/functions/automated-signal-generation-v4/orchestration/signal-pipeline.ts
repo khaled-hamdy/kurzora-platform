@@ -63,6 +63,8 @@ import {
   calculateIndicatorScoreContribution,
 } from "../database/indicator-repository.ts";
 import { CacheManager } from "../data/cache-manager.ts";
+// 🎯 SESSION #402: Import divergence integration
+import { enhanceSignalWithDivergence } from "../analysis/divergence-integration.ts";
 
 // 🔍 DEBUG: Module-level variable for debugging info
 let debugInfo: any = null;
@@ -113,7 +115,13 @@ export class SignalPipeline {
    * BUG FIX: Fixed hardcoded support/resistance classification with Session #313D position-based validation
    */
   async execute(params) {
-    const { startIndex, endIndex, batchNumber } = params;
+    const {
+      startIndex,
+      endIndex,
+      batchNumber,
+      divergenceEnabled = true,
+      divergenceConfig = {},
+    } = params;
 
     // 🔧 SESSION #313: CONFIGURATION ACCESS - PRODUCTION READY
     const USE_BACKTEST = getUseBacktest();
@@ -771,12 +779,101 @@ export class SignalPipeline {
             : 0
         );
 
-        const kuzzoraSmartScore = calculateKuzzoraSmartScore(
+        let kuzzoraSmartScore = calculateKuzzoraSmartScore(
           signalStrength,
           signalConfidence,
           momentumQuality,
           riskAdjustment
         );
+
+        // 🎯 SESSION #402: RSI DIVERGENCE ANALYSIS - 1D TIMEFRAME ENHANCEMENT
+        let divergenceIndicatorData = null;
+        let divergenceMetadata = null;
+        try {
+          console.log(
+            `🎯 [${ticker}] SESSION #402: Starting 1D divergence analysis...`
+          );
+
+          // Get 1D data for divergence analysis
+          const oneDayData = timeframeData["1D"];
+          if (
+            oneDayData &&
+            oneDayData.prices &&
+            oneDayData.prices.length >= 50
+          ) {
+            // Get 1D RSI values
+            const oneDayDetails = timeframeDetails["1D"];
+            const oneDayRSI = oneDayDetails?.rsi;
+
+            if (oneDayRSI && oneDayData.prices.length > 0) {
+              // Calculate RSI series for divergence analysis
+              const rsiCalculator = new RSICalculator();
+              const rsiSeries = [];
+
+              // Calculate RSI for each point in the series
+              for (let i = 14; i < oneDayData.prices.length; i++) {
+                const priceSlice = oneDayData.prices.slice(0, i + 1);
+                const rsiResult = rsiCalculator.calculate({
+                  prices: priceSlice,
+                  period: 14,
+                });
+                if (rsiResult.isValid && rsiResult.value !== null) {
+                  rsiSeries.push(rsiResult.value);
+                }
+              }
+
+              // Perform divergence analysis if we have enough RSI data
+              if (rsiSeries.length >= 50) {
+                const divergenceResult = await enhanceSignalWithDivergence(
+                  ticker,
+                  oneDayData.prices.slice(-rsiSeries.length), // Match RSI series length
+                  rsiSeries,
+                  kuzzoraSmartScore,
+                  { sensitivityLevel: 5, enableDebug: false }
+                );
+
+                // Apply divergence enhancement to score
+                kuzzoraSmartScore = divergenceResult.enhancedScore;
+                divergenceIndicatorData =
+                  divergenceResult.divergenceIndicatorData;
+                divergenceMetadata = divergenceResult.divergenceMetadata;
+
+                console.log(
+                  `✅ [${ticker}] SESSION #402: Divergence analysis complete`
+                );
+                console.log(
+                  `📊 [${ticker}] Score enhanced: ${divergenceResult.divergenceBonus.toFixed(
+                    2
+                  )} bonus points`
+                );
+                console.log(
+                  `🎯 [${ticker}] Has strong divergence: ${divergenceResult.hasStrongDivergence}`
+                );
+              } else {
+                console.log(
+                  `⚠️ [${ticker}] SESSION #402: Insufficient RSI data for divergence analysis (${rsiSeries.length} points)`
+                );
+              }
+            } else {
+              console.log(
+                `⚠️ [${ticker}] SESSION #402: No valid 1D RSI data for divergence analysis`
+              );
+            }
+          } else {
+            console.log(
+              `⚠️ [${ticker}] SESSION #402: Insufficient 1D price data for divergence analysis`
+            );
+          }
+        } catch (divergenceError) {
+          console.log(
+            `❌ [${ticker}] SESSION #402: Divergence analysis error: ${divergenceError.message}`
+          );
+          divergenceMetadata = {
+            session: "SESSION_402_1D_DIVERGENCE_PRODUCTION",
+            error: divergenceError.message,
+            analysisSuccessful: false,
+          };
+        }
 
         // 🔧 SESSION #313: DATABASE FIELD MAPPING - PRODUCTION READY
         const signalStrength_enum =
@@ -1050,6 +1147,18 @@ export class SignalPipeline {
           totalIndicatorsForThisSignal++;
         }
 
+        // 🎯 SESSION #402: ADD DIVERGENCE INDICATOR TO DATABASE
+        if (divergenceIndicatorData) {
+          indicatorsData.push(divergenceIndicatorData);
+          totalIndicatorsForThisSignal++;
+
+          console.log(
+            `💾 [${ticker}] SESSION #402: Added RSI_DIVERGENCE indicator to database (Score contribution: ${divergenceIndicatorData.score_contribution.toFixed(
+              2
+            )})`
+          );
+        }
+
         console.log(
           `✅ [${ticker}] SESSION #325: Prepared ${totalIndicatorsForThisSignal} indicator records for database creation (MIGRATION COMPLETE)`
         );
@@ -1181,6 +1290,13 @@ export class SignalPipeline {
               volatility_distance: safeTimeframeDetails.volatilityDistance,
               actionable_levels:
                 "S/R levels filtered for trading actionability",
+            },
+            // 🎯 SESSION #402: RSI DIVERGENCE ANALYSIS RESULTS
+            session_402_divergence: divergenceMetadata || {
+              session: "SESSION_402_1H_DIVERGENCE_PRODUCTION",
+              analysisSuccessful: false,
+              hasValidDivergence: false,
+              reason: "No 1H data available for divergence analysis",
             },
           },
         };

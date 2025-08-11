@@ -1,6 +1,5 @@
-// src/components/signals/SignalCard.tsx
-// Complete Enhanced SignalCard - FIXED redundant timestamps
-// Preserves ALL features while fixing timestamp redundancy
+// BACKUP: Complex SignalCard implementation from Session #402
+// This version has extensive features but may not match user's original design preference
 
 import React from "react";
 import {
@@ -17,7 +16,7 @@ import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { createMarketAwareTimestamp } from "@/utils/smartTimestamp";
 import { calculateFinalScore } from "@/utils/signalCalculations";
-import { DivergenceBadge } from "./DivergenceIndicator";
+import { DivergenceBadge, EnhancedScoreDisplay } from "./DivergenceIndicator";
 
 // Enhanced Signal interface (matches your project structure exactly)
 interface Signal {
@@ -67,6 +66,9 @@ interface Signal {
       validPatternsCount: number;
     };
   };
+  // Enhanced score fields
+  base_score?: number;
+  divergence_bonus?: number;
 }
 
 interface SignalCardProps {
@@ -254,9 +256,9 @@ const SignalTelegramIndicator: React.FC<{
 };
 
 /**
- * Complete Enhanced SignalCard Component
+ * Complete Enhanced SignalCard Component - COMPLEX VERSION BACKUP
  */
-const SignalCard: React.FC<SignalCardProps> = ({
+const SignalCardBackup: React.FC<SignalCardProps> = ({
   signal,
   isHighlighted = false,
   hasExistingPosition = false,
@@ -332,16 +334,16 @@ const SignalCard: React.FC<SignalCardProps> = ({
               <div>
                 <div className="flex items-center space-x-2">
                   <h3 className="text-2xl font-bold text-white">{ticker}</h3>
-                  {/* Session #402: ONLY ADDITION - Divergence Badge */}
-                  <DivergenceBadge
-                    divergenceData={signal.analysis?.session_402_divergence}
-                    className=""
-                  />
                   {isHighlighted && (
                     <Badge className="bg-emerald-600 text-white animate-pulse">
                       Found!
                     </Badge>
                   )}
+                  {/* Session #402: Divergence Badge */}
+                  <DivergenceBadge
+                    divergenceData={signal.analysis?.session_402_divergence}
+                    className="ml-2"
+                  />
                 </div>
                 <p className="text-slate-400 text-lg">{companyName}</p>
                 <p className="text-slate-500 text-sm">{sector}</p>
@@ -402,17 +404,15 @@ const SignalCard: React.FC<SignalCardProps> = ({
                 </div>
               </div>
 
-              {/* Score Badge */}
-              <div className="text-center">
-                <p className="text-slate-400 text-sm mb-1">Final Score</p>
-                <Badge
-                  className={`${getScoreColor(
-                    finalScore
-                  )} text-white text-2xl px-4 py-2 font-bold`}
-                >
-                  {finalScore}
-                </Badge>
-              </div>
+              {/* Session #402: Enhanced Score Display with Divergence */}
+              <EnhancedScoreDisplay
+                baseScore={signal.base_score || finalScore}
+                divergenceBonus={
+                  signal.analysis?.session_402_divergence?.scoreBonus
+                }
+                finalScore={finalScore}
+                className=""
+              />
             </div>
 
             {/* Price Information */}
@@ -534,4 +534,4 @@ const SignalCard: React.FC<SignalCardProps> = ({
   );
 };
 
-export default SignalCard;
+export default SignalCardBackup;
