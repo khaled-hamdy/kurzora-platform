@@ -17,6 +17,7 @@ import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { createMarketAwareTimestamp } from "@/utils/smartTimestamp";
 import { calculateFinalScore } from "@/utils/signalCalculations";
+import { DivergenceBadge } from "./DivergenceIndicator";
 
 // Enhanced Signal interface (matches your project structure exactly)
 interface Signal {
@@ -45,6 +46,27 @@ interface Signal {
   riskRewardRatio?: number;
   atr?: number;
   positionSize?: number;
+  // Session #402: RSI Divergence Enhancement
+  analysis?: {
+    session_402_divergence?: {
+      hasValidDivergence: boolean;
+      analysisSuccessful: boolean;
+      timeframe: string;
+      strongestPattern?: {
+        type:
+          | "BULLISH_REGULAR"
+          | "BEARISH_REGULAR"
+          | "BULLISH_HIDDEN"
+          | "BEARISH_HIDDEN";
+        strength: "WEAK" | "MODERATE" | "STRONG" | "VERY_STRONG";
+        confidenceScore: number;
+        qualityScore: number;
+      };
+      scoreBonus?: number;
+      totalPatternsFound: number;
+      validPatternsCount: number;
+    };
+  };
 }
 
 interface SignalCardProps {
@@ -310,6 +332,11 @@ const SignalCard: React.FC<SignalCardProps> = ({
               <div>
                 <div className="flex items-center space-x-2">
                   <h3 className="text-2xl font-bold text-white">{ticker}</h3>
+                  {/* Session #402: ONLY ADDITION - Divergence Badge */}
+                  <DivergenceBadge
+                    divergenceData={signal.analysis?.session_402_divergence}
+                    className=""
+                  />
                   {isHighlighted && (
                     <Badge className="bg-emerald-600 text-white animate-pulse">
                       Found!

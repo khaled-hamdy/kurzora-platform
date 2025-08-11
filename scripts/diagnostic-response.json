@@ -1,0 +1,1663 @@
+{
+  "success": true,
+  "processed": 50,
+  "passed_gatekeeper": 14,
+  "saved": 3,
+  "skipped_insufficient_data": 1,
+  "data_quality_issues": 54,
+  "api_calls": 200,
+  "cache_performance": {
+    "hits": 0,
+    "misses": 0,
+    "hit_rate": "0.0%"
+  },
+  "time": "60.1s",
+  "time_minutes": "1.0",
+  "results": [
+    {
+      "ticker": "A",
+      "company_name": "Agilent Technologies Inc.",
+      "sector": "Healthcare",
+      "status": "SAVED_WITH_COMPLETE_INDICATORS_MIGRATION_COMPLETE",
+      "kuzzoraScore": 84,
+      "signalStrength": "BUY",
+      "dimensions": {
+        "strength": 93,
+        "confidence": 69,
+        "quality": 95,
+        "risk": 81
+      },
+      "timeframes": {
+        "1H": 100,
+        "4H": 80,
+        "1D": 100,
+        "1W": 0
+      },
+      "real_indicators": {
+        "rsi": 25.56,
+        "macd": null,
+        "volume_ratio": 1.42,
+        "authentic_data": true,
+        "session_313_production": true
+      },
+      "object_construction": "SUCCESS",
+      "database_save": "SUCCESS",
+      "save_result": "Successfully saved signal with 28 indicator records - ID: 1a52863c-4e9e-4682-9d19-cb0596a4e7a9 (SESSION #325 MIGRATION COMPLETE)",
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": {
+        "version": "automated-signal-generation-v3",
+        "status": "production",
+        "transparency_upgrade": "complete_28_record_indicator_breakdown_migration_complete",
+        "indicator_records_created": 28,
+        "scoring_preservation": "session_313e_exact",
+        "database_migration_complete": true,
+        "deprecated_columns_removed": true,
+        "old_signals_deleted": "N/A (append mode)",
+        "delete_success": "N/A (append mode)",
+        "fresh_signal_inserted": true,
+        "batch_mode": "APPEND_ONLY",
+        "cache_hits": 0,
+        "cache_misses": 0
+      },
+      "session_313c_enhancement": {
+        "proximity_filter_applied": true,
+        "volatility_distance": 10.31580000000001,
+        "actionable_levels": "S/R levels filtered for trading actionability"
+      },
+      "database_driven": "Company info from active_stocks table"
+    },
+    {
+      "ticker": "AAPL",
+      "company_name": "Apple Inc.",
+      "sector": "Technology",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 15,
+        "4H": 0,
+        "1D": 95,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "ABBV",
+      "company_name": "AbbVie Inc.",
+      "sector": "Healthcare",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 55,
+        "4H": 70,
+        "1D": 21,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "ABNB",
+      "company_name": "Airbnb Inc.",
+      "sector": "Consumer Discretionary",
+      "status": "CONSTRUCTED_BUT_NOT_SAVED",
+      "kuzzoraScore": 90,
+      "signalStrength": "STR_BUY",
+      "dimensions": {
+        "strength": 98,
+        "confidence": 92,
+        "quality": 80,
+        "risk": 79
+      },
+      "timeframes": {
+        "1H": 95,
+        "4H": 100,
+        "1D": 100,
+        "1W": 0
+      },
+      "real_indicators": {
+        "rsi": 29.54,
+        "macd": null,
+        "volume_ratio": 0.92,
+        "authentic_data": true,
+        "session_313_production": true
+      },
+      "object_construction": "SUCCESS",
+      "database_save": "FAILED",
+      "save_result": "Database Error: Signal save failed: new row for relation \"trading_signals\" violates check constraint \"check_signal_strength\"",
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": {
+        "version": "automated-signal-generation-v3",
+        "status": "production",
+        "transparency_upgrade": "complete_28_record_indicator_breakdown_migration_complete",
+        "indicator_records_created": 0,
+        "scoring_preservation": "session_313e_exact",
+        "database_migration_complete": true,
+        "deprecated_columns_removed": true,
+        "old_signals_deleted": "N/A (append mode)",
+        "delete_success": "N/A (append mode)",
+        "fresh_signal_inserted": false,
+        "batch_mode": "APPEND_ONLY",
+        "cache_hits": 0,
+        "cache_misses": 0
+      },
+      "session_313c_enhancement": {
+        "proximity_filter_applied": true,
+        "volatility_distance": 10.89179999999999,
+        "actionable_levels": "S/R levels filtered for trading actionability"
+      },
+      "database_driven": "Company info from active_stocks table"
+    },
+    {
+      "ticker": "ABT",
+      "company_name": "Abbott Laboratories",
+      "sector": "Healthcare",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 55,
+        "4H": 35,
+        "1D": 15,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "ADBE",
+      "company_name": "Adobe Inc.",
+      "sector": "Technology",
+      "status": "CONSTRUCTED_BUT_NOT_SAVED",
+      "kuzzoraScore": 93,
+      "signalStrength": "STR_BUY",
+      "dimensions": {
+        "strength": 100,
+        "confidence": 100,
+        "quality": 80,
+        "risk": 78
+      },
+      "timeframes": {
+        "1H": 100,
+        "4H": 100,
+        "1D": 100,
+        "1W": 0
+      },
+      "real_indicators": {
+        "rsi": 13.13,
+        "macd": null,
+        "volume_ratio": 1.11,
+        "authentic_data": true,
+        "session_313_production": true
+      },
+      "object_construction": "SUCCESS",
+      "database_save": "FAILED",
+      "save_result": "Database Error: Signal save failed: new row for relation \"trading_signals\" violates check constraint \"check_signal_strength\"",
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": {
+        "version": "automated-signal-generation-v3",
+        "status": "production",
+        "transparency_upgrade": "complete_28_record_indicator_breakdown_migration_complete",
+        "indicator_records_created": 0,
+        "scoring_preservation": "session_313e_exact",
+        "database_migration_complete": true,
+        "deprecated_columns_removed": true,
+        "old_signals_deleted": "N/A (append mode)",
+        "delete_success": "N/A (append mode)",
+        "fresh_signal_inserted": false,
+        "batch_mode": "APPEND_ONLY",
+        "cache_hits": 0,
+        "cache_misses": 0
+      },
+      "session_313c_enhancement": {
+        "proximity_filter_applied": true,
+        "volatility_distance": 30.694500000000005,
+        "actionable_levels": "S/R levels filtered for trading actionability"
+      },
+      "database_driven": "Company info from active_stocks table"
+    },
+    {
+      "ticker": "ADM",
+      "company_name": "Archer-Daniels-Midland Company",
+      "sector": "Consumer Staples",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 100,
+        "4H": 80,
+        "1D": 21,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "AEP",
+      "company_name": "American Electric Power Company Inc.",
+      "sector": "Utilities",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 45,
+        "4H": 25,
+        "1D": 25,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "ALB",
+      "company_name": "Albemarle Corporation",
+      "sector": "Materials",
+      "status": "CONSTRUCTED_BUT_NOT_SAVED",
+      "kuzzoraScore": 92,
+      "signalStrength": "STR_BUY",
+      "dimensions": {
+        "strength": 97,
+        "confidence": 92,
+        "quality": 95,
+        "risk": 70
+      },
+      "timeframes": {
+        "1H": 95,
+        "4H": 100,
+        "1D": 95,
+        "1W": 0
+      },
+      "real_indicators": {
+        "rsi": 29.62,
+        "macd": null,
+        "volume_ratio": 0.72,
+        "authentic_data": true,
+        "session_313_production": true
+      },
+      "object_construction": "SUCCESS",
+      "database_save": "FAILED",
+      "save_result": "Database Error: Signal save failed: new row for relation \"trading_signals\" violates check constraint \"check_signal_strength\"",
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": {
+        "version": "automated-signal-generation-v3",
+        "status": "production",
+        "transparency_upgrade": "complete_28_record_indicator_breakdown_migration_complete",
+        "indicator_records_created": 0,
+        "scoring_preservation": "session_313e_exact",
+        "database_migration_complete": true,
+        "deprecated_columns_removed": true,
+        "old_signals_deleted": "N/A (append mode)",
+        "delete_success": "N/A (append mode)",
+        "fresh_signal_inserted": false,
+        "batch_mode": "APPEND_ONLY",
+        "cache_hits": 0,
+        "cache_misses": 0
+      },
+      "session_313c_enhancement": {
+        "proximity_filter_applied": true,
+        "volatility_distance": 6.793199999999999,
+        "actionable_levels": "S/R levels filtered for trading actionability"
+      },
+      "database_driven": "Company info from active_stocks table"
+    },
+    {
+      "ticker": "ALGN",
+      "company_name": "Align Technology Inc.",
+      "sector": "Healthcare",
+      "status": "CONSTRUCTED_BUT_NOT_SAVED",
+      "kuzzoraScore": 92,
+      "signalStrength": "STR_BUY",
+      "dimensions": {
+        "strength": 97,
+        "confidence": 92,
+        "quality": 95,
+        "risk": 70
+      },
+      "timeframes": {
+        "1H": 95,
+        "4H": 100,
+        "1D": 95,
+        "1W": 0
+      },
+      "real_indicators": {
+        "rsi": 17.3,
+        "macd": null,
+        "volume_ratio": 0.5,
+        "authentic_data": true,
+        "session_313_production": true
+      },
+      "object_construction": "SUCCESS",
+      "database_save": "FAILED",
+      "save_result": "Database Error: Signal save failed: new row for relation \"trading_signals\" violates check constraint \"check_signal_strength\"",
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": {
+        "version": "automated-signal-generation-v3",
+        "status": "production",
+        "transparency_upgrade": "complete_28_record_indicator_breakdown_migration_complete",
+        "indicator_records_created": 0,
+        "scoring_preservation": "session_313e_exact",
+        "database_migration_complete": true,
+        "deprecated_columns_removed": true,
+        "old_signals_deleted": "N/A (append mode)",
+        "delete_success": "N/A (append mode)",
+        "fresh_signal_inserted": false,
+        "batch_mode": "APPEND_ONLY",
+        "cache_hits": 0,
+        "cache_misses": 0
+      },
+      "session_313c_enhancement": {
+        "proximity_filter_applied": true,
+        "volatility_distance": 12.589199999999977,
+        "actionable_levels": "S/R levels filtered for trading actionability"
+      },
+      "database_driven": "Company info from active_stocks table"
+    },
+    {
+      "ticker": "AMAT",
+      "company_name": "Applied Materials Inc.",
+      "sector": "Technology",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 100,
+        "4H": 90,
+        "1D": 27,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "AMD",
+      "company_name": "Advanced Micro Devices Inc.",
+      "sector": "Technology",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 34,
+        "4H": 0,
+        "1D": 21,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "AMGN",
+      "company_name": "Amgen Inc.",
+      "sector": "Healthcare",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 35,
+        "4H": 39,
+        "1D": 36,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "AMT",
+      "company_name": "American Tower Corporation",
+      "sector": "Real Estate",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 25,
+        "4H": 46,
+        "1D": 36,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "AMZN",
+      "company_name": "Amazon.com Inc.",
+      "sector": "Technology",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 60,
+        "4H": 0,
+        "1D": 54,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "ANSS",
+      "company_name": "ANSYS Inc.",
+      "sector": "Technology",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 60,
+        "4H": 15,
+        "1D": 15,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "ANTM",
+      "company_name": "Anthem Inc.",
+      "sector": "Healthcare",
+      "status": "SKIPPED_NO_REAL_DATA",
+      "reason": "No real market data available - production quality filter",
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - skipped due to no data"
+    },
+    {
+      "ticker": "APA",
+      "company_name": "APA Corporation",
+      "sector": "Energy",
+      "status": "SAVED_WITH_COMPLETE_INDICATORS_MIGRATION_COMPLETE",
+      "kuzzoraScore": 83,
+      "signalStrength": "BUY",
+      "dimensions": {
+        "strength": 89,
+        "confidence": 72,
+        "quality": 95,
+        "risk": 77
+      },
+      "timeframes": {
+        "1H": 100,
+        "4H": 80,
+        "1D": 86,
+        "1W": 0
+      },
+      "real_indicators": {
+        "rsi": 33.27,
+        "macd": null,
+        "volume_ratio": 1.08,
+        "authentic_data": true,
+        "session_313_production": true
+      },
+      "object_construction": "SUCCESS",
+      "database_save": "SUCCESS",
+      "save_result": "Successfully saved signal with 28 indicator records - ID: cbadb04e-3d26-4839-913b-581d2171abfe (SESSION #325 MIGRATION COMPLETE)",
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": {
+        "version": "automated-signal-generation-v3",
+        "status": "production",
+        "transparency_upgrade": "complete_28_record_indicator_breakdown_migration_complete",
+        "indicator_records_created": 28,
+        "scoring_preservation": "session_313e_exact",
+        "database_migration_complete": true,
+        "deprecated_columns_removed": true,
+        "old_signals_deleted": "N/A (append mode)",
+        "delete_success": "N/A (append mode)",
+        "fresh_signal_inserted": true,
+        "batch_mode": "APPEND_ONLY",
+        "cache_hits": 0,
+        "cache_misses": 0
+      },
+      "session_313c_enhancement": {
+        "proximity_filter_applied": true,
+        "volatility_distance": 1.8008999999999986,
+        "actionable_levels": "S/R levels filtered for trading actionability"
+      },
+      "database_driven": "Company info from active_stocks table"
+    },
+    {
+      "ticker": "APD",
+      "company_name": "Air Products and Chemicals Inc.",
+      "sector": "Materials",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 45,
+        "4H": 35,
+        "1D": 74,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "AVB",
+      "company_name": "AvalonBay Communities Inc.",
+      "sector": "Real Estate",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 42,
+        "4H": 48,
+        "1D": 100,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "AVGO",
+      "company_name": "Broadcom Inc.",
+      "sector": "Technology",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 35,
+        "4H": 55,
+        "1D": 15,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "AWK",
+      "company_name": "American Water Works Company Inc.",
+      "sector": "Utilities",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 15,
+        "4H": 25,
+        "1D": 15,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "AXP",
+      "company_name": "American Express Company",
+      "sector": "Financial Services",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 45,
+        "4H": 15,
+        "1D": 60,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "AZO",
+      "company_name": "AutoZone Inc.",
+      "sector": "Consumer Discretionary",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 25,
+        "4H": 15,
+        "1D": 15,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "BA",
+      "company_name": "Boeing Company",
+      "sector": "Industrials",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 15,
+        "4H": 25,
+        "1D": 25,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "BAC",
+      "company_name": "Bank of America Corporation",
+      "sector": "Financial Services",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 45,
+        "4H": 55,
+        "1D": 38,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "BBY",
+      "company_name": "Best Buy Co. Inc.",
+      "sector": "Consumer Discretionary",
+      "status": "CONSTRUCTED_BUT_NOT_SAVED",
+      "kuzzoraScore": 89,
+      "signalStrength": "STR_BUY",
+      "dimensions": {
+        "strength": 94,
+        "confidence": 85,
+        "quality": 95,
+        "risk": 76
+      },
+      "timeframes": {
+        "1H": 100,
+        "4H": 90,
+        "1D": 91,
+        "1W": 0
+      },
+      "real_indicators": {
+        "rsi": 20.41,
+        "macd": null,
+        "volume_ratio": 0.64,
+        "authentic_data": true,
+        "session_313_production": true
+      },
+      "object_construction": "SUCCESS",
+      "database_save": "FAILED",
+      "save_result": "Database Error: Signal save failed: new row for relation \"trading_signals\" violates check constraint \"check_signal_strength\"",
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": {
+        "version": "automated-signal-generation-v3",
+        "status": "production",
+        "transparency_upgrade": "complete_28_record_indicator_breakdown_migration_complete",
+        "indicator_records_created": 0,
+        "scoring_preservation": "session_313e_exact",
+        "database_migration_complete": true,
+        "deprecated_columns_removed": true,
+        "old_signals_deleted": "N/A (append mode)",
+        "delete_success": "N/A (append mode)",
+        "fresh_signal_inserted": false,
+        "batch_mode": "APPEND_ONLY",
+        "cache_hits": 0,
+        "cache_misses": 0
+      },
+      "session_313c_enhancement": {
+        "proximity_filter_applied": true,
+        "volatility_distance": 6.2072999999999965,
+        "actionable_levels": "S/R levels filtered for trading actionability"
+      },
+      "database_driven": "Company info from active_stocks table"
+    },
+    {
+      "ticker": "BG",
+      "company_name": "Bunge Limited",
+      "sector": "Consumer Staples",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 95,
+        "4H": 80,
+        "1D": 44,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "BHP",
+      "company_name": "BHP Group Limited",
+      "sector": "Materials",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 95,
+        "4H": 100,
+        "1D": 26,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "BIIB",
+      "company_name": "Biogen Inc.",
+      "sector": "Healthcare",
+      "status": "CONSTRUCTED_BUT_NOT_SAVED",
+      "kuzzoraScore": 91,
+      "signalStrength": "STR_BUY",
+      "dimensions": {
+        "strength": 97,
+        "confidence": 84,
+        "quality": 95,
+        "risk": 83
+      },
+      "timeframes": {
+        "1H": 100,
+        "4H": 90,
+        "1D": 100,
+        "1W": 0
+      },
+      "real_indicators": {
+        "rsi": 22.18,
+        "macd": null,
+        "volume_ratio": 1.39,
+        "authentic_data": true,
+        "session_313_production": true
+      },
+      "object_construction": "SUCCESS",
+      "database_save": "FAILED",
+      "save_result": "Database Error: Signal save failed: new row for relation \"trading_signals\" violates check constraint \"check_signal_strength\"",
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": {
+        "version": "automated-signal-generation-v3",
+        "status": "production",
+        "transparency_upgrade": "complete_28_record_indicator_breakdown_migration_complete",
+        "indicator_records_created": 0,
+        "scoring_preservation": "session_313e_exact",
+        "database_migration_complete": true,
+        "deprecated_columns_removed": true,
+        "old_signals_deleted": "N/A (append mode)",
+        "delete_success": "N/A (append mode)",
+        "fresh_signal_inserted": false,
+        "batch_mode": "APPEND_ONLY",
+        "cache_hits": 0,
+        "cache_misses": 0
+      },
+      "session_313c_enhancement": {
+        "proximity_filter_applied": true,
+        "volatility_distance": 11.7603,
+        "actionable_levels": "S/R levels filtered for trading actionability"
+      },
+      "database_driven": "Company info from active_stocks table"
+    },
+    {
+      "ticker": "BK",
+      "company_name": "Bank of New York Mellon Corporation",
+      "sector": "Financial Services",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 45,
+        "4H": 25,
+        "1D": 35,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "BKNG",
+      "company_name": "Booking Holdings Inc.",
+      "sector": "Consumer Discretionary",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 15,
+        "4H": 15,
+        "1D": 36,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "BLK",
+      "company_name": "BlackRock Inc.",
+      "sector": "Financial Services",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 35,
+        "4H": 15,
+        "1D": 56,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "BMY",
+      "company_name": "Bristol-Myers Squibb Company",
+      "sector": "Healthcare",
+      "status": "CONSTRUCTED_BUT_NOT_SAVED",
+      "kuzzoraScore": 90,
+      "signalStrength": "STR_BUY",
+      "dimensions": {
+        "strength": 95,
+        "confidence": 86,
+        "quality": 95,
+        "risk": 77
+      },
+      "timeframes": {
+        "1H": 100,
+        "4H": 90,
+        "1D": 95,
+        "1W": 0
+      },
+      "real_indicators": {
+        "rsi": 17.81,
+        "macd": null,
+        "volume_ratio": 0.57,
+        "authentic_data": true,
+        "session_313_production": true
+      },
+      "object_construction": "SUCCESS",
+      "database_save": "FAILED",
+      "save_result": "Database Error: Signal save failed: new row for relation \"trading_signals\" violates check constraint \"check_signal_strength\"",
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": {
+        "version": "automated-signal-generation-v3",
+        "status": "production",
+        "transparency_upgrade": "complete_28_record_indicator_breakdown_migration_complete",
+        "indicator_records_created": 0,
+        "scoring_preservation": "session_313e_exact",
+        "database_migration_complete": true,
+        "deprecated_columns_removed": true,
+        "old_signals_deleted": "N/A (append mode)",
+        "delete_success": "N/A (append mode)",
+        "fresh_signal_inserted": false,
+        "batch_mode": "APPEND_ONLY",
+        "cache_hits": 0,
+        "cache_misses": 0
+      },
+      "session_313c_enhancement": {
+        "proximity_filter_applied": true,
+        "volatility_distance": 4.1355,
+        "actionable_levels": "S/R levels filtered for trading actionability"
+      },
+      "database_driven": "Company info from active_stocks table"
+    },
+    {
+      "ticker": "BRK.B",
+      "company_name": "Berkshire Hathaway Inc.",
+      "sector": "Financial Services",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 35,
+        "4H": 55,
+        "1D": 38,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "BSX",
+      "company_name": "Boston Scientific Corporation",
+      "sector": "Healthcare",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 25,
+        "4H": 25,
+        "1D": 25,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "BXP",
+      "company_name": "Boston Properties Inc.",
+      "sector": "Real Estate",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 15,
+        "4H": 48,
+        "1D": 100,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "C",
+      "company_name": "Citigroup Inc.",
+      "sector": "Financial Services",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 60,
+        "4H": 25,
+        "1D": 35,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "CAG",
+      "company_name": "Conagra Brands Inc.",
+      "sector": "Consumer Staples",
+      "status": "CONSTRUCTED_BUT_NOT_SAVED",
+      "kuzzoraScore": 89,
+      "signalStrength": "STR_BUY",
+      "dimensions": {
+        "strength": 98,
+        "confidence": 92,
+        "quality": 80,
+        "risk": 78
+      },
+      "timeframes": {
+        "1H": 95,
+        "4H": 100,
+        "1D": 100,
+        "1W": 0
+      },
+      "real_indicators": {
+        "rsi": 11.92,
+        "macd": null,
+        "volume_ratio": 0.9,
+        "authentic_data": true,
+        "session_313_production": true
+      },
+      "object_construction": "SUCCESS",
+      "database_save": "FAILED",
+      "save_result": "Database Error: Signal save failed: new row for relation \"trading_signals\" violates check constraint \"check_signal_strength\"",
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": {
+        "version": "automated-signal-generation-v3",
+        "status": "production",
+        "transparency_upgrade": "complete_28_record_indicator_breakdown_migration_complete",
+        "indicator_records_created": 0,
+        "scoring_preservation": "session_313e_exact",
+        "database_migration_complete": true,
+        "deprecated_columns_removed": true,
+        "old_signals_deleted": "N/A (append mode)",
+        "delete_success": "N/A (append mode)",
+        "fresh_signal_inserted": false,
+        "batch_mode": "APPEND_ONLY",
+        "cache_hits": 0,
+        "cache_misses": 0
+      },
+      "session_313c_enhancement": {
+        "proximity_filter_applied": true,
+        "volatility_distance": 1.7324999999999982,
+        "actionable_levels": "S/R levels filtered for trading actionability"
+      },
+      "database_driven": "Company info from active_stocks table"
+    },
+    {
+      "ticker": "CAT",
+      "company_name": "Caterpillar Inc.",
+      "sector": "Industrials",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 25,
+        "4H": 70,
+        "1D": 17,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "CC",
+      "company_name": "Chemours Company",
+      "sector": "Materials",
+      "status": "SAVED_WITH_COMPLETE_INDICATORS_MIGRATION_COMPLETE",
+      "kuzzoraScore": 84,
+      "signalStrength": "BUY",
+      "dimensions": {
+        "strength": 92,
+        "confidence": 72,
+        "quality": 95,
+        "risk": 71
+      },
+      "timeframes": {
+        "1H": 95,
+        "4H": 80,
+        "1D": 100,
+        "1W": 0
+      },
+      "real_indicators": {
+        "rsi": 24.6,
+        "macd": null,
+        "volume_ratio": 1,
+        "authentic_data": true,
+        "session_313_production": true
+      },
+      "object_construction": "SUCCESS",
+      "database_save": "SUCCESS",
+      "save_result": "Successfully saved signal with 28 indicator records - ID: 85025add-1c2c-4895-9ef5-7b92f8c6c166 (SESSION #325 MIGRATION COMPLETE)",
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": {
+        "version": "automated-signal-generation-v3",
+        "status": "production",
+        "transparency_upgrade": "complete_28_record_indicator_breakdown_migration_complete",
+        "indicator_records_created": 28,
+        "scoring_preservation": "session_313e_exact",
+        "database_migration_complete": true,
+        "deprecated_columns_removed": true,
+        "old_signals_deleted": "N/A (append mode)",
+        "delete_success": "N/A (append mode)",
+        "fresh_signal_inserted": true,
+        "batch_mode": "APPEND_ONLY",
+        "cache_hits": 0,
+        "cache_misses": 0
+      },
+      "session_313c_enhancement": {
+        "proximity_filter_applied": true,
+        "volatility_distance": 1.0970999999999993,
+        "actionable_levels": "S/R levels filtered for trading actionability"
+      },
+      "database_driven": "Company info from active_stocks table"
+    },
+    {
+      "ticker": "CCI",
+      "company_name": "Crown Castle International Corp.",
+      "sector": "Real Estate",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 55,
+        "4H": 49,
+        "1D": 28,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "CCL",
+      "company_name": "Carnival Corporation",
+      "sector": "Consumer Discretionary",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 15,
+        "4H": 0,
+        "1D": 25,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "CDNS",
+      "company_name": "Cadence Design Systems Inc.",
+      "sector": "Technology",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 25,
+        "4H": 45,
+        "1D": 15,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "CE",
+      "company_name": "Celanese Corporation",
+      "sector": "Materials",
+      "status": "CONSTRUCTED_BUT_NOT_SAVED",
+      "kuzzoraScore": 89,
+      "signalStrength": "STR_BUY",
+      "dimensions": {
+        "strength": 98,
+        "confidence": 92,
+        "quality": 80,
+        "risk": 77
+      },
+      "timeframes": {
+        "1H": 95,
+        "4H": 100,
+        "1D": 100,
+        "1W": 0
+      },
+      "real_indicators": {
+        "rsi": 16.93,
+        "macd": null,
+        "volume_ratio": 1.73,
+        "authentic_data": true,
+        "session_313_production": true
+      },
+      "object_construction": "SUCCESS",
+      "database_save": "FAILED",
+      "save_result": "Database Error: Signal save failed: new row for relation \"trading_signals\" violates check constraint \"check_signal_strength\"",
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": {
+        "version": "automated-signal-generation-v3",
+        "status": "production",
+        "transparency_upgrade": "complete_28_record_indicator_breakdown_migration_complete",
+        "indicator_records_created": 0,
+        "scoring_preservation": "session_313e_exact",
+        "database_migration_complete": true,
+        "deprecated_columns_removed": true,
+        "old_signals_deleted": "N/A (append mode)",
+        "delete_success": "N/A (append mode)",
+        "fresh_signal_inserted": false,
+        "batch_mode": "APPEND_ONLY",
+        "cache_hits": 0,
+        "cache_misses": 0
+      },
+      "session_313c_enhancement": {
+        "proximity_filter_applied": true,
+        "volatility_distance": 4.3245000000000005,
+        "actionable_levels": "S/R levels filtered for trading actionability"
+      },
+      "database_driven": "Company info from active_stocks table"
+    },
+    {
+      "ticker": "CF",
+      "company_name": "CF Industries Holdings Inc.",
+      "sector": "Materials",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 27,
+        "4H": 63,
+        "1D": 100,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "CHD",
+      "company_name": "Church & Dwight Co. Inc.",
+      "sector": "Consumer Staples",
+      "status": "CONSTRUCTED_BUT_NOT_SAVED",
+      "kuzzoraScore": 85,
+      "signalStrength": "STR_BUY",
+      "dimensions": {
+        "strength": 92,
+        "confidence": 72,
+        "quality": 95,
+        "risk": 86
+      },
+      "timeframes": {
+        "1H": 95,
+        "4H": 80,
+        "1D": 100,
+        "1W": 0
+      },
+      "real_indicators": {
+        "rsi": 19.99,
+        "macd": null,
+        "volume_ratio": 1.5,
+        "authentic_data": true,
+        "session_313_production": true
+      },
+      "object_construction": "SUCCESS",
+      "database_save": "FAILED",
+      "save_result": "Database Error: Signal save failed: new row for relation \"trading_signals\" violates check constraint \"check_signal_strength\"",
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": {
+        "version": "automated-signal-generation-v3",
+        "status": "production",
+        "transparency_upgrade": "complete_28_record_indicator_breakdown_migration_complete",
+        "indicator_records_created": 0,
+        "scoring_preservation": "session_313e_exact",
+        "database_migration_complete": true,
+        "deprecated_columns_removed": true,
+        "old_signals_deleted": "N/A (append mode)",
+        "delete_success": "N/A (append mode)",
+        "fresh_signal_inserted": false,
+        "batch_mode": "APPEND_ONLY",
+        "cache_hits": 0,
+        "cache_misses": 0
+      },
+      "session_313c_enhancement": {
+        "proximity_filter_applied": true,
+        "volatility_distance": 8.1828,
+        "actionable_levels": "S/R levels filtered for trading actionability"
+      },
+      "database_driven": "Company info from active_stocks table"
+    },
+    {
+      "ticker": "CHRW",
+      "company_name": "C.H. Robinson Worldwide Inc.",
+      "sector": "Industrials",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 35,
+        "4H": 25,
+        "1D": 15,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "CHTR",
+      "company_name": "Charter Communications Inc.",
+      "sector": "Communication Services",
+      "status": "REJECTED",
+      "reason": "Failed Production Gatekeeper Rules",
+      "scores": {
+        "1H": 44,
+        "4H": 100,
+        "1D": 100,
+        "1W": 0
+      },
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": "28-record indicator processing - rejected by gatekeeper"
+    },
+    {
+      "ticker": "CI",
+      "company_name": "Cigna Corporation",
+      "sector": "Healthcare",
+      "status": "CONSTRUCTED_BUT_NOT_SAVED",
+      "kuzzoraScore": 87,
+      "signalStrength": "STR_BUY",
+      "dimensions": {
+        "strength": 91,
+        "confidence": 75,
+        "quality": 100,
+        "risk": 84
+      },
+      "timeframes": {
+        "1H": 100,
+        "4H": 90,
+        "1D": 82,
+        "1W": 0
+      },
+      "real_indicators": {
+        "rsi": 36.91,
+        "macd": null,
+        "volume_ratio": 1.36,
+        "authentic_data": true,
+        "session_313_production": true
+      },
+      "object_construction": "SUCCESS",
+      "database_save": "FAILED",
+      "save_result": "Database Error: Signal save failed: new row for relation \"trading_signals\" violates check constraint \"check_signal_strength\"",
+      "batch": 999,
+      "parameters": {
+        "startIndex": 0,
+        "endIndex": 50,
+        "batchNumber": 999
+      },
+      "session_325_migration": {
+        "version": "automated-signal-generation-v3",
+        "status": "production",
+        "transparency_upgrade": "complete_28_record_indicator_breakdown_migration_complete",
+        "indicator_records_created": 0,
+        "scoring_preservation": "session_313e_exact",
+        "database_migration_complete": true,
+        "deprecated_columns_removed": true,
+        "old_signals_deleted": "N/A (append mode)",
+        "delete_success": "N/A (append mode)",
+        "fresh_signal_inserted": false,
+        "batch_mode": "APPEND_ONLY",
+        "cache_hits": 0,
+        "cache_misses": 0
+      },
+      "session_313c_enhancement": {
+        "proximity_filter_applied": true,
+        "volatility_distance": 24.741000000000014,
+        "actionable_levels": "S/R levels filtered for trading actionability"
+      },
+      "database_driven": "Company info from active_stocks table"
+    }
+  ],
+  "session_325_migration": {
+    "version": "automated-signal-generation-v3",
+    "status": "production",
+    "transparency_upgrade": "complete",
+    "total_indicator_records_created": 84,
+    "average_indicators_per_signal": 28,
+    "scoring_preservation": "session_313e_exact",
+    "modular_architecture_enhanced": true,
+    "database_migration_complete": true,
+    "deprecated_columns_removed": true,
+    "expected_indicators_per_signal": 28
+  },
+  "session_313c_enhancement": {
+    "proximity_filter_deployed": true,
+    "actionable_levels": "S/R levels filtered for trading actionability",
+    "volatility_based_filtering": "Using production entry/stop calculations"
+  },
+  "session": "SESSION-325-MIGRATION-COMPLETE-LIVE-4TIMEFRAME-TRANSPARENCY",
+  "mode": "LIVE",
+  "mode_description": "using SESSION #185 enhanced 400-day rolling window for reliable multi-timeframe data",
+  "message": "SESSION #325 MIGRATION COMPLETE system with successful database operations using complete transparency architecture with 84 indicator records created for total signal scoring understanding",
+  "stochastic_debug": {
+    "ticker": "A",
+    "timeframe": "1H",
+    "dataLength": 115,
+    "stochasticResult": {
+      "percentK": 0
+    },
+    "williamsResult": {
+      "value": -100
+    },
+    "pricesLast5": [
+      137.97,
+      136.78,
+      136.8,
+      133.85,
+      114.62
+    ],
+    "highsLast5": [
+      137.98,
+      137.94,
+      136.8,
+      137.46,
+      135.28
+    ],
+    "lowsLast5": [
+      136.79,
+      136.625,
+      136.8,
+      132.87,
+      114.62
+    ]
+  },
+  "rsi_macd_debug": {
+    "ticker": "A",
+    "timeframe": "1D",
+    "dataLength": 200,
+    "rsiResult": {
+      "value": 25.56,
+      "isValid": true,
+      "metadata": {
+        "period": 14,
+        "dataPoints": 200,
+        "calculationMethod": "session_301_modular",
+        "sessionFix": "FIXED: RSI calculation with Wilder's smoothing (TradingView compatible)",
+        "debug": {
+          "priceRange": "$114.62-$154.64",
+          "currentPrice": "114.62",
+          "lastFivePrices": [
+            "137.41",
+            "137.00",
+            "137.47",
+            "141.95",
+            "114.62"
+          ],
+          "totalChanges": 199,
+          "finalAverages": {
+            "avgGain": "0.823055",
+            "avgLoss": "2.397291",
+            "rsRatio": "0.343327"
+          },
+          "calculationSteps": 199
+        }
+      }
+    },
+    "macdResult": null,
+    "pricesLast10": [
+      134.42,
+      134.34,
+      133.43,
+      135.69,
+      136.43,
+      137.41,
+      137,
+      137.47,
+      141.95,
+      114.62
+    ],
+    "pricesFirst5": [
+      145.51,
+      145.56,
+      144.17,
+      143.73,
+      141.34
+    ],
+    "currentPrice": 114.62
+  },
+  "divergence_stats": {
+    "total_signals": 0,
+    "signals_with_divergence": 0,
+    "signals_with_strong_divergence": 0,
+    "average_divergence_bonus": 0,
+    "divergence_enhancement_rate": 0,
+    "max_divergence_bonus": 0
+  },
+  "session_402_divergence": {
+    "version": "automated-signal-generation-v4-divergence-enhanced",
+    "status": "production",
+    "divergence_enabled": true,
+    "divergence_sensitivity": 5,
+    "divergence_mode": "standard",
+    "divergence_integration_complete": true,
+    "rsi_divergence_detection_active": true,
+    "professional_divergence_analysis": true,
+    "session_402_milestone": "RSI Divergence Detection Foundation Complete"
+  },
+  "session_313_production": {
+    "version": "automated-signal-generation",
+    "status": "production",
+    "modular_architecture_deployed": true,
+    "session_311_transformation_complete": true,
+    "professional_codebase": true
+  }
+}

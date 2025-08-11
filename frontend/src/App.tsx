@@ -38,6 +38,7 @@ import AdminSettings from "./components/admin/AdminSettings";
 // 🧪 TEST COMPONENTS (PRESERVED FROM PREVIOUS SESSIONS)
 // ==================================================================================
 import SubscriptionTierTest from "./components/test/SubscriptionTierTest";
+import DivergenceUITest from "./components/test/DivergenceUITest";
 
 // ==================================================================================
 // 📄 CORE PAGE IMPORTS (PRESERVED FROM PREVIOUS SESSIONS)
@@ -208,6 +209,12 @@ function App() {
 
                   {/* ✅ CLEANED: Enhanced Signal Generation Test with Database Auto-Save & Sector Fix */}
                   <Route path="/signals-test" element={<SignalsTest />} />
+
+                  {/* 🎯 SESSION #402: DIVERGENCE UI TEST */}
+                  <Route
+                    path="/divergence-test"
+                    element={<DivergenceUITest />}
+                  />
 
                   {/* 🧪 SUBSCRIPTION TIER TEST PAGE */}
                   <Route
